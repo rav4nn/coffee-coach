@@ -1,0 +1,153 @@
+{
+    "part_1_flavour_symptom_map": {
+        "sour": {
+            "south_indian_filter": [
+                "Grind finer to extract more sugars and balance acidity",
+                "Ensure water is freshly boiled, do not let it cool down too much",
+                "Do not tamp the grounds hard, just level them gently to allow even extraction"
+            ],
+            "cold_brew": [
+                "Increase steeping time by 2-4 hours",
+                "Grind slightly finer to increase extraction surface area",
+                "Ensure all grounds are fully saturated when starting the steep"
+            ]
+        },
+        "bitter": {
+            "south_indian_filter": [
+                "If using a chicory blend, some bitterness is expected and desirable",
+                "Grind slightly coarser",
+                "Use slightly cooler water, pouring a minute or two after boiling"
+            ],
+            "cold_brew": [
+                "Decrease steeping time by 2-4 hours",
+                "Grind coarser to slow down extraction",
+                "Use cold water from the fridge instead of room temperature water"
+            ]
+        },
+        "weak_watery": {
+            "south_indian_filter": [
+                "Use a higher ratio of coffee to water when brewing the decoction",
+                "Use less milk or water when diluting your final cup",
+                "Grind finer for better extraction efficiency"
+            ],
+            "cold_brew": [
+                "Use a stronger coffee-to-water ratio (e.g., 1:8 instead of 1:12)",
+                "Grind finer to pull out more strength",
+                "Increase total steeping time"
+            ]
+        },
+        "flat_no_sweetness": {
+            "south_indian_filter": [
+                "Ensure beans are fresh—stale coffee loses its natural sweetness",
+                "Grind slightly finer to extract more natural sugars",
+                "Pre-heat the stainless steel brewer with hot water before brewing"
+            ],
+            "cold_brew": [
+                "Ensure your beans are fresh; cold brew mutes older coffee but freshness still matters",
+                "Grind slightly finer",
+                "Steep at room temperature rather than in the fridge"
+            ]
+        },
+        "muddy_silty": {
+            "south_indian_filter": [
+                "Metal filters naturally pass some fines—let the decoction settle before pouring",
+                "Grind slightly coarser to reduce the amount of microscopic coffee dust",
+                "Do not press aggressively on the plunger disc, this forces fines through the holes"
+            ],
+            "cold_brew": [
+                "Double filter the finished brew through a paper filter or fine cloth",
+                "Avoid squeezing or pressing the coffee grounds bag when removing it",
+                "Grind coarser to reduce overall fines"
+            ]
+        },
+        "woody_papery": {
+            "south_indian_filter": [
+                "Ensure the metal brewer is thoroughly clean and completely dry before use",
+                "Check your beans—woody flavors often indicate stale, old, or over-roasted coffee",
+                "Store your coffee in an airtight container away from light and moisture"
+            ],
+            "cold_brew": [
+                "If using paper filters for final straining, rinse them thoroughly with hot water first",
+                "Ensure your steeping vessel is perfectly clean before starting the brew",
+                "Old or stale beans heavily impart woody notes in cold brew; use fresher coffee"
+            ]
+        },
+        "hollow": {
+            "south_indian_filter": [
+                "Increase the amount of coffee used relative to the water to build more body",
+                "Grind finer to extract more of the heavy, body-building compounds",
+                "Ensure your water is hot enough (just off the boil) to fully extract the coffee"
+            ],
+            "cold_brew": [
+                "Use a stronger ratio of coffee to water",
+                "Grind finer to increase the overall extraction depth and body",
+                "Increase the steeping time to pull out more complex flavor compounds"
+            ]
+        }
+    },
+    "part_2_brewing_variable_interactions": {
+        "method_overrides": {
+            "south_indian_filter": {
+                "order": [
+                    "grind_size",
+                    "brew_ratio",
+                    "water_temperature"
+                ],
+                "notes": "A gravity-fed metal filter method with no agitation, producing a strong concentrate often paired with chicory."
+            },
+            "cold_brew": {
+                "order": [
+                    "brew_ratio",
+                    "grind_size",
+                    "brew_time"
+                ],
+                "notes": "A cold-water immersion method where ratio and time are the primary levers, with absolutely no temperature control."
+            }
+        },
+        "ratio_range_guide": {
+            "south_indian_filter": "1:5 to 1:8 (coffee:water by weight for the decoction)",
+            "cold_brew": "1:8 (concentrate) to 1:15 (ready-to-drink)"
+        },
+        "brew_time_feedback_targets": {
+            "south_indian_filter": "8 to 12 minutes",
+            "cold_brew": "12 to 24 hours"
+        }
+    },
+    "part_3_decision_tree": {
+        "method_select": {
+            "add": {
+                "label": "South Indian Filter",
+                "value": "south_indian_filter",
+                "next": "roast_level"
+            }
+        },
+        "method_select_improve": {
+            "add": [
+                {
+                    "label": "South Indian Filter",
+                    "value": "south_indian_filter",
+                    "next": "current_params"
+                },
+                {
+                    "label": "Cold brew",
+                    "value": "cold_brew",
+                    "next": "current_params"
+                }
+            ]
+        },
+        "method_select_recipe": {
+            "add": [
+                {
+                    "label": "South Indian Filter",
+                    "value": "south_indian_filter",
+                    "next": "roast_level_recipe"
+                },
+                {
+                    "label": "Cold brew",
+                    "value": "cold_brew",
+                    "next": "roast_level_recipe"
+                }
+            ]
+        }
+    }
+}

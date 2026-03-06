@@ -1,0 +1,248 @@
+{
+    "version": "1.0",
+    "description": "Schema definition for a single continuous brew log entry, supporting a two-phase logging system and history-based improvement suggestions.",
+    "schema": {
+        "fields": [
+            {
+                "field_name": "brew_id",
+                "type": "string",
+                "required": true,
+                "nullable": false,
+                "description": "A unique identifier for this specific brew session, typically a UUID.",
+                "default": null,
+                "references": null
+            },
+            {
+                "field_name": "bean_id",
+                "type": "string",
+                "required": true,
+                "nullable": false,
+                "description": "The identifier of the coffee bean used for this brew.",
+                "default": null,
+                "references": "beans_AI.json → coffee_id"
+            },
+            {
+                "field_name": "method",
+                "type": "string",
+                "required": true,
+                "nullable": false,
+                "description": "The category of brewing method used.",
+                "default": null,
+                "references": null
+            },
+            {
+                "field_name": "method_device",
+                "type": "string",
+                "required": true,
+                "nullable": true,
+                "description": "The specific device used, required if method is 'pour_over' (e.g., v60, chemex). Null otherwise.",
+                "default": null,
+                "references": null
+            },
+            {
+                "field_name": "recipe_id",
+                "type": "string",
+                "required": true,
+                "nullable": true,
+                "description": "The ID of the starter template recipe used as a baseline before modifications. Null if completely custom.",
+                "default": null,
+                "references": "recipes_v4.json → recipe_id"
+            },
+            {
+                "field_name": "actual_params",
+                "type": "object",
+                "required": true,
+                "nullable": false,
+                "description": "The exact parameters actually executed by the user during this brew.",
+                "default": null,
+                "references": null,
+                "children": [
+                    {
+                        "field_name": "coffee_g",
+                        "type": "float",
+                        "required": true,
+                        "nullable": false,
+                        "description": "The physical weight of ground coffee used, in grams.",
+                        "default": null,
+                        "references": null
+                    },
+                    {
+                        "field_name": "water_ml",
+                        "type": "float",
+                        "required": true,
+                        "nullable": false,
+                        "description": "The volume of water used for brewing, in milliliters.",
+                        "default": null,
+                        "references": null
+                    },
+                    {
+                        "field_name": "water_temp_c",
+                        "type": "integer",
+                        "required": true,
+                        "nullable": true,
+                        "description": "The temperature of the water used, in Celsius. Null for cold brew without temp control.",
+                        "default": null,
+                        "references": null
+                    },
+                    {
+                        "field_name": "grind_size",
+                        "type": "string",
+                        "required": true,
+                        "nullable": false,
+                        "description": "The descriptive or numeric representation of grind size used.",
+                        "default": null,
+                        "references": null
+                    },
+                    {
+                        "field_name": "brew_time_seconds",
+                        "type": "integer",
+                        "required": true,
+                        "nullable": false,
+                        "description": "The total duration of the brew, in seconds.",
+                        "default": null,
+                        "references": null
+                    },
+                    {
+                        "field_name": "bloom_water_g",
+                        "type": "float",
+                        "required": true,
+                        "nullable": true,
+                        "description": "The amount of water used specifically for the bloom phase, in grams. Null if no bloom.",
+                        "default": null,
+                        "references": null
+                    },
+                    {
+                        "field_name": "bloom_duration_seconds",
+                        "type": "integer",
+                        "required": true,
+                        "nullable": true,
+                        "description": "The time spent on the bloom phase, in seconds. Null if no bloom.",
+                        "default": null,
+                        "references": null
+                    }
+                ]
+            },
+            {
+                "field_name": "brew_datetime",
+                "type": "datetime",
+                "required": true,
+                "nullable": false,
+                "description": "The exact timestamp when the brew officially occurred in ISO 8601 format.",
+                "default": null,
+                "references": null
+            },
+            {
+                "field_name": "flavour_notes",
+                "type": "array",
+                "required": true,
+                "nullable": true,
+                "description": "Free-form strings entered by user describing their sensory experience of the brew.",
+                "default": null,
+                "references": null
+            },
+            {
+                "field_name": "rating",
+                "type": "integer",
+                "required": true,
+                "nullable": true,
+                "description": "User's subjective quality rating of the brew on a scale of 1 to 10.",
+                "default": null,
+                "references": null
+            },
+            {
+                "field_name": "selected_improvement_goals",
+                "type": "array",
+                "required": true,
+                "nullable": true,
+                "description": "User-selected goals to improve the next brew of this specific bean-method combination.",
+                "default": null,
+                "references": "improvement_goals_map.json → id"
+            },
+            {
+                "field_name": "suggested_tweaks",
+                "type": "object",
+                "required": true,
+                "nullable": true,
+                "description": "Arbitrary key-value pairs generated by the app mapping parameter names to new suggested values based on selected goals.",
+                "default": null,
+                "references": null
+            },
+            {
+                "field_name": "brew_number",
+                "type": "integer",
+                "required": true,
+                "nullable": false,
+                "description": "Sequential count indicating which iteration this is for the current bean+method combo.",
+                "default": 1,
+                "references": null
+            },
+            {
+                "field_name": "previous_brew_id",
+                "type": "string",
+                "required": true,
+                "nullable": true,
+                "description": "Link to the preceding brew entry for this specific bean+method combo to maintain a history chain. Null for first brew.",
+                "default": null,
+                "references": null
+            }
+        ]
+    },
+    "examples": {
+        "complete_entry": {
+            "brew_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            "bean_id": "8a7c1b2c-2b6e-4c74-9b5a-7e6d2b3c4f5e",
+            "method": "pour_over",
+            "method_device": "v60",
+            "recipe_id": "james-hoffmann-v60-recipe",
+            "actual_params": {
+                "coffee_g": 30.0,
+                "water_ml": 500.0,
+                "water_temp_c": 98,
+                "grind_size": "medium_fine",
+                "brew_time_seconds": 210,
+                "bloom_water_g": 60.0,
+                "bloom_duration_seconds": 45
+            },
+            "brew_datetime": "2026-03-06T09:15:30Z",
+            "flavour_notes": [
+                "nutty",
+                "slight sourness",
+                "lacking sweetness"
+            ],
+            "rating": 6,
+            "selected_improvement_goals": [
+                "more_sweetness",
+                "less_acidity"
+            ],
+            "suggested_tweaks": {
+                "grind_size": "finer",
+                "water_temp_c": 100
+            },
+            "brew_number": 2,
+            "previous_brew_id": "d290f1ee-6c54-4b01-90e6-d701748f0851"
+        },
+        "partial_entry": {
+            "brew_id": "e391b1ac-46de-4128-9a84-1d01a1d2e382",
+            "bean_id": "8a7c1b2c-2b6e-4c74-9b5a-7e6d2b3c4f5e",
+            "method": "pour_over",
+            "method_device": "v60",
+            "recipe_id": "james-hoffmann-v60-recipe",
+            "actual_params": {
+                "coffee_g": 30.0,
+                "water_ml": 500.0,
+                "water_temp_c": 100,
+                "grind_size": "finer",
+                "brew_time_seconds": 225,
+                "bloom_water_g": 60.0,
+                "bloom_duration_seconds": 45
+            },
+            "brew_datetime": "2026-03-07T08:30:00Z",
+            "flavour_notes": null,
+            "rating": null,
+            "selected_improvement_goals": null,
+            "suggested_tweaks": null,
+            "brew_number": 3,
+            "previous_brew_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        }
+    }
+}

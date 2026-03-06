@@ -1,0 +1,184 @@
+COFFEE COACH - PROJECT GUIDELINES
+===================================
+Last updated: 2026-03-06
+
+This file captures the user's design decisions, priorities, and constraints.
+Read this file at the start of every session to understand project context.
+
+
+1. CORE APP CONCEPT
+-------------------
+A coffee coaching app with an iterative brew-rate-improve loop:
+  Pick beans -> Pick method -> Pick recipe -> Log brew -> Rate & add flavour notes
+  -> Get improvement suggestions -> Brew again with tweaks
+
+The app supports single-user, mobile-first. No espresso (deferred — fundamentally
+different param set). Indian specialty coffee focus.
+
+
+2. ACTIVE BREW METHODS (6)
+---------------------------
+- aeropress
+- cold_brew
+- french_press
+- moka_pot
+- pour_over (with sub-devices: v60, chemex, kalita_wave, clever_dripper, etc.)
+- south_indian_filter
+
+
+3. KEY DATA FILES
+-----------------
+Existing (pre-project):
+  - beans_AI.json           -- 1,270 Indian specialty beans
+  - recipes_v4.json         -- 48 expert recipes, 13 methods (REPLACES timer_coffee_supabase.json)
+  - flavour_symptom_map.json -- 7 symptoms -> method-specific fixes
+  - brewing_variable_interactions.json -- 6 variables, interactions, priorities
+  - roast_level_modifiers.json -- Roast profiles + process modifiers
+  - decision_tree.json      -- 64-node conversational flow (updated: references recipes_v4.json, includes all 6 methods)
+  - coffee_knowledge_rag_filtered.jsonl -- 1,691 Hoffmann transcript chunks (includes pre-ground aging video)
+
+Generated (GAPs 1-7):
+  - improvement_goals_map.json    -- 9 goals with magnitude calibration (GAP 1)
+  - brew_log_schema.json          -- Brew entry schema, two-phase logging (GAP 2)
+  - brew_history_logic.json       -- Trend detection + suggestion pipeline (GAP 3)
+  - new_method_entries.json       -- South Indian filter + cold brew insertable content (GAP 4)
+  - rating_routing_config.json    -- 4 coaching modes based on rating (GAP 5)
+  - bean_method_pairing.json      -- Process x method adjustments (GAP 7)
+  - bean_freshness_logic.json     -- Roast-date freshness zones + resting/storage guidance
+  - ground_coffee_freshness_logic.json -- Pre-ground degradation timeline + grinder quality crossover
+
+Deleted:
+  - timer_coffee_supabase.json    -- REDUNDANT, replaced by recipes_v4.json
+
+
+4. CRITICAL COFFEE SCIENCE RULES
+---------------------------------
+These rules must NEVER be violated by any file or logic:
+
+  a) Grind finer = more extraction. Grind coarser = less extraction.
+  b) Hotter water = more extraction. Cooler water = less extraction.
+  c) Longer brew time = more extraction (immersion methods only).
+     For pour_over and south_indian_filter, brew time is a RESULT of grind, not independent.
+  d) Ratio changes STRENGTH, not extraction. More coffee = stronger. Less = weaker.
+     Ratio does NOT fix sour/bitter.
+  e) Sweetness lives in 18-22% extraction zone.
+  f) Dark roasts: lower temp FIRST for bitterness (not grind).
+  g) ONE change at a time. Never suggest multiple variable changes.
+  h) Pour-over: never suggest brew time changes directly — suggest grind changes instead.
+  i) Cold brew: NO temperature control. Only grind, ratio, and steep time.
+  j) South Indian filter: brew time is NOT independently controllable (gravity drip).
+  k) Freshness as caveat, not blocker: only too-fresh beans (needing rest) pause the flow.
+     Stale beans or old grounds get a caveat NOTE after the technique fix, never instead of it.
+     The user has these beans — help them make the best cup, then mention the freshness limit.
+  l) Ground coffee degrades rapidly: noticeable loss at 1 day, significant at 2, flat by 7,
+     actively unpleasant by 10+. Whole beans hold freshness 10-50x longer than grounds.
+
+
+5. GRIND SIZE LANGUAGE
+----------------------
+Always use qualitative language, never step counts or grinder-specific settings.
+  - Nudge:      "slightly finer" / "slightly coarser"
+  - Moderate:   "finer" / "coarser"
+  - Aggressive:  "significantly finer" / "significantly coarser"
+
+The user explicitly decided NOT to map grinder settings (GAP 8 skipped).
+Grinder manufacturers themselves say quantitative cross-mapping is pointless.
+Qualitative descriptions are the standard for this app.
+
+
+6. MAGNITUDE CALIBRATION
+-------------------------
+Rating tiers (baseline magnitude):
+  - 1-4:  aggressive (cup is broken)
+  - 5-6:  moderate (decent but needs work)
+  - 7-8:  nudge (good cup, fine-tuning)
+  - 9-10: none (lock in recipe, save as favourite)
+
+Goal-based modifiers shift baseline up/down one tier:
+  - shift_up:   nudge -> moderate, moderate -> aggressive
+  - neutral:    use baseline as-is
+  - shift_down: aggressive -> moderate, moderate -> nudge
+
+
+7. COACHING MODES (from rating_routing_config.json)
+---------------------------------------------------
+  - Diagnosis (1-4):   Symptom identification -> method-specific fix
+  - Improvement (5-6): Hybrid — symptom fix OR improvement goals
+  - Refinement (7-8):  Improvement goals only, max 2, nudge magnitude
+  - Lock-in (9-10):    Save recipe, celebrate journey
+
+History overrides: oscillating -> consistency focus, plateau -> try new method/recipe,
+improving trend hitting 7+ -> celebrate before refining.
+
+
+8. TREND DETECTION (from brew_history_logic.json)
+-------------------------------------------------
+Evaluation order (first match wins):
+  1. Oscillating (4 ratings, std dev > 2)
+  2. Plateau (4 ratings, max - min <= 1)
+  3. Improving (diff > 1, i.e. 2+ point increase)
+  4. Worsening (diff < -1, i.e. 2+ point decrease)
+  5. Stable (abs(diff) <= 1 — catches small changes like 6->7)
+
+A 1-point change is "stable", not "improving" — only 2+ point swings count as real trends.
+
+
+9. VARIABLE PROGRESSION (canonical orders per method)
+-----------------------------------------------------
+  - pour_over:            grind_size -> water_temperature -> brew_ratio
+  - french_press:         brew_time -> grind_size -> water_temperature -> brew_ratio
+  - aeropress:            grind_size -> brew_time -> water_temperature -> brew_ratio
+  - moka_pot:             grind_size -> water_temperature -> brew_ratio
+  - cold_brew:            grind_size -> brew_ratio -> brew_time (NO water_temperature)
+  - south_indian_filter:  grind_size -> brew_ratio -> water_temperature (NO brew_time)
+
+
+10. BEANS DATA (beans_AI.json)
+------------------------------
+Known gaps (acceptable for V1):
+  - 80% missing body ratings
+  - 79% missing acidity/sweetness scores
+  - 64% missing explicit brew_methods (has inferred)
+  - 57.8% missing process data
+
+The user will scrape more data when time permits. For now, inferred fields are sufficient.
+The coaching loop depends on what the user TASTES and RATES, not bean metadata.
+
+
+11. SOUTH INDIAN FILTER SPECIFICS
+----------------------------------
+  - Gravity drip method (like pour-over), NOT immersion
+  - Brew time is NOT independently controllable
+  - Commonly uses chicory — some bitterness is expected and desired
+  - "Weak" problem = decoction too diluted (fix ratio, not serving dilution)
+  - Metal filter passes oils and fines (no paper)
+
+
+12. COLD BREW SPECIFICS
+------------------------
+  - Immersion method, 12-24 hour steep
+  - NO temperature control — never suggest temp changes
+  - Grind, ratio, and steep time are the only levers
+  - Filtration affects clarity but "filtration" is not a trackable param in brew_log_schema
+
+
+13. WORKFLOW: OPUS FOR PLANNING, GEMINI FOR EXECUTION
+-----------------------------------------------------
+The user uses Claude Opus for architecture, planning, review, and prompt writing.
+Gemini 3.1 Pro handles bulk JSON generation from detailed prompts.
+This conserves Opus tokens for high-value thinking.
+
+
+14. GAP STATUS
+--------------
+  GAP 1 (improvement_goals_map.json):     DONE + fixes applied
+  GAP 2 (brew_log_schema.json):           DONE + fixes applied
+  GAP 3 (brew_history_logic.json):        DONE + fixes applied
+  GAP 4 (new_method_entries.json):        DONE + fixes applied
+  GAP 5 (rating_routing_config.json):     DONE + fixes applied
+  GAP 6 (decision_tree.json stale refs):  DONE (applied directly by Opus)
+  GAP 7 (bean_method_pairing.json):       DONE (generated by Gemini, pending review)
+  FRESHNESS (bean_freshness_logic.json):   DONE — roast-date zones, resting, freezer logic
+  FRESHNESS (ground_coffee_freshness):     DONE — day-by-day degradation, grinder crossover
+  GAP 8 (grind standardization):          SKIPPED — user decision, qualitative only
+  GAP 9 (beans_AI data quality):          DEFERRED — best available data for V1

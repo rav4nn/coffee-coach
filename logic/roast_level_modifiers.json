@@ -1,0 +1,265 @@
+{
+  "version": "1.0",
+  "description": "Roast level modifiers. Defines how light, medium, and dark roasts behave differently and how to adjust brewing variables for each. Used by the decision tree to branch advice based on roast level.",
+
+  "roast_levels": {
+    "light": {
+      "id": "light",
+      "visual": "Light brown, no oil on surface, dry to touch",
+      "bean_properties": {
+        "density": "high — beans are hard and dense, less cellular breakdown during roasting",
+        "solubility": "low — harder to extract, needs more energy (heat, time, surface area)",
+        "acidity": "high — fruit acids preserved during shorter roast time",
+        "sweetness_potential": "high — but only accessible with sufficient extraction",
+        "bitterness_potential": "low — fewer Maillard/carbonization products"
+      },
+      "common_origins": "Ethiopian, Kenyan, Colombian, light-roast Indian specialty (Attikan, Bibi plantation)",
+      "brewing_adjustments": {
+        "grind_size": {
+          "direction": "finer than baseline",
+          "why": "Low solubility means you need more surface area to extract enough. Under-extraction is the default risk."
+        },
+        "water_temperature": {
+          "direction": "hotter — 96-100C, or just off boil",
+          "why": "Dense beans need more thermal energy. Hoffmann advocates boiling water for light roasts. Heat loss during pour means slurry temp is always lower than kettle temp."
+        },
+        "brew_time": {
+          "direction": "can go longer without penalty",
+          "why": "Light roasts are forgiving on time — they resist over-extraction because there are fewer bitter compounds to extract."
+        },
+        "ratio": {
+          "direction": "standard 1:15 to 1:17 for filter",
+          "why": "No special adjustment needed. Ratio is about strength, not extraction."
+        },
+        "agitation": {
+          "direction": "moderate to high is fine",
+          "why": "More agitation helps extract stubborn light roast compounds. A good swirl or stir is beneficial."
+        }
+      },
+      "common_problems": [
+        {
+          "problem": "Sour / underextracted",
+          "frequency": "very common — the #1 light roast problem",
+          "why": "People use the same parameters as medium roast. Light roast needs more extraction energy.",
+          "fix_order": ["grind finer", "increase water temperature to boiling", "extend brew time"]
+        },
+        {
+          "problem": "Bright but hollow / no body",
+          "frequency": "common",
+          "why": "Acidity extracts first but body compounds need more time/heat. Partial extraction gives brightness without weight.",
+          "fix_order": ["grind finer", "extend brew time", "increase dose slightly"]
+        },
+        {
+          "problem": "Grassy / vegetal",
+          "frequency": "occasional",
+          "why": "Very underdeveloped roast (not the brewer's fault). Some light roasts are roasted too light — green, hay-like flavours indicate the roast itself was under-done.",
+          "fix_order": ["try hotter water", "if still grassy, the roast is the problem — try a different roaster"]
+        }
+      ],
+      "expectations": "A well-brewed light roast should taste: bright, fruity, complex acidity (like citrus or berries), floral or tea-like aromatics, with underlying sweetness. It should NOT taste sour, thin, or like lemon juice — that's under-extraction."
+    },
+
+    "medium": {
+      "id": "medium",
+      "visual": "Medium brown, little to no oil on surface",
+      "bean_properties": {
+        "density": "moderate — some cellular breakdown, easier to extract than light",
+        "solubility": "moderate — the goldilocks zone, works with standard parameters",
+        "acidity": "moderate — some fruit acids remain, balanced by developing sweetness",
+        "sweetness_potential": "highest — best balance of caramelization without carbonization",
+        "bitterness_potential": "low-moderate — some Maillard products, pleasant chocolate/caramel notes"
+      },
+      "common_origins": "Most Indian specialty coffee (Chikmagalur, Coorg, Araku), Brazilian, Central American",
+      "brewing_adjustments": {
+        "grind_size": {
+          "direction": "standard baseline for the method",
+          "why": "Medium roast is what most recipes are calibrated for. Use the recipe's default grind."
+        },
+        "water_temperature": {
+          "direction": "92-96C — standard range",
+          "why": "Moderate solubility means standard temps work well. No special adjustment needed."
+        },
+        "brew_time": {
+          "direction": "standard for the method",
+          "why": "Hit the target brew time for your method and you'll be in the right range."
+        },
+        "ratio": {
+          "direction": "standard 1:15 to 1:17 for filter",
+          "why": "No special adjustment."
+        },
+        "agitation": {
+          "direction": "standard — follow the recipe",
+          "why": "Medium roast is the baseline. Whatever the recipe says is correct."
+        }
+      },
+      "common_problems": [
+        {
+          "problem": "Flat / no sweetness",
+          "frequency": "common — often a freshness issue",
+          "why": "Medium roast sweetness fades fast with staleness. Check roast date first.",
+          "fix_order": ["check freshness (use within 2-4 weeks of roast)", "grind finer", "increase water temperature slightly"]
+        },
+        {
+          "problem": "Slightly sour",
+          "frequency": "common with medium-light roasts",
+          "why": "Medium-light sits close to light roast territory. May need a small extraction bump.",
+          "fix_order": ["grind one step finer", "use slightly hotter water (94-96C)"]
+        },
+        {
+          "problem": "Slightly bitter",
+          "frequency": "common with medium-dark roasts",
+          "why": "Medium-dark is approaching dark roast solubility. May be extracting a bit much.",
+          "fix_order": ["grind one step coarser", "lower water temperature slightly (90-93C)"]
+        }
+      ],
+      "expectations": "A well-brewed medium roast should taste: sweet (chocolate, caramel, brown sugar), balanced acidity (not sharp), full body, clean finish. This is the most approachable roast level for most people."
+    },
+
+    "dark": {
+      "id": "dark",
+      "visual": "Dark brown to almost black, oily/shiny surface",
+      "bean_properties": {
+        "density": "low — significant cellular breakdown, beans are porous and fragile",
+        "solubility": "very high — extracts easily and quickly, over-extraction is the default risk",
+        "acidity": "very low — most fruit acids destroyed during extended roasting",
+        "sweetness_potential": "low — many sugars have carbonized past the sweet point",
+        "bitterness_potential": "high — lots of Maillard products, carbonized compounds, phenols"
+      },
+      "common_origins": "Traditional Indian coffee (estate blends, commercial roasts), Italian-style blends, French roast, most supermarket coffee",
+      "brewing_adjustments": {
+        "grind_size": {
+          "direction": "coarser than baseline",
+          "why": "High solubility means fines extract extremely fast. Coarser grind slows extraction and reduces harsh compound dissolution."
+        },
+        "water_temperature": {
+          "direction": "cooler — 85-92C, well below boiling",
+          "why": "This is the MOST important adjustment for dark roasts. Hot water + high solubility = instant over-extraction. Lowering temp is the first move, not grind. This is the exception to the normal 'grind first' priority."
+        },
+        "brew_time": {
+          "direction": "shorter than standard",
+          "why": "Dark roasts extract fast. Extended contact time pulls out more harsh, ashy compounds."
+        },
+        "ratio": {
+          "direction": "can go slightly stronger (1:14 to 1:16) for filter",
+          "why": "Dark roasts produce a lighter-bodied cup per gram because so much mass was lost to CO2 during roasting. Slightly more coffee compensates."
+        },
+        "agitation": {
+          "direction": "less — gentle or minimal",
+          "why": "High solubility + agitation = rapid over-extraction. Keep it gentle."
+        }
+      },
+      "common_problems": [
+        {
+          "problem": "Bitter / harsh / ashy",
+          "frequency": "very common — the #1 dark roast problem",
+          "why": "People use light/medium roast parameters (boiling water, fine grind, long steep). Dark roast is already highly soluble — standard params massively over-extract.",
+          "fix_order": ["lower water temperature to 85-90C", "grind coarser", "shorten brew time", "reduce agitation"],
+          "important": "For dark roasts, temperature comes BEFORE grind in the fix priority. This is the one exception to the normal adjustment order."
+        },
+        {
+          "problem": "Smoky / burnt taste",
+          "frequency": "common",
+          "why": "Some level of smoke/char is inherent to dark roast — it's part of the flavour profile. But if it's overwhelming, it's either the roast itself (too dark) or over-extraction amplifying it.",
+          "fix_order": ["lower water temperature", "shorten brew time", "if still too smoky, the roast is darker than you prefer — try a medium-dark instead"]
+        },
+        {
+          "problem": "Flat / no complexity",
+          "frequency": "inherent to very dark roasts",
+          "why": "Extended roasting destroys volatile aromatics and fruit acids. Very dark roasts have a narrower flavour range — mostly chocolate, smoke, and roast character. This is a property of the roast, not a technique problem.",
+          "fix_order": ["try a medium or medium-dark roast if you want more complexity", "there's no technique fix for flavour that was destroyed during roasting"]
+        }
+      ],
+      "expectations": "A well-brewed dark roast should taste: chocolatey, full-bodied, low acidity, smooth with some bitterness (pleasant, not harsh). Think dark chocolate, not burnt toast. Some smokiness is normal. If it tastes like an ashtray, it's over-extracted or the roast is too dark for your preference."
+    }
+  },
+
+  "process_modifiers": {
+    "description": "Coffee processing method also affects how to brew. These are secondary modifiers on top of roast level.",
+    "washed": {
+      "flavour_tendency": "clean, bright, defined acidity",
+      "brewing_note": "Standard parameters work well. Acidity is clear and structured."
+    },
+    "natural": {
+      "flavour_tendency": "fruity, fermented, heavy body, winey",
+      "brewing_note": "Can taste fermenty or boozy if over-extracted. Slightly coarser grind or lower temp can tame wild naturals. Sweetness comes through more easily than washed."
+    },
+    "honey": {
+      "flavour_tendency": "sweet, syrupy body, moderate acidity, stone fruit",
+      "brewing_note": "Between washed and natural. Standard parameters usually work. Tends to be very forgiving."
+    },
+    "monsooned": {
+      "flavour_tendency": "low acidity, heavy body, earthy, musty, spicy — uniquely Indian",
+      "brewing_note": "Treat like a dark roast even if the colour is medium. Monsooned beans are very porous and extract quickly. Use cooler water and coarser grind than the colour suggests."
+    }
+  },
+
+  "freshness_guide": {
+    "description": "How roast level affects freshness window and resting period.",
+    "light": {
+      "rest_after_roast": "7-14 days before peak flavour — light roasts need longer to degas",
+      "peak_window": "2-6 weeks after roast",
+      "stale_after": "6-8 weeks",
+      "notes": "Light roasts hold freshness longer because less cellular damage means slower CO2 loss. But they also need more resting time — brewing day-of-roast will taste papery and underdeveloped."
+    },
+    "medium": {
+      "rest_after_roast": "5-10 days",
+      "peak_window": "1-4 weeks after roast",
+      "stale_after": "4-6 weeks",
+      "notes": "The standard freshness curve. Most recipes assume this timeline."
+    },
+    "dark": {
+      "rest_after_roast": "2-5 days — degasses fast due to porous structure",
+      "peak_window": "4 days to 3 weeks after roast",
+      "stale_after": "3-4 weeks",
+      "notes": "Dark roasts go stale fastest. The oils on the surface oxidize quickly. Use dark roasts sooner than you'd use light roasts. If they smell rancid or taste papery, they've gone off."
+    }
+  },
+
+  "roast_switching_guide": {
+    "description": "What to change when switching between roast levels. Referenced by decision_tree.json → bean_switch node.",
+    "light_to_dark": {
+      "changes": [
+        "Lower water temperature by 5-10C (from 96C+ down to 85-92C)",
+        "Grind 2-3 steps coarser",
+        "Reduce brew time if you control it (immersion methods)",
+        "Reduce agitation"
+      ],
+      "warning": "This is the biggest roast jump. Using light roast parameters on dark roast will produce very bitter, harsh coffee. Reset everything."
+    },
+    "dark_to_light": {
+      "changes": [
+        "Increase water temperature by 5-10C (from 85-90C up to 96-100C)",
+        "Grind 2-3 steps finer",
+        "Extend brew time if you control it",
+        "Can increase agitation"
+      ],
+      "warning": "Using dark roast parameters on light roast will produce very sour, thin, underdeveloped coffee. Reset everything."
+    },
+    "medium_to_light": {
+      "changes": [
+        "Increase water temperature by 2-4C",
+        "Grind 1-2 steps finer",
+        "Slightly extend brew time"
+      ]
+    },
+    "medium_to_dark": {
+      "changes": [
+        "Lower water temperature by 3-5C",
+        "Grind 1-2 steps coarser",
+        "Slightly shorten brew time"
+      ]
+    },
+    "light_to_medium": {
+      "changes": [
+        "Lower water temperature by 2-4C",
+        "Grind 1-2 steps coarser"
+      ]
+    },
+    "dark_to_medium": {
+      "changes": [
+        "Increase water temperature by 3-5C",
+        "Grind 1-2 steps finer"
+      ]
+    }
+  }
+}

@@ -1,0 +1,123 @@
+{
+    "version": "1.0",
+    "description": "Routing config that dictates app UI transitions and coaching paths based on user brew ratings, symptom identification, and historical feedback.",
+    "rating_modes": {
+        "diagnosis": {
+            "rating_range": "1-4",
+            "primary_action": "Guide the user through symptom identification",
+            "flow": "Ask 'What's wrong with the taste?' -> present the 7 symptom options -> deliver method-specific fix.",
+            "goal_selection_offered": false,
+            "tweak_source": "symptom_fix",
+            "ui_hint": "Let's fix this."
+        },
+        "improvement": {
+            "rating_range": "5-6",
+            "primary_action": "Ask the user if they can identify a specific problem OR if they'd prefer to select improvement goals",
+            "flow": "Ask 'Can you describe a specific taste issue?' (route to diagnosis with moderate fixes) OR 'Would you rather tell me what you want more/less of?' (route to improvement goals).",
+            "goal_selection_offered": true,
+            "tweak_source": "improvement_goals_or_symptom_fix",
+            "magnitude_tier": "moderate",
+            "ui_hint": "Getting there \u2014 let's dial it in."
+        },
+        "refinement": {
+            "rating_range": "7-8",
+            "primary_action": "Present improvement goals only \u2014 no symptom diagnosis needed",
+            "flow": "Say 'Great cup! Want to make it even better?' -> present improvement goals from improvement_goals_map.json",
+            "goal_selection_offered": true,
+            "max_goals_selectable": 2,
+            "tweak_source": "improvement_goals",
+            "magnitude_tier": "nudge",
+            "ui_hint": "Nice brew! Let's fine-tune."
+        },
+        "lock_in": {
+            "rating_range": "9-10",
+            "primary_action": "Congratulate the user and suggest saving this as a favourite recipe",
+            "flow": "Say 'Amazing brew! Save this recipe?' -> offer to bookmark/favourite this bean+method+params combo",
+            "goal_selection_offered": false,
+            "tweak_source": "none",
+            "special_action": "If brew_number >= 2 and previous brews were rated lower, highlight the journey: 'You went from {first_rating} to {current_rating} in {brew_number} brews!'",
+            "ui_hint": "Nailed it!"
+        }
+    },
+    "transition_rules": {
+        "rating_changed_between_brews": "If brew N-1 was in Diagnosis mode (e.g., 3) and brew N is in Improvement mode (e.g., 6), acknowledge progress: 'Big improvement! Last time we fixed {symptom}, now let's refine further.'",
+        "rating_dropped_between_brews": "If brew N-1 was in Refinement mode (e.g., 7) and brew N is in Diagnosis mode (e.g., 4), acknowledge the regression and check if the user followed the previous suggestion or made their own changes.",
+        "first_brew": "Go straight to the appropriate mode based on rating without transition messaging."
+    },
+    "symptom_to_tweak_mapping": {
+        "sour": {
+            "default_tweak": {
+                "grind_size": "significantly finer"
+            },
+            "method_exceptions": {
+                "cold_brew": {
+                    "brew_time_seconds": "increase by 2-4 hours"
+                }
+            }
+        },
+        "bitter": {
+            "default_tweak": {
+                "grind_size": "significantly coarser"
+            },
+            "method_exceptions": {
+                "cold_brew": {
+                    "brew_time_seconds": "decrease by 2-4 hours"
+                }
+            },
+            "roast_exceptions": {
+                "dark": {
+                    "water_temp_c": "lower by 5-10\u00b0C"
+                }
+            }
+        },
+        "weak_watery": {
+            "default_tweak": {
+                "brew_ratio": "decrease by 1-2"
+            },
+            "method_exceptions": {}
+        },
+        "flat_no_sweetness": {
+            "default_tweak": {
+                "grind_size": "significantly finer"
+            },
+            "pre_check": "Check for staleness first.",
+            "method_exceptions": {}
+        },
+        "muddy_silty": {
+            "default_tweak": {
+                "grind_size": "slightly coarser"
+            },
+            "method_exceptions": {
+                "cold_brew": {
+                    "filtration": "double filter with paper or fine cloth"
+                }
+            }
+        },
+        "woody_papery": {
+            "default_tweak": null,
+            "action": "Rinse filter / check freshness. No parameter tweak generated.",
+            "method_exceptions": {}
+        },
+        "hollow": {
+            "default_tweak": {
+                "grind_size": "significantly finer"
+            },
+            "method_exceptions": {}
+        }
+    },
+    "history_overrides": {
+        "oscillating_trend_detected": {
+            "override_trigger": "oscillating",
+            "action": "Regardless of current rating, override to: 'Focus on consistency. Brew the same recipe 3 times before changing anything.' No goals offered."
+        },
+        "plateau_detected": {
+            "override_trigger": "plateau",
+            "action": "Regardless of current rating, override to plateau messaging from brew_history_logic.json (try different recipe/method/accept ceiling)."
+        },
+        "improving_trend_hits_7_plus": {
+            "override_trigger": "improving",
+            "condition": "improving trend + rating now 7+",
+            "action": "Suggest locking in. Even though 7-8 normally offers refinement goals, an improving trend that just hit 7 should celebrate first."
+        }
+    }
+}

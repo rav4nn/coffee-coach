@@ -1,0 +1,176 @@
+{
+  "version": "1.0",
+  "description": "Bean freshness logic based on roast date. Classifies beans into freshness zones and provides coaching actions. Sources: James Hoffmann's 'A Beginner's Guide to Resting Coffee', 'Should you freeze coffee beans?', roast_level_modifiers.json freshness_guide.",
+
+  "inputs": {
+    "roast_date": "Date on bag (ISO string or null if unknown)",
+    "roast_level": "light | medium | dark | unknown",
+    "storage_method": "room_temp | freezer | unknown",
+    "has_roast_date": "Whether the bag has a roast date printed on it"
+  },
+
+  "freshness_zones": {
+    "too_fresh": {
+      "label": "Too fresh — needs resting",
+      "description": "CO2 is still trapped inside the beans. Brewing now will produce a carbonic acid tang, unpleasant sourness, and under-extraction. The bloom will be very vigorous.",
+      "taste_symptoms": ["sour", "sharp carbonic tang", "under-extracted", "sparkling water mouthfeel", "thin body"],
+      "windows_by_roast": {
+        "light": {
+          "days_after_roast": [0, 7],
+          "note": "Light roasts are dense — CO2 escapes slowly. Very dense/high-altitude beans may need up to 10 days.",
+          "filter_rest_minimum_days": 5,
+          "filter_rest_ideal_days": 7
+        },
+        "medium": {
+          "days_after_roast": [0, 5],
+          "filter_rest_minimum_days": 4,
+          "filter_rest_ideal_days": 5
+        },
+        "dark": {
+          "days_after_roast": [0, 3],
+          "note": "Dark roasts are porous — CO2 escapes fast. 2-3 days is usually enough.",
+          "filter_rest_minimum_days": 2,
+          "filter_rest_ideal_days": 3
+        }
+      },
+      "coaching_action": {
+        "primary": "Wait before brewing. Your beans need {days_remaining} more days to rest.",
+        "storage_tip": "Keep the bag sealed at room temperature (~20C). Don't open it repeatedly — let the CO2 escape through the one-way valve.",
+        "if_must_brew_now": "If you can't wait: use a longer bloom (45-60 seconds), grind slightly coarser than usual, and expect a more sour cup than the bean's potential. It will improve day by day.",
+        "pauses_flow": true,
+        "reason": "Sour/sharp flavours from too-fresh beans will be misdiagnosed as extraction problems. Resting is the fix, not grind or temperature changes. User can still choose to proceed to diagnosis with a caveat."
+      }
+    },
+
+    "peak": {
+      "label": "Peak freshness",
+      "description": "CO2 has mostly escaped. Aromatics and flavour compounds are intact. This is when the beans taste their best.",
+      "windows_by_roast": {
+        "light": {
+          "days_after_roast": [7, 42],
+          "note": "Light roasts hold freshness longest — dense structure slows oxidation and volatile loss."
+        },
+        "medium": {
+          "days_after_roast": [5, 28],
+          "note": "Standard freshness curve. Most recipes assume this window."
+        },
+        "dark": {
+          "days_after_roast": [3, 21],
+          "note": "Dark roasts go stale fastest — oils on surface oxidize quickly, porous structure loses volatiles."
+        }
+      },
+      "coaching_action": {
+        "primary": "Your beans are in their peak window. Any taste issues are technique-related — proceed with diagnosis.",
+        "freshness_caveat": false
+      }
+    },
+
+    "past_peak": {
+      "label": "Past peak — still usable",
+      "description": "Flavour is fading. Aromatics are diminishing. The cup will lack some complexity and sweetness compared to peak, but technique can still make a decent cup.",
+      "taste_symptoms": ["reduced sweetness", "less aromatic complexity", "flatter than expected", "slight staleness"],
+      "windows_by_roast": {
+        "light": {
+          "days_after_roast": [42, 56],
+          "note": "Light roasts past 6 weeks — sweetness fading, acidity becoming sharper and less pleasant."
+        },
+        "medium": {
+          "days_after_roast": [28, 42],
+          "note": "Medium roasts past 4 weeks — caramel/chocolate notes fading, cup getting thinner."
+        },
+        "dark": {
+          "days_after_roast": [21, 28],
+          "note": "Dark roasts past 3 weeks — oils going rancid, developing papery/cardboard notes."
+        }
+      },
+      "coaching_action": {
+        "primary": "Your beans are past peak but still usable. Expect less sweetness and complexity than fresh beans.",
+        "technique_tips": [
+          "Grind slightly finer to compensate for lower solubility as beans age",
+          "Use hotter water to extract what flavour remains",
+          "Avoid long bloom — there's little CO2 left, so a long bloom just cools the water"
+        ],
+        "expectation_management": "No technique change can restore lost aromatics. If 'flat/no sweetness' is the complaint, fresher beans are the real fix.",
+        "freshness_caveat": true,
+        "caveat_message": "Note: your beans are past peak ({days_old} days old). Some flatness or reduced sweetness may be age-related rather than a technique problem."
+      }
+    },
+
+    "stale": {
+      "label": "Stale — technique can't save this",
+      "description": "Volatile aromatics have escaped. Oxidation has degraded oils. The coffee will taste flat, papery, cardboard-like, or rancid. No amount of grind, temperature, or ratio adjustment will bring it back.",
+      "taste_symptoms": ["flat", "papery", "cardboard", "rancid", "empty", "no aroma on grinding"],
+      "windows_by_roast": {
+        "light": {
+          "days_after_roast": [56, null],
+          "note": "8+ weeks — even light roasts are done at this point."
+        },
+        "medium": {
+          "days_after_roast": [42, null],
+          "note": "6+ weeks — well past any usable window."
+        },
+        "dark": {
+          "days_after_roast": [28, null],
+          "note": "4+ weeks — surface oils have gone rancid. May smell fishy or taste like wet cardboard."
+        }
+      },
+      "coaching_action": {
+        "primary": "Your beans are stale ({days_old} days since roast). Fresh beans are the single biggest improvement you can make.",
+        "what_to_look_for": "Buy beans with a roast date on the bag. Aim to use them within the peak window for your roast level.",
+        "freshness_caveat": true,
+        "caveat_message": "Note: your beans are well past peak freshness. Technique adjustments will still help somewhat, but stale beans have lost aromatics that can't be recovered. For your next bag, aim for beans roasted within the last 2-4 weeks."
+      }
+    }
+  },
+
+  "no_roast_date": {
+    "description": "If the bag has no roast date, it's a red flag. Most specialty roasters print roast dates. Supermarket coffee and commercial brands use 'best before' dates that tell you nothing about freshness.",
+    "coaching_action": {
+      "message": "No roast date on the bag is a warning sign. Specialty roasters always print the roast date. If you only see a 'best before' or 'use by' date, the coffee may have been roasted weeks or months ago.",
+      "follow_up": "When did you buy it?",
+      "heuristic": {
+        "bought_this_week_from_roaster": "Probably fresh — proceed with diagnosis but note the uncertainty.",
+        "bought_this_week_from_supermarket": "Likely stale. Supermarket beans are typically 2-6 months post-roast. Consider buying from a local roaster with roast dates.",
+        "bought_weeks_ago": "Assume stale unless you froze it immediately after purchase.",
+        "unsure": "Grind a small amount — if there's little aroma and no bloom when you add water, the beans are stale."
+      }
+    }
+  },
+
+  "freezer_storage_modifiers": {
+    "description": "Freezing pauses the freshness clock. Beans frozen during their peak window and properly defrosted retain most of their quality.",
+    "rules": {
+      "frozen_during_peak": {
+        "effective_age": "Use the number of days at room temp before freezing + days at room temp after thawing. Ignore time in freezer.",
+        "example": "Beans roasted 5 days ago, frozen for 3 weeks, thawed yesterday = effectively 6 days old."
+      },
+      "frozen_while_stale": {
+        "effective_age": "Still stale. Freezing preserves current state — it doesn't reverse staleness.",
+        "coaching": "Freezing stale beans just preserves staleness. Nothing good will happen."
+      },
+      "proper_thaw_method": "Defrost the sealed bag/container overnight on the counter. Do NOT open while cold — condensation will form on the beans and accelerate staling.",
+      "anti_pattern": "Do NOT repeatedly take the same bag in and out of the freezer. Each cycle introduces humid air that crystallizes on the beans. Portion into 1-2 week amounts before freezing."
+    },
+    "source": "James Hoffmann - 'Should you freeze coffee beans?'"
+  },
+
+  "ambient_temperature_modifier": {
+    "description": "Warmer storage environments accelerate both degassing and staling.",
+    "rules": {
+      "cool_storage": {
+        "temp_range": "below 18C (basement, cellar)",
+        "effect": "Extend all resting times by 1-2 days. Extend peak window slightly."
+      },
+      "standard_storage": {
+        "temp_range": "18-22C (normal room temp)",
+        "effect": "All windows as defined above."
+      },
+      "warm_storage": {
+        "temp_range": "above 25C (warm climate, near stove)",
+        "effect": "Reduce resting times by 1-2 days. Shorten peak window. Beans stale faster.",
+        "coaching": "Store beans away from heat sources. If your home is warm, consider using them sooner or freezing portions."
+      }
+    },
+    "source": "James Hoffmann - 'A Beginner's Guide to Resting Coffee'"
+  }
+}

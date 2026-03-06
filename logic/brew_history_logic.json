@@ -1,0 +1,166 @@
+{
+    "version": "1.0",
+    "description": "Logic processor for chained brew logs. Analyzes historical ratings for a bean+method combo to suggest parameter tweaks based on trend trajectories instead of isolated data points.",
+    "trend_detection": {
+        "patterns": {
+            "improving": {
+                "condition": "current_rating > previous_rating",
+                "implication": "The most recent parameter adjustment moved the extraction in the correct direction.",
+                "action": "Continue with the same variable and direction, but reduce the adjustment magnitude by one tier (e.g., aggressive → moderate).",
+                "edge_case": "If current magnitude is 'nudge' and rating is >= 7, lock the recipe and advise no further changes."
+            },
+            "worsening": {
+                "condition": "current_rating < previous_rating",
+                "implication": "The most recent parameter adjustment went either too far or in the wrong direction.",
+                "action": "Reverse the last suggested tweak by moving in the opposite direction at a smaller magnitude.",
+                "edge_case": "If the previous brew has no suggested_tweaks recorded, the app cannot diagnose automatically. Prompt user with 'It looks like you made a custom adjustment. What parameter did you change from the last brew?' before suggesting."
+            },
+            "stable": {
+                "condition": "Math.abs(current_rating - previous_rating) <= 1",
+                "implication": "The recent variable change had negligible impact, suggesting that specific parameter might be optimized.",
+                "action": "Move to the next priority variable in the method's variable progression sequence.",
+                "edge_case": "If the user selects the identical improvement goal again, check the goals matrix and attempt the 'secondary_variable'."
+            },
+            "plateau": {
+                "condition": "4 consecutive brews where Math.max(ratings) - Math.min(ratings) <= 1",
+                "implication": "The current bean and method combination has reached its theoretical peak for this setup.",
+                "action": "Cease parameter change suggestions. Notify the user they have likely optimized this combo and suggest trying a new recipe or a different brewing method."
+            },
+            "oscillating": {
+                "condition": "standard_deviation(last_4_ratings) > 2.0",
+                "implication": "Fluctuations reflect inconsistent pouring technique rather than core parameter issues.",
+                "action": "Suspend parameter tweaks. Advise the user to focus strictly on physical execution consistency for the next 3 consecutive brews."
+            }
+        },
+        "minimum_data_requirements": {
+            "trend_detection": "Requires at least 2 brews with non-null ratings.",
+            "plateau_detection": "Requires at least 4 contiguous brews with non-null ratings.",
+            "oscillation_detection": "Requires at least 4 contiguous brews with non-null ratings.",
+            "null_handling": "Brews with a null rating are ignored for trend calculations. The system falls back to the most recent brew containing a valid rating."
+        }
+    },
+    "variable_progression": {
+        "method_orders": {
+            "pour_over": [
+                "grind_size",
+                "water_temperature",
+                "brew_ratio"
+            ],
+            "french_press": [
+                "brew_time",
+                "grind_size",
+                "water_temperature",
+                "brew_ratio"
+            ],
+            "aeropress": [
+                "grind_size",
+                "brew_time",
+                "water_temperature",
+                "brew_ratio"
+            ],
+            "moka_pot": [
+                "grind_size",
+                "water_temperature",
+                "brew_ratio"
+            ],
+            "cold_brew": [
+                "grind_size",
+                "brew_ratio",
+                "brew_time"
+            ],
+            "south_indian_filter": [
+                "grind_size",
+                "brew_time",
+                "brew_ratio"
+            ]
+        },
+        "exhaustion_behavior": "When the system has attempted adjustments across all primary variables in the method order and no improvement is yielded, it transitions to testing secondary variables mapped to the user's specific improvement goal. If secondary variables are also exhausted, the system triggers the 'plateau' state response."
+    },
+    "reversal_logic": {
+        "reversal_magnitude": "Always calculate the reversal at one magnitude tier BELOW the original suggestion. Floor at 'nudge' (aggressive → moderate, moderate → nudge, nudge → nudge).",
+        "partial_reversal": "When a previous suggestion overshot the mark without severely damaging the rating, split the difference. Example: If original was 'grind finer', reversal is 'grind slightly coarser' rather than 'grind coarser'.",
+        "direction_was_wrong": "If the rating collapsed by 3 or more points (current_rating <= previous_rating - 3), assume fundamental direction error. Execute a full directional reversal at the identical magnitude tier.",
+        "unknown_changes": "If the previous_brew_id contains a brew log where suggested_tweaks is null, abort automatic reversal. The user must manually input the delta parameter before a new sequence can begin."
+    },
+    "first_brew_behavior": {
+        "condition": "brew_number === 1 or no valid previous_brew_id exists.",
+        "action": "Bypass trend detection. Rely exclusively on the baseline mapping from improvement_goals_map.json (Rating → Tier → Goal Modifier → Magnitude). Store generated output firmly in suggested_tweaks to initialize the chain."
+    },
+    "suggestion_pipeline": {
+        "steps": [
+            "Query History: Fetch up to 4 most recent brew logs containing valid non-null ratings where bean_id and method match the current context.",
+            "Detect Trend: Evaluate the fetched array against the conditions in trend_detection.patterns.",
+            "Evaluate Reversals: If pattern evaluates to 'worsening', execute logic defined in reversal_logic.",
+            "Determine Variable: If pattern is 'stable', execute logic defined in variable_progression to escalate down the priority tree. Otherwise, target the primary_variable mapped to the user's selected improvement goal.",
+            "Apply Magnitude Calibration: Cross-reference current_rating with the calibration logic in improvement_goals_map.json, then adjust tier based on the trend pattern (e.g., dropping a tier for an 'improving' trend).",
+            "Format Output: Apply qualitative linguistic mapping constraint (e.g., translating a generic 'decrease' to 'slightly coarser' for grind sizes).",
+            "Persist Record: Write the final targeted parameter and qualitative value into the suggested_tweaks object on the active brew log entry."
+        ]
+    },
+    "examples": {
+        "improving_trend": {
+            "input": {
+                "brew_1": {
+                    "rating": 4,
+                    "suggested_tweaks": {
+                        "grind_size": "significantly finer"
+                    }
+                },
+                "brew_2": {
+                    "rating": 6,
+                    "improvement_goal": "more_sweetness"
+                }
+            },
+            "output": {
+                "trend_detected": "improving",
+                "suggested_tweaks": {
+                    "grind_size": "finer"
+                },
+                "reasoning": "Rating improved from 4 to 6. Continuing with grind size adjustment for more sweetness, but stepping magnitude down from aggressive ('significantly finer') to moderate ('finer') as extraction approaches target."
+            }
+        },
+        "worsening_with_reversal": {
+            "input": {
+                "brew_1": {
+                    "rating": 6,
+                    "suggested_tweaks": {
+                        "grind_size": "finer"
+                    }
+                },
+                "brew_2": {
+                    "rating": 4,
+                    "improvement_goal": "less_bitterness"
+                }
+            },
+            "output": {
+                "trend_detected": "worsening",
+                "suggested_tweaks": {
+                    "grind_size": "slightly coarser"
+                },
+                "reasoning": "Rating dropped from 6 to 4 after 'finer' suggestion (moderate magnitude). App executes partial reversal logic: stepping down one tier to 'nudge' magnitude and reversing direction to 'coarser', resulting in 'slightly coarser' to fix the over-extraction."
+            }
+        },
+        "plateau_detected": {
+            "input": {
+                "brew_1": {
+                    "rating": 6
+                },
+                "brew_2": {
+                    "rating": 7
+                },
+                "brew_3": {
+                    "rating": 6
+                },
+                "brew_4": {
+                    "rating": 7,
+                    "improvement_goal": "smoother_mouthfeel"
+                }
+            },
+            "output": {
+                "trend_detected": "plateau",
+                "suggested_tweaks": null,
+                "reasoning": "4 consecutive brews have remained within a 1-point spread (6-7), fulfilling the plateau condition. The app concludes parameter optimization is maxed out and advises the user to attempt a new method or recipe rather than endlessly tweaking."
+            }
+        }
+    }
+}

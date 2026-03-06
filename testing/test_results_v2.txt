@@ -1,0 +1,162 @@
+Coffee Coach App - Test Brews Results Simulation v2
+===================================================
+
+1. Balanced V60 – Blue Tokai Attikan Estate
+- Method: V60 | Target: Pour Over
+- Flavour Notes: medium acidity, high sweetness, medium body, low bitterness.
+- Coaching Mode: Lock-In Mode
+- Matched Symptom: None
+- Coach Response: "Amazing brew! Save this recipe?"
+- Suggested Tweaks: None.
+
+2. Sour V60 – Araku Selection
+- Method: V60 | Target: Pour Over
+- Flavour Notes: very high acidity, low sweetness, thin body.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "sour" (under-extraction)
+- Coach Response: "Let's fix this. What's wrong with the taste?" -> User selects "Sour / Sharp / Acidic". Presents method-specific fixes for V60: Grind finer in small increments, Pour slower to extend contact time, Use water closer to 94–96°C, Try a longer bloom.
+- Suggested Tweaks: {"grind_size": "significantly finer"}
+
+3. Bitter French Press – Blue Tokai Vienna Roast
+- Method: French Press | Target: Immersion
+- Flavour Notes: low acidity, low sweetness, heavy body, very high bitterness.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "bitter" (over-extraction)
+- Coach Response: "Let's fix this." -> User selects "Bitter / Harsh / Astringent". Presents method-specific fixes: Don't over-steep — stick to 4 minutes, Skim the crust, Grind coarser, Decant immediately.
+- Suggested Tweaks: {"grind_size": "significantly coarser"} (or {"water_temp_c": "lower by 5-10°C"} due to dark roast exceptions).
+
+4. Weak AeroPress – Araku Microclimate
+- Method: AeroPress | Target: Immersion
+- Flavour Notes: medium acidity, low sweetness, very low body.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "weak_watery" (low_strength)
+- Coach Response: "Let's fix this." -> Presents AeroPress fixes: Increase dose, Grind finer, Use less water for a more concentrated result.
+- Suggested Tweaks: {"brew_ratio": "decrease by 1-2"}
+
+5. Flat Chemex – Blue Tokai Orchardale
+- Method: Chemex | Target: Pour Over
+- Flavour Notes: low acidity, very low sweetness, thin body.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "flat_no_sweetness" (requires heat)
+- Coach Response: "Let's fix this." -> Pre-check: "Check for staleness first." Presents Chemex fixes: Use fresh beans, hotter water. 
+- Suggested Tweaks: {"grind_size": "significantly finer"}
+
+6. Channeling V60 – Araku Micro Lot
+- Method: V60 | Target: Pour Over
+- Flavour Notes: sharp acidity, low sweetness, thin body.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "sour" (under-extraction due to fast 85s drawdown).
+- Coach Response: "Let's fix this." -> Presents V60 fixes: Grind finer in small increments, Pour slower to extend contact time.
+- Suggested Tweaks: {"grind_size": "significantly finer"}
+
+7. Stale Beans Pour Over
+- Method: V60 | Target: Pour Over
+- Flavour Notes: muted acidity, flat body, low sweetness.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "flat_no_sweetness" (stale_coffee)
+- Coach Response: "Check for staleness first." -> Presents V60 fixes: Use 94-96°C water, Ensure bloom is vigorous.
+- Suggested Tweaks: {"grind_size": "significantly finer"}
+
+8. Papery Chemex
+- Method: Chemex | Target: Pour Over
+- Flavour Notes: medium acidity, papery bitterness.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "woody_papery" (unrinsed filter)
+- Coach Response: "Let's fix this." -> Presents Chemex filter fixes: Thick Chemex filters especially need thorough rinsing — 20-30 seconds.
+- Suggested Tweaks: null (Action: Rinse filter / check freshness)
+
+9. Inconsistent Grinder Brew
+- Method: V60 | Target: Pour Over
+- Flavour Notes: sharp acidity, muddy body, medium bitterness.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "muddy_silty" (fines in cup)
+- Coach Response: "Let's fix this." -> Presents V60 fixes: Rinse paper filter thoroughly before adding coffee, don't stir aggressively.
+- Suggested Tweaks: {"grind_size": "slightly coarser"}
+
+10. Overly Strong AeroPress
+- Method: AeroPress | Target: Immersion
+- Flavour Notes: very heavy body, high bitterness.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "bitter" (over-extraction due to extreme brew_ratio of 9).
+- Coach Response: "Let's fix this." -> Presents AeroPress fixes: Grind coarser, Reduce steep time, Lower water temperature to 80-85°C.
+- Suggested Tweaks: {"grind_size": "significantly coarser"}
+
+11. Fast Drawdown V60
+- Method: V60 | Target: Pour Over
+- Flavour Notes: very high acidity, low sweetness, thin body.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "sour" (under-extraction from very_coarse grind).
+- Coach Response: "Let's fix this." -> Presents V60 fixes: Grind finer in small increments, Pour slower to extend contact time.
+- Suggested Tweaks: {"grind_size": "significantly finer"}
+
+12. Clogged V60
+- Method: V60 | Target: Pour Over
+- Flavour Notes: heavy body, very high bitterness.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "bitter" (over-extraction from very_fine grind/280s drawdown).
+- Coach Response: "Let's fix this." -> Presents V60 fixes: Grind coarser, Pour faster or reduce total pour time, Reduce steep/bloom time.
+- Suggested Tweaks: {"grind_size": "significantly coarser"}
+
+13. Cold Brew Water Error
+- Method: V60 | Target: Pour Over
+- Flavour Notes: muted acidity, low sweetness, thin body.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "flat_no_sweetness" (low extraction temperature at 85C).
+- Coach Response: "Check for staleness first." -> Presents V60 fixes: Use 94-96°C water.
+- Suggested Tweaks: {"grind_size": "significantly finer"}
+
+14. Scorched Brew
+- Method: French Press | Target: Immersion
+- Flavour Notes: heavy body, burnt bitterness.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "bitter" (boiling water at 100C).
+- Coach Response: "Let's fix this." -> Presents French Press fixes: Don't over-steep, Skim the crust, Grind coarser.
+- Suggested Tweaks: {"grind_size": "significantly coarser"} (or {"water_temp_c": "lower by 5-10°C"}).
+
+15. Watery Chemex
+- Method: Chemex | Target: Pour Over
+- Flavour Notes: low acidity, very low sweetness, very thin body.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "weak_watery" (ratio too weak at 25).
+- Coach Response: "Let's fix this." -> Presents Chemex fixes: Use more coffee — at least 1:15 ratio, Grind slightly finer.
+- Suggested Tweaks: {"brew_ratio": "decrease by 1-2"}
+
+16. Strong V60
+- Method: V60 | Target: Pour Over
+- Flavour Notes: very heavy body, high bitterness.
+- Coaching Mode: Diagnosis Mode / Improvement Mode
+- Matched Symptom: "bitter" (over-extraction / ratio 10).
+- Coach Response: "Let's fix this." -> Presents V60 fixes: Grind coarser, Pour faster or reduce total pour time.
+- Suggested Tweaks: {"grind_size": "significantly coarser"}
+
+17. No Bloom Degassing Issue
+- Method: V60 | Target: Pour Over
+- Flavour Notes: sharp acidity, low sweetness, thin body.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "sour" (under-extraction due to missing bloom/fast flow).
+- Coach Response: "Let's fix this." -> Presents V60 fixes: Grind finer in small increments, Pour slower to extend contact time, Try a longer bloom (to establish one).
+- Suggested Tweaks: {"grind_size": "significantly finer"}
+
+18. Edge Channeling Pour
+- Method: V60 | Target: Pour Over
+- Flavour Notes: high acidity, low sweetness, thin body.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "sour" (channeling).
+- Coach Response: "Let's fix this." -> Presents V60 fixes: Grind finer in small increments, Pour slower.
+- Suggested Tweaks: {"grind_size": "significantly finer"}
+
+19. Rancid Oils Grinder
+- Method: AeroPress | Target: Immersion
+- Flavour Notes: rancid bitterness.
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "bitter" (dirty equipment).
+- Coach Response: "Let's fix this." -> Presents universal fix: Clean your equipment thoroughly.
+- Suggested Tweaks: {"grind_size": "significantly coarser"} (Universal fix is heavily implied instead).
+
+20. Perfect AeroPress – Araku Grand Reserve
+- Method: AeroPress | Target: Immersion
+- Flavour Notes: medium acidity, high sweetness, medium body.
+- Coaching Mode: Lock-In Mode
+- Matched Symptom: None
+- Coach Response: "Amazing brew! Save this recipe?"
+- Suggested Tweaks: None.

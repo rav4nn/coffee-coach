@@ -1,0 +1,179 @@
+{
+  "version": "1.0",
+  "description": "Ground coffee freshness logic. Tracks how pre-ground coffee degrades over time and when grinder quality vs freshness trade-offs matter. Source: James Hoffmann's '$50 Coffee Grinder Vs Pre-ground From A $3,500 Grinder'.",
+
+  "inputs": {
+    "grind_state": "fresh_ground | pre_ground",
+    "days_since_ground": "Number of days since coffee was ground (0 = ground just now)",
+    "grinder_quality": "no_grinder | blade | false_burr | budget_burr | good_burr | cafe_commercial",
+    "ground_storage": "room_temp_sealed | room_temp_open | freezer | unknown"
+  },
+
+  "degradation_timeline": {
+    "description": "Day-by-day taste degradation of ground coffee stored at room temperature in a sealed bag. Based on Hoffmann's cupping of EK43/EG1-ground coffee aged 0-16 days.",
+    "days": {
+      "0": {
+        "label": "Fresh",
+        "taste": "Sweet, complex, vibrant, fruity, caramels. Full aromatic intensity.",
+        "quality_retained": 100,
+        "coaching": "Ideal. Brew immediately for best results."
+      },
+      "1": {
+        "label": "1 day old",
+        "taste": "Noticeable loss. Sweetness drops, aromatic complexity fades. Not unpleasant, but 'a bunch is missing'.",
+        "quality_retained": 75,
+        "coaching": "Still good. Minor loss that most people won't notice in a casual cup."
+      },
+      "2": {
+        "label": "2 days old",
+        "taste": "More positive flavour lost. Negative flavour starting to creep in at the edges.",
+        "quality_retained": 60,
+        "coaching": "Acceptable. Use within the next day or two for best remaining quality."
+      },
+      "3_to_6": {
+        "label": "3-6 days old",
+        "taste": "Progressive flattening. Sweetness largely gone. Complexity reduced to basic roast character.",
+        "quality_retained": 40,
+        "coaching": "Diminishing returns. Brew it soon — it's not getting better."
+      },
+      "7": {
+        "label": "7 days old",
+        "taste": "'Not a lot going on at all.' Flat, uninteresting. No longer tastes like specialty coffee despite the price tag.",
+        "quality_retained": 25,
+        "coaching": "Week-old grounds are the break-even point. Still drinkable but no longer worth a premium price."
+      },
+      "8_to_10": {
+        "label": "8-10 days old",
+        "taste": "Unpleasant flavours creeping in. Harsher, slightly roastier. Beginning of active degradation beyond just 'missing flavour'.",
+        "quality_retained": 15,
+        "coaching": "Actively getting worse now, not just fading. New negative flavours are developing."
+      },
+      "11_plus": {
+        "label": "11+ days old",
+        "taste": "Harsh, bitter finish. Roasty in a bad way. Rancid oil notes may appear.",
+        "quality_retained": 5,
+        "coaching": "Not recommended. The three degradation mechanisms have done their work: volatile loss, staling reactions, and oil oxidation."
+      }
+    },
+    "degradation_mechanisms": [
+      {
+        "mechanism": "Volatile flavour loss",
+        "description": "Aromatic compounds literally float away into the atmosphere. This is irreversible — lost flavour cannot be recovered.",
+        "onset": "Immediate (within minutes of grinding)",
+        "primary_effect": "Loss of sweetness, complexity, and aromatic intensity"
+      },
+      {
+        "mechanism": "Staling reactions",
+        "description": "Chemical compounds combine and create new flavours that are generally unpleasant.",
+        "onset": "Gradual (noticeable after 2-3 days)",
+        "primary_effect": "Harsh, flat, or 'off' flavours develop"
+      },
+      {
+        "mechanism": "Oxidation",
+        "description": "Fats and oils in the coffee oxidize and go rancid. Rancid oil smells slightly fishy.",
+        "onset": "Gradual (noticeable after 7-10 days)",
+        "primary_effect": "Rancid, fishy, or cardboard-like off-flavours"
+      }
+    ]
+  },
+
+  "grinder_quality_vs_freshness": {
+    "description": "At what point does fresh coffee from a cheap grinder beat aged coffee from a great grinder? Based on Hoffmann's comparative tasting and Prima Coffee's research.",
+    "crossover_points": {
+      "blade_grinder": {
+        "quality_tier": "lowest",
+        "crossover_days": 7,
+        "detail": "7-day-old pre-ground from a commercial grinder was STILL better than fresh from a blade grinder. Blade grinders produce extremely uneven particles — boulders and dust — causing simultaneous over and under-extraction.",
+        "coaching": "If you only have a blade grinder, buying pre-ground from a cafe with a good grinder and using it within a week may actually produce better coffee."
+      },
+      "false_burr_grinder": {
+        "quality_tier": "low",
+        "crossover_days": 7,
+        "detail": "Similar to blade grinder results. False burr grinders look like burr grinders but perform closer to blade grinders. 7-day pre-ground still competitive.",
+        "coaching": "False burr grinders are misleading — they look professional but produce inconsistent grinds. Same advice as blade: cafe pre-ground within a week may be better."
+      },
+      "budget_burr_grinder": {
+        "quality_tier": "good",
+        "crossover_days": 1,
+        "detail": "Fresh from a decent burr grinder (like Baratza ESP, ~$160) was better than 1-day-old pre-ground from a fancy grinder. The freshness advantage of grinding at home with a proper burr grinder is immediate and significant.",
+        "coaching": "A decent burr grinder beats pre-ground every time. This is the minimum recommended grinder tier for home brewing."
+      },
+      "good_burr_grinder": {
+        "quality_tier": "excellent",
+        "crossover_days": 0,
+        "detail": "Fresh from a good grinder is the gold standard. No pre-ground can match it.",
+        "coaching": "You have the best setup. Always grind fresh, right before brewing."
+      }
+    },
+    "key_insight": "Grinder quality and freshness are not independent variables. A great grinder's output degrades over time just like a cheap grinder's — it just starts from a higher point. The crossover shows where fresh-from-cheap beats aged-from-great.",
+    "practical_advice": {
+      "no_grinder": "Buy pre-ground from a cafe that grinds to order on a commercial grinder. Use within 5-7 days. Store sealed. This is better than buying a blade or false burr grinder.",
+      "blade_or_false_burr": "Consider getting pre-ground from a cafe instead. Your grinder may be making your coffee worse, not better. Upgrade to a budget burr grinder when budget allows.",
+      "budget_burr_or_better": "Always grind fresh. Your grinder is good enough that freshness gives you a clear advantage over any pre-ground option."
+    }
+  },
+
+  "freezer_storage_for_grounds": {
+    "description": "Hoffmann tested freezing ground coffee to see if it extends the freshness window.",
+    "findings": {
+      "effectiveness": "Slight improvement but not dramatic",
+      "detail": "Frozen grounds showed similar degradation pattern to room-temp grounds. Freezing slows but does not stop the three degradation mechanisms. The volatile loss has already happened at the moment of grinding — you can't freeze flavour back in.",
+      "practical_advice": "If you must store grounds, freezing is better than room temp, but don't expect miracles. Use within 5-7 days even if frozen.",
+      "comparison_to_whole_beans": "Freezing WHOLE beans is far more effective than freezing grounds. Whole beans have minimal surface area exposed — grounds have massive surface area, so most volatile loss happens at the moment of grinding, before you even get them to the freezer."
+    }
+  },
+
+  "coaching_integration": {
+    "pre_ground_user_detected": {
+      "trigger": "User indicates they use pre-ground coffee or have no grinder",
+      "immediate_questions": [
+        "How old are your grounds? (When were they ground?)",
+        "Where did you buy/grind them? (Cafe grinder? Supermarket shelf? Home grinder?)"
+      ],
+      "response_logic": {
+        "grounds_under_3_days_from_good_source": {
+          "action": "Proceed with diagnosis. Grounds are fresh enough that technique matters.",
+          "note": "Mention that grinding fresh would improve things, but don't derail the current conversation."
+        },
+        "grounds_3_to_7_days": {
+          "action": "Proceed with diagnosis but add freshness caveat.",
+          "caveat": "Your grounds are {days_old} days old — some flatness or reduced sweetness is from aging, not technique. The fixes below will help, but fresher grounds would make the biggest difference."
+        },
+        "grounds_over_7_days": {
+          "action": "Proceed with diagnosis. Append freshness caveat after technique fix.",
+          "caveat": "Your grounds are {days_old} days old. Most positive flavour has faded and some negative flavours are developing. The technique fix above will still help, but fresher grounds would make the biggest difference — either grind at home or buy pre-ground from a cafe and use within a week."
+        },
+        "supermarket_pre_ground": {
+          "action": "Proceed with diagnosis. Append freshness caveat after technique fix.",
+          "caveat": "Store-bought pre-ground coffee was likely ground weeks or months ago. The technique fix above will help you get the most out of it, but for a bigger upgrade next time, consider buying from a roaster who grinds to order, or a basic hand grinder (~$20-30)."
+        }
+      }
+    },
+    "grinder_upgrade_path": {
+      "description": "Recommended upgrade path based on current grinder and how much improvement each step gives.",
+      "path": [
+        {
+          "from": "no_grinder",
+          "to": "cheap_hand_burr_grinder",
+          "improvement": "massive",
+          "cost": "$20-40",
+          "message": "The single biggest upgrade in coffee quality per dollar spent. Even a basic hand burr grinder produces dramatically better coffee than any pre-ground option."
+        },
+        {
+          "from": "blade_or_false_burr",
+          "to": "budget_burr_grinder",
+          "improvement": "large",
+          "cost": "$50-160",
+          "message": "Consistent particle size eliminates the simultaneous over/under-extraction that blade grinders cause. This is where coffee starts tasting like the roaster intended."
+        },
+        {
+          "from": "budget_burr",
+          "to": "good_burr_grinder",
+          "improvement": "moderate",
+          "cost": "$200-500",
+          "message": "Diminishing returns but real improvement in sweetness, clarity, and consistency. Worth it if coffee is a daily ritual you want to optimize."
+        }
+      ]
+    }
+  }
+}

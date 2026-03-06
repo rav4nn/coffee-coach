@@ -1,0 +1,900 @@
+{
+  "version": "1.0",
+  "description": "Decision tree for coffee coaching conversations. Defines the question flow to diagnose problems and route to fixes. Each node is a step; answers branch to the next node or a terminal action.",
+
+  "entry_point": "intent",
+
+  "nodes": {
+    "intent": {
+      "question": "What can I help you with today?",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "Something tastes wrong with my coffee",
+          "next": "method_select"
+        },
+        {
+          "label": "I want to improve a decent cup",
+          "next": "method_select_improve"
+        },
+        {
+          "label": "Give me a starting recipe for my brewer",
+          "next": "method_select_recipe"
+        },
+        {
+          "label": "I just switched beans and need to re-dial",
+          "next": "bean_switch"
+        }
+      ]
+    },
+
+    "method_select": {
+      "question": "What are you brewing with?",
+      "type": "single_choice",
+      "context": "problem_diagnosis",
+      "options": [
+        { "label": "V60 / pour-over cone", "value": "v60", "next": "roast_level" },
+        { "label": "French Press", "value": "french_press", "next": "roast_level" },
+        { "label": "AeroPress", "value": "aeropress", "next": "roast_level" },
+        { "label": "Espresso machine", "value": "espresso", "next": "roast_level" },
+        { "label": "Moka pot", "value": "moka_pot", "next": "roast_level" },
+        { "label": "Chemex", "value": "chemex", "next": "roast_level" },
+        { "label": "Clever Dripper", "value": "clever_dripper", "next": "roast_level" },
+        { "label": "Kalita Wave", "value": "kalita_wave", "next": "roast_level" },
+        { "label": "Cold brew", "value": "cold_brew", "next": "roast_level" },
+        { "label": "South Indian Filter", "value": "south_indian_filter", "next": "roast_level" },
+        { "label": "Other / not sure", "value": "other", "next": "roast_level" }
+      ]
+    },
+
+    "method_select_improve": {
+      "question": "What are you brewing with?",
+      "type": "single_choice",
+      "context": "improvement",
+      "options": [
+        { "label": "V60 / pour-over cone", "value": "v60", "next": "current_params" },
+        { "label": "French Press", "value": "french_press", "next": "current_params" },
+        { "label": "AeroPress", "value": "aeropress", "next": "current_params" },
+        { "label": "Espresso machine", "value": "espresso", "next": "current_params" },
+        { "label": "Moka pot", "value": "moka_pot", "next": "current_params" },
+        { "label": "Chemex", "value": "chemex", "next": "current_params" },
+        { "label": "Clever Dripper", "value": "clever_dripper", "next": "current_params" },
+        { "label": "Kalita Wave", "value": "kalita_wave", "next": "current_params" },
+        { "label": "Cold brew", "value": "cold_brew", "next": "current_params" },
+        { "label": "South Indian Filter", "value": "south_indian_filter", "next": "current_params" },
+        { "label": "Other / not sure", "value": "other", "next": "current_params" }
+      ]
+    },
+
+    "method_select_recipe": {
+      "question": "What brewer do you have?",
+      "type": "single_choice",
+      "context": "starter_recipe",
+      "options": [
+        { "label": "V60 / pour-over cone", "value": "v60", "next": "roast_level_recipe" },
+        { "label": "French Press", "value": "french_press", "next": "roast_level_recipe" },
+        { "label": "AeroPress", "value": "aeropress", "next": "roast_level_recipe" },
+        { "label": "Espresso machine", "value": "espresso", "next": "roast_level_recipe" },
+        { "label": "Moka pot", "value": "moka_pot", "next": "roast_level_recipe" },
+        { "label": "Chemex", "value": "chemex", "next": "roast_level_recipe" },
+        { "label": "Clever Dripper", "value": "clever_dripper", "next": "roast_level_recipe" },
+        { "label": "Kalita Wave", "value": "kalita_wave", "next": "roast_level_recipe" },
+        { "label": "Cold brew", "value": "cold_brew", "next": "roast_level_recipe" },
+        { "label": "South Indian Filter", "value": "south_indian_filter", "next": "roast_level_recipe" }
+      ]
+    },
+
+    "roast_level": {
+      "question": "What roast level is your coffee?",
+      "type": "single_choice",
+      "why_we_ask": "Dark roasts extract very differently from light roasts. The same symptom can need opposite fixes depending on roast.",
+      "options": [
+        { "label": "Light roast", "value": "light", "next": "freshness_check" },
+        { "label": "Medium roast", "value": "medium", "next": "freshness_check" },
+        { "label": "Dark roast", "value": "dark", "next": "freshness_check" },
+        { "label": "Not sure / unlabelled", "value": "unknown", "next": "roast_help" }
+      ]
+    },
+
+    "roast_help": {
+      "type": "info",
+      "message": "Look at the beans: Light roast = light brown, no oil on surface. Medium = medium brown, little to no oil. Dark = dark brown to almost black, oily/shiny surface. If the bag doesn't say, most Indian specialty roasters default to medium or medium-light.",
+      "next": "roast_level"
+    },
+
+    "freshness_check": {
+      "question": "How fresh is your coffee?",
+      "type": "single_choice",
+      "why_we_ask": "Freshness context helps the coach add the right caveats to advice. Only too-fresh beans (needing rest) will pause the flow — everything else proceeds to diagnosis with a freshness note attached.",
+      "data_sources": {
+        "bean_freshness": "bean_freshness_logic.json",
+        "ground_freshness": "ground_coffee_freshness_logic.json"
+      },
+      "options": [
+        {
+          "label": "I have whole beans with a roast date on the bag",
+          "next": "bean_age_check"
+        },
+        {
+          "label": "I have whole beans but no roast date on the bag",
+          "next": "no_roast_date_check"
+        },
+        {
+          "label": "I'm using pre-ground coffee",
+          "next": "ground_age_check"
+        }
+      ]
+    },
+
+    "bean_age_check": {
+      "question": "How many days ago was it roasted? (Check the roast date on the bag.)",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "Less than 5 days ago",
+          "value": "very_fresh",
+          "next": "action_too_fresh",
+          "condition_note": "Route to action_too_fresh for light/medium. For dark roast: only if < 3 days.",
+          "sets": { "bean_freshness_zone": "too_fresh" }
+        },
+        {
+          "label": "5 days to 4 weeks ago",
+          "value": "peak",
+          "next": "symptom_select",
+          "sets": { "bean_freshness_zone": "peak", "freshness_caveat": false }
+        },
+        {
+          "label": "4 to 8 weeks ago",
+          "value": "past_peak",
+          "next": "symptom_select",
+          "sets": { "bean_freshness_zone": "past_peak", "freshness_caveat": true }
+        },
+        {
+          "label": "More than 8 weeks ago",
+          "value": "stale",
+          "next": "symptom_select",
+          "sets": { "bean_freshness_zone": "stale", "freshness_caveat": true }
+        }
+      ]
+    },
+
+    "action_too_fresh": {
+      "type": "info_then_branch",
+      "message": "Your beans are very fresh and still degassing CO2. This can cause a sharp, carbonic tang — like forgotten sparkling water — and make the coffee taste sour and under-extracted. This isn't a technique problem; the beans just need more time to rest.",
+      "data_source": "bean_freshness_logic.json → freshness_zones.too_fresh",
+      "question": "Would you like resting advice, or do you want to brew anyway and troubleshoot taste?",
+      "options": [
+        {
+          "label": "Tell me how long to wait",
+          "next": "action_resting_advice"
+        },
+        {
+          "label": "I want to brew now anyway — help me make the best of it",
+          "next": "symptom_select",
+          "sets": { "bean_freshness_zone": "too_fresh", "freshness_caveat": true },
+          "context_note": "Proceed to diagnosis. Any sour/sharp diagnosis should note CO2 from too-fresh beans as a likely contributing cause."
+        }
+      ]
+    },
+
+    "action_resting_advice": {
+      "type": "terminal",
+      "action": "deliver_resting_advice",
+      "data_source": "bean_freshness_logic.json → freshness_zones.too_fresh.windows_by_roast[{roast_level}]",
+      "response_template": {
+        "message": "For {roast_level} roast, wait at least {filter_rest_minimum_days} days (ideally {filter_rest_ideal_days} days) after roasting before brewing.",
+        "storage_tip": "Keep the bag sealed at room temperature. Don't open it repeatedly.",
+        "visual_cue": "When you bloom the coffee, a gentle dome of bubbles is ideal. A violent, fizzy bloom means too much CO2 — wait another day or two.",
+        "follow_up": "Come back when your beans have rested and we'll dial in the taste."
+      }
+    },
+
+    "no_roast_date_check": {
+      "question": "No roast date can mean the coffee was roasted a long time ago. Where did you buy it?",
+      "type": "single_choice",
+      "data_source": "bean_freshness_logic.json → no_roast_date",
+      "options": [
+        {
+          "label": "From a specialty roaster / cafe this week",
+          "next": "symptom_select",
+          "sets": { "bean_freshness_zone": "unknown_likely_fresh", "freshness_caveat": false }
+        },
+        {
+          "label": "From a supermarket or online (not a specialty roaster)",
+          "next": "symptom_select",
+          "sets": { "bean_freshness_zone": "unknown_likely_stale", "freshness_caveat": true }
+        },
+        {
+          "label": "I've had it for a few weeks / not sure",
+          "next": "symptom_select",
+          "sets": { "bean_freshness_zone": "unknown_likely_stale", "freshness_caveat": true }
+        }
+      ]
+    },
+
+    "ground_age_check": {
+      "question": "When was the coffee ground?",
+      "type": "single_choice",
+      "data_source": "ground_coffee_freshness_logic.json",
+      "options": [
+        {
+          "label": "Ground today / yesterday (0-1 days ago)",
+          "value": "fresh_ground",
+          "next": "ground_source_check",
+          "sets": { "grind_state": "pre_ground", "days_since_ground": "0-1", "freshness_caveat": false }
+        },
+        {
+          "label": "Ground 2-5 days ago",
+          "value": "recent_ground",
+          "next": "ground_source_check",
+          "sets": { "grind_state": "pre_ground", "days_since_ground": "2-5", "freshness_caveat": true }
+        },
+        {
+          "label": "Ground 6-10 days ago",
+          "value": "week_old_ground",
+          "next": "ground_source_check",
+          "sets": { "grind_state": "pre_ground", "days_since_ground": "6-10", "freshness_caveat": true }
+        },
+        {
+          "label": "More than 10 days ago / I don't know / bought pre-ground from a store",
+          "value": "old_ground",
+          "next": "symptom_select",
+          "sets": { "grind_state": "pre_ground", "days_since_ground": "11+", "freshness_caveat": true, "grinder_quality": "unknown" }
+        }
+      ]
+    },
+
+    "ground_source_check": {
+      "question": "Where was it ground?",
+      "type": "single_choice",
+      "why_we_ask": "Grinder quality determines how much flavour was captured in the first place. Coffee from a good grinder degrades from a higher starting point.",
+      "data_source": "ground_coffee_freshness_logic.json → grinder_quality_vs_freshness",
+      "options": [
+        {
+          "label": "At a cafe or roastery (commercial grinder)",
+          "value": "cafe_commercial",
+          "next": "symptom_select",
+          "sets": { "grinder_quality": "cafe_commercial" }
+        },
+        {
+          "label": "At home with a burr grinder",
+          "value": "home_burr",
+          "next": "symptom_select",
+          "sets": { "grinder_quality": "budget_burr" }
+        },
+        {
+          "label": "At home with a blade grinder",
+          "value": "home_blade",
+          "next": "symptom_select",
+          "sets": { "grinder_quality": "blade", "grinder_quality_caveat": true }
+        }
+      ]
+    },
+
+    "roast_level_recipe": {
+      "question": "What roast level is your coffee?",
+      "type": "single_choice",
+      "options": [
+        { "label": "Light roast", "value": "light", "next": "action_starter_recipe" },
+        { "label": "Medium roast", "value": "medium", "next": "action_starter_recipe" },
+        { "label": "Dark roast", "value": "dark", "next": "action_starter_recipe" },
+        { "label": "Not sure", "value": "unknown", "next": "action_starter_recipe" }
+      ]
+    },
+
+    "symptom_select": {
+      "question": "How would you describe the problem?",
+      "type": "single_choice",
+      "why_we_ask": "Each taste problem points to a specific extraction issue. Picking the right symptom is the most important diagnostic step.",
+      "options": [
+        {
+          "label": "Sour / sharp / acidic (tongue sides tingle, like lemon)",
+          "value": "sour",
+          "next": "sour_confirm"
+        },
+        {
+          "label": "Bitter / harsh / astringent (heavy finish, back of mouth)",
+          "value": "bitter",
+          "next": "bitter_confirm"
+        },
+        {
+          "label": "Weak / watery / thin (like faint dirty water)",
+          "value": "weak_watery",
+          "next": "weak_checks"
+        },
+        {
+          "label": "Flat / no sweetness / dull (not bad, just boring)",
+          "value": "flat_no_sweetness",
+          "next": "flat_checks"
+        },
+        {
+          "label": "Muddy / gritty / silty (sandy texture, cloudy cup)",
+          "value": "muddy_silty",
+          "next": "action_fix"
+        },
+        {
+          "label": "Papery / cardboard / woody taste",
+          "value": "woody_papery",
+          "next": "papery_checks"
+        },
+        {
+          "label": "Hollow / bright but empty (some flavour, no body)",
+          "value": "hollow",
+          "next": "action_fix"
+        },
+        {
+          "label": "I'm not sure how to describe it",
+          "value": "unsure",
+          "next": "symptom_guided"
+        }
+      ]
+    },
+
+    "symptom_guided": {
+      "question": "Let me help narrow it down. Where do you feel the unpleasantness?",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "Sides of my tongue — a sharp, tangy sensation",
+          "value": "sour",
+          "next": "sour_confirm"
+        },
+        {
+          "label": "Back of mouth / throat — a heavy, lingering finish",
+          "value": "bitter",
+          "next": "bitter_confirm"
+        },
+        {
+          "label": "Everywhere — it just tastes like nothing, water-like",
+          "value": "weak_watery",
+          "next": "weak_checks"
+        },
+        {
+          "label": "It's not unpleasant exactly, just... flat and lifeless",
+          "value": "flat_no_sweetness",
+          "next": "flat_checks"
+        },
+        {
+          "label": "Weird texture — sandy, gritty, or thick sludge",
+          "value": "muddy_silty",
+          "next": "action_fix"
+        },
+        {
+          "label": "Tastes like cardboard or old paper",
+          "value": "woody_papery",
+          "next": "papery_checks"
+        }
+      ]
+    },
+
+    "sour_confirm": {
+      "question": "People often confuse sour and bitter — they need opposite fixes. Sour = sharp tingle on the SIDES of your tongue, like biting into a green apple. Does that match?",
+      "type": "single_choice",
+      "why_we_ask": "Misidentifying sour vs bitter means applying the wrong fix, making it worse. This is the #1 coaching mistake.",
+      "options": [
+        { "label": "Yes, that's exactly it — sharp and tangy on the sides", "value": "sour", "next": "sour_severity" },
+        { "label": "Hmm, actually it's more of a heavy finish in the back of my mouth", "value": "bitter", "next": "bitter_confirm" },
+        { "label": "I feel both — sour AND bitter", "value": "both", "next": "mixed_extraction" }
+      ]
+    },
+
+    "bitter_confirm": {
+      "question": "To confirm: bitterness is a heavy, lingering harshness at the back of your mouth/throat. Like over-steeped tea or dark chocolate without sugar. Does that match?",
+      "type": "single_choice",
+      "options": [
+        { "label": "Yes — harsh, heavy finish that lingers", "value": "bitter", "next": "bitter_dark_roast_check" },
+        { "label": "Actually, it's more of a sharp tingle on the sides of my tongue", "value": "sour", "next": "sour_severity" },
+        { "label": "I feel both — sour AND bitter", "value": "both", "next": "mixed_extraction" }
+      ]
+    },
+
+    "mixed_extraction": {
+      "type": "info_then_branch",
+      "message": "Sour AND bitter together usually means channeling — water found easy paths through the coffee bed, over-extracting some grounds and under-extracting others. This gives you both extremes at once.",
+      "question": "Are you using a pour-over or espresso method?",
+      "options": [
+        {
+          "label": "Yes, pour-over or espresso",
+          "next": "action_channeling_fix"
+        },
+        {
+          "label": "No, I'm using immersion (French press, AeroPress, Clever)",
+          "next": "action_immersion_mixed_fix"
+        }
+      ]
+    },
+
+    "sour_severity": {
+      "question": "How sour are we talking?",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "Very sour — almost undrinkable, like lemon juice",
+          "value": "severe",
+          "next": "action_fix",
+          "fix_note": "Severely under-extracted. Grind significantly finer (2-3 steps). If already at medium-fine, also increase water temperature."
+        },
+        {
+          "label": "Noticeably sour — drinkable but not enjoyable",
+          "value": "moderate",
+          "next": "action_fix",
+          "fix_note": "Moderately under-extracted. Grind one step finer."
+        },
+        {
+          "label": "Slightly sour — just a bit too much acidity, close to good",
+          "value": "mild",
+          "next": "sour_mild_options"
+        }
+      ]
+    },
+
+    "sour_mild_options": {
+      "question": "For mild sourness, a small change should fix it. Have you already tried grinding finer?",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "No, haven't tried that yet",
+          "next": "action_fix",
+          "fix_note": "Grind one notch finer. That's likely all you need."
+        },
+        {
+          "label": "Yes, and it didn't help or I can't go finer",
+          "next": "sour_already_tried_grind"
+        }
+      ]
+    },
+
+    "sour_already_tried_grind": {
+      "question": "If grind is already fine and it's still slightly sour, let's check temperature.",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "I'm using water well below boiling (under 90C)",
+          "next": "action_fix",
+          "fix_note": "Increase water temperature. For light/medium roasts, use 94-96C or even just-boiled water. Hoffmann recommends boiling for most filter brewing."
+        },
+        {
+          "label": "I'm already using hot/boiling water",
+          "next": "action_fix",
+          "fix_note": "Check brew time — are you hitting the target for your method? Also check coffee freshness. Very old coffee can taste flat-sour because aromatics have faded. If everything checks out, try different water (filtered or bottled)."
+        }
+      ]
+    },
+
+    "bitter_dark_roast_check": {
+      "question": "Bitterness has two common causes: over-extraction OR dark roast character. Since you said your roast is {roast_level}...",
+      "type": "conditional",
+      "branches": {
+        "dark": {
+          "message": "Dark roasts are inherently more bitter — some bitterness is expected. But we can reduce harshness.",
+          "next": "bitter_dark_roast_flow"
+        },
+        "light": { "next": "bitter_severity" },
+        "medium": { "next": "bitter_severity" },
+        "unknown": { "next": "bitter_severity" }
+      }
+    },
+
+    "bitter_dark_roast_flow": {
+      "question": "For dark roasts, the fix order is different. Have you lowered your water temperature yet?",
+      "type": "single_choice",
+      "why_we_ask": "Dark roasts are already very soluble. Hot water extracts harsh compounds too aggressively. Lowering temp is the FIRST move for dark roasts, not grind.",
+      "options": [
+        {
+          "label": "No — I'm using standard or boiling water",
+          "next": "action_fix",
+          "fix_note": "Lower water temperature to 85-90C. Dark roasts extract much faster than light roasts. This is the #1 fix for bitter dark roast coffee."
+        },
+        {
+          "label": "Yes, I already use cooler water (85-90C)",
+          "next": "action_fix",
+          "fix_note": "Grind coarser. If it's still bitter after that, shorten contact time. Also: clean your equipment — old coffee oils go rancid and add harsh bitterness."
+        }
+      ]
+    },
+
+    "bitter_severity": {
+      "question": "How bitter?",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "Very bitter — harsh and undrinkable",
+          "value": "severe",
+          "next": "bitter_equipment_check"
+        },
+        {
+          "label": "Noticeably bitter — not pleasant",
+          "value": "moderate",
+          "next": "action_fix"
+        },
+        {
+          "label": "Slightly bitter — almost good, just a bit too much",
+          "value": "mild",
+          "next": "action_fix",
+          "fix_note": "Grind one notch coarser. That should be enough for mild bitterness."
+        }
+      ]
+    },
+
+    "bitter_equipment_check": {
+      "question": "Very bitter coffee sometimes means dirty equipment. When did you last deep-clean your brewer?",
+      "type": "single_choice",
+      "why_we_ask": "Old coffee oils go rancid inside brewers and add a specific harsh bitterness that no grind change will fix.",
+      "options": [
+        {
+          "label": "It's been a while / I don't clean it regularly",
+          "next": "action_fix",
+          "fix_note": "Clean your equipment first! Old coffee oils go rancid and produce harsh bitterness. For espresso: backflush with cleaner. For all others: scrub with hot soapy water, rinse thoroughly. Then try brewing again before changing any other variable."
+        },
+        {
+          "label": "I clean it regularly, it's not that",
+          "next": "action_fix",
+          "fix_note": "Grind significantly coarser (2-3 steps). Also lower water temperature. If you're using a pour-over, check your total brew time — if it's way over target, the grind is too fine and choking the drain."
+        }
+      ]
+    },
+
+    "weak_checks": {
+      "question": "Weak coffee is a STRENGTH problem (not enough coffee dissolved), not an extraction problem. How much coffee are you using?",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "I use a scale — my ratio is around 1:16 to 1:17",
+          "next": "weak_with_scale"
+        },
+        {
+          "label": "I use a scale — my ratio is stronger than 1:15",
+          "next": "weak_strong_ratio"
+        },
+        {
+          "label": "I don't use a scale / I eyeball it",
+          "next": "action_fix",
+          "fix_note": "Get a kitchen scale (even a cheap one). Eyeballing coffee and water is the #1 cause of inconsistency. Start with 15g coffee to 250ml water (1:16.7 ratio). This alone may fix your weak coffee."
+        }
+      ]
+    },
+
+    "weak_with_scale": {
+      "question": "Your ratio is in the standard range. Is the coffee also sour/acidic, or just weak?",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "Just weak — no sourness, just watery",
+          "next": "action_fix",
+          "fix_note": "Tighten your ratio: try 1:15 (e.g. 16g coffee to 240ml water). If that's still not strong enough, go to 1:14. Some people simply prefer a stronger cup."
+        },
+        {
+          "label": "Weak AND sour",
+          "next": "action_fix",
+          "fix_note": "Weak AND sour = under-extraction plus low strength. Fix extraction FIRST: grind finer. Don't just add more coffee — that makes it stronger but still sour. Once sourness is fixed, then adjust ratio for strength."
+        }
+      ]
+    },
+
+    "weak_strong_ratio": {
+      "question": "You're already using a strong ratio but it still tastes weak. That suggests your grind may be too coarse — water is passing through without extracting enough.",
+      "type": "info",
+      "next": "action_fix",
+      "fix_note": "Grind finer. If you're using a pour-over, check your drain time — if it's very fast (under 2 minutes for V60), the grind is definitely too coarse."
+    },
+
+    "flat_checks": {
+      "question": "Flat, lifeless coffee is usually stale beans. When was your coffee roasted?",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "Within the last 2-4 weeks",
+          "next": "flat_fresh_beans"
+        },
+        {
+          "label": "More than a month ago / I don't know",
+          "next": "action_fix",
+          "fix_note": "Your beans are likely stale. Coffee is best 1-4 weeks after roasting. After that, CO2 escapes and takes aromatics with it. Buy fresh beans from a roaster with a roast date on the bag. No amount of technique can bring stale coffee back to life."
+        },
+        {
+          "label": "I'm using pre-ground coffee",
+          "next": "action_fix",
+          "fix_note": "Pre-ground coffee goes stale within minutes of grinding. Ground coffee has massively more surface area exposed to air. The single biggest upgrade you can make is a grinder — even a cheap hand grinder — and grinding just before you brew."
+        }
+      ]
+    },
+
+    "flat_fresh_beans": {
+      "question": "Beans are fresh, so it might be slight under-extraction. Is your water hot enough?",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "I use water below 90C",
+          "next": "action_fix",
+          "fix_note": "Increase water temperature to 94-96C (or just off boil). Sweetness and complexity need heat energy to extract. Too cool = flat, thin cup."
+        },
+        {
+          "label": "I use 90C+ or boiling water",
+          "next": "action_fix",
+          "fix_note": "Try grinding one step finer to increase extraction. If bloom is not vigorous (no bubbles when you add first water), beans may have been resting too long or were improperly stored. Also ensure you're storing beans in an airtight container away from light and heat."
+        }
+      ]
+    },
+
+    "papery_checks": {
+      "question": "Papery/cardboard taste is almost always from unrinsed paper filters. Do you rinse your filter with hot water before brewing?",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "No / I didn't know I should",
+          "next": "action_fix",
+          "fix_note": "Always rinse your paper filter with hot water before adding coffee. Pour hot water through the filter, discard the rinse water, then brew as normal. This removes the papery taste. Chemex filters especially need a thorough rinse (20-30 seconds)."
+        },
+        {
+          "label": "Yes, I always rinse the filter",
+          "next": "action_fix",
+          "fix_note": "If you rinse and still get papery taste, check coffee freshness — very stale coffee can taste like cardboard. Also try a different brand of filter papers; some are worse than others. If using French press or moka pot (no paper filter), this is almost certainly stale coffee."
+        }
+      ]
+    },
+
+    "current_params": {
+      "question": "Tell me about your current brew so I can suggest improvements.",
+      "type": "multi_input",
+      "fields": [
+        {
+          "id": "roast",
+          "label": "Roast level",
+          "type": "choice",
+          "options": ["Light", "Medium", "Dark", "Not sure"]
+        },
+        {
+          "id": "grind",
+          "label": "Grind setting (if you know it)",
+          "type": "text",
+          "placeholder": "e.g. '15 on Timemore C2' or 'medium-fine'",
+          "optional": true
+        },
+        {
+          "id": "dose",
+          "label": "How much coffee? (grams)",
+          "type": "number",
+          "placeholder": "e.g. 15"
+        },
+        {
+          "id": "water_amount",
+          "label": "How much water? (ml)",
+          "type": "number",
+          "placeholder": "e.g. 250"
+        },
+        {
+          "id": "water_temp",
+          "label": "Water temperature",
+          "type": "choice",
+          "options": ["Boiling", "Just off boil (95C+)", "Around 90C", "Below 90C", "Don't measure"]
+        },
+        {
+          "id": "brew_time",
+          "label": "Total brew time (approximate)",
+          "type": "text",
+          "placeholder": "e.g. '3 minutes'",
+          "optional": true
+        },
+        {
+          "id": "taste_now",
+          "label": "How does it taste currently?",
+          "type": "text",
+          "placeholder": "Describe what you like and don't like"
+        },
+        {
+          "id": "roast_date_age",
+          "label": "How old are your beans? (days since roast date)",
+          "type": "choice",
+          "options": ["Under 1 week", "1-2 weeks", "2-4 weeks", "Over 4 weeks", "No roast date / unsure"],
+          "optional": true
+        },
+        {
+          "id": "grind_state",
+          "label": "Are you grinding fresh or using pre-ground?",
+          "type": "choice",
+          "options": ["Grinding fresh before each brew", "Pre-ground (from cafe/roaster)", "Pre-ground (store-bought)", "Not sure"]
+        }
+      ],
+      "next": "action_improve"
+    },
+
+    "bean_switch": {
+      "question": "Switching beans means you need to re-dial. What's the new bean like compared to your old one?",
+      "type": "single_choice",
+      "options": [
+        {
+          "label": "Similar roast level, different origin",
+          "next": "action_bean_switch",
+          "fix_note": "Start with your current settings — you may only need a minor grind adjustment. Brew once, taste, then adjust grind by one step if needed."
+        },
+        {
+          "label": "Different roast level (e.g. light to dark or vice versa)",
+          "next": "action_bean_switch",
+          "fix_note": "Reset to baseline for the new roast level. Light roast: finer grind, hotter water (96C+). Dark roast: coarser grind, cooler water (85-90C). This is the one exception to the 'change one variable at a time' rule — when changing roast level, reset multiple variables."
+        },
+        {
+          "label": "Totally different (new roaster, different everything)",
+          "next": "action_bean_switch",
+          "fix_note": "Reset everything to your method's baseline recipe and dial in from scratch. Use the 'Give me a starting recipe' flow to get a baseline, then adjust from there."
+        }
+      ]
+    },
+
+    "action_fix": {
+      "type": "terminal",
+      "action": "deliver_fix",
+      "data_sources": {
+        "primary": "flavour_symptom_map.json → method_fixes[{method}]",
+        "interactions": "brewing_variable_interactions.json → adjustment_priority.method_overrides[{method}]",
+        "recipes": "recipes_v4.json → baseline recipe for {method}",
+        "bean_freshness": "bean_freshness_logic.json (if freshness_caveat is set)",
+        "ground_freshness": "ground_coffee_freshness_logic.json (if grind_state is pre_ground)"
+      },
+      "response_template": {
+        "diagnosis": "Based on {symptom} with {roast_level} roast on {method}:",
+        "primary_fix": "The ONE thing to change for your next brew: {fix from severity + method}",
+        "why": "Brief explanation of the extraction science",
+        "what_to_expect": "What to look for after making this change",
+        "if_that_doesnt_work": "If that doesn't fix it, come back and we'll try the next lever",
+        "freshness_note": "Appended ONLY when freshness_caveat or grinder_quality_caveat is true in conversation_state. See freshness_caveat_rules below."
+      },
+      "freshness_caveat_rules": {
+        "description": "When freshness_caveat is true, append a note AFTER the primary fix. Never let the caveat override or replace the technique fix — it's additional context, not a replacement.",
+        "bean_too_fresh": {
+          "condition": "bean_freshness_zone == 'too_fresh'",
+          "note": "Note: your beans are very fresh ({days_old} days since roast). Some of the sourness you're tasting may be from CO2 still trapped in the beans, not just extraction. The fix above will help, but the beans will also improve naturally over the next few days as they rest."
+        },
+        "bean_past_peak": {
+          "condition": "bean_freshness_zone == 'past_peak'",
+          "note": "Note: your beans are {days_old} days old, past their peak freshness window. Some flatness or reduced sweetness may be from age rather than technique. The fix above will help extract the best from what's there, but fresher beans would make the biggest difference next time."
+        },
+        "bean_stale": {
+          "condition": "bean_freshness_zone == 'stale'",
+          "note": "Note: your beans are {days_old} days old — well past peak freshness. Stale beans lose aromatics and develop papery, flat flavours that technique can't fully fix. The suggestion above will help somewhat, but for your next bag, look for beans with a roast date within the last 2-4 weeks."
+        },
+        "bean_unknown_likely_stale": {
+          "condition": "bean_freshness_zone == 'unknown_likely_stale'",
+          "note": "Note: without a roast date on the bag, your beans may be past their prime. If the fix above doesn't help much, freshness could be the culprit. Next time, try buying from a roaster that prints roast dates."
+        },
+        "ground_2_to_5_days": {
+          "condition": "grind_state == 'pre_ground' && days_since_ground == '2-5'",
+          "note": "Note: your grounds are a few days old. Some sweetness and aromatic complexity has already faded. The fix above will help with technique, but grinding fresh (or using grounds within a day) would make a noticeable difference."
+        },
+        "ground_6_to_10_days": {
+          "condition": "grind_state == 'pre_ground' && days_since_ground == '6-10'",
+          "note": "Note: your grounds are {days_since_ground} days old — most of the positive flavour has faded by this point. The fix above will help extract the best from what remains, but the biggest upgrade would be fresher grounds. A hand burr grinder ($20-40) grinding fresh before each brew is the single highest-impact upgrade per dollar in coffee."
+        },
+        "ground_11_plus": {
+          "condition": "grind_state == 'pre_ground' && days_since_ground == '11+'",
+          "note": "Note: pre-ground coffee this old has lost most of its positive flavour and may have developed stale, harsh notes. The fix above will still help with the technique side, but freshness is likely the dominant factor. For your next batch, buy smaller quantities and use within a week, or consider a hand grinder for fresh grinding."
+        },
+        "blade_grinder": {
+          "condition": "grinder_quality_caveat == true",
+          "note": "Note: blade grinders produce very uneven particle sizes, which causes simultaneous over-extraction (bitter dust) and under-extraction (sour boulders). This limits how much technique adjustments can help. When budget allows, a basic burr grinder (~$20-40 for hand, ~$50-160 for electric) would be a significant upgrade."
+        }
+      },
+      "rules": [
+        "Always give exactly ONE change to make — never multiple",
+        "Reference the adjustment_priority order for the user's method",
+        "For dark roasts with bitterness: temp before grind (exception to normal order)",
+        "Include brew time targets for pour-over methods as a feedback signal",
+        "If user has already tried the primary fix, move to the next variable in priority order",
+        "Freshness caveats are appended AFTER the fix, never instead of it. The user has these beans/grounds — help them make the best cup possible, then note what might be limiting them."
+      ]
+    },
+
+    "action_channeling_fix": {
+      "type": "terminal",
+      "action": "deliver_channeling_fix",
+      "fixes": {
+        "pour_over": [
+          "Ensure your coffee bed is flat and even before pouring",
+          "Pour in slow, concentric circles — don't pour directly on the filter walls",
+          "After each pour, give the brewer a gentle swirl (Rao spin) to settle the bed",
+          "Check grind consistency — if your grinder produces lots of fine dust (fines), it clogs some areas and leaves channels in others. This is a grinder quality issue."
+        ],
+        "espresso": [
+          "Distribute grounds evenly in the portafilter before tamping (use WDT tool or a toothpick)",
+          "Tamp level and consistent — don't tamp at an angle",
+          "Check puck prep: if you see wet spots or holes in the spent puck, that's channeling",
+          "If using a pressurized basket, switch to unpressurized for more control",
+          "Try a slightly coarser grind — too fine can cause the puck to crack under pressure"
+        ]
+      }
+    },
+
+    "action_immersion_mixed_fix": {
+      "type": "terminal",
+      "action": "deliver_immersion_mixed_fix",
+      "message": "Sour AND bitter in immersion brewing is unusual. This usually means very uneven extraction — some grounds extracted fully while others barely got touched.",
+      "fixes": [
+        "Stir gently after adding water to ensure ALL grounds are wet and submerged",
+        "Check grind consistency — a bad grinder producing dust AND boulders will give you both sour (boulders) and bitter (dust) in the same cup",
+        "Try a medium grind with a longer steep time for more even extraction",
+        "If using AeroPress, make sure water covers all the grounds — don't leave dry pockets"
+      ]
+    },
+
+    "action_starter_recipe": {
+      "type": "terminal",
+      "action": "deliver_starter_recipe",
+      "data_sources": {
+        "recipes": "recipes_v4.json",
+        "roast_modifiers": "brewing_variable_interactions.json → interactions.temp_roast_interaction"
+      },
+      "response_template": {
+        "recipe": "Baseline recipe for {method} with {roast_level} roast",
+        "parameters": "Dose, water, ratio, grind, temp, time",
+        "steps": "Step-by-step brew guide",
+        "what_to_taste_for": "What a good cup should taste like with this recipe",
+        "first_adjustment": "After your first brew, here's what to change based on taste"
+      },
+      "rules": [
+        "Pull baseline from recipes_v4.json for the method",
+        "Modify temperature based on roast level (dark = cooler, light = hotter)",
+        "For unknown roast level, use medium roast parameters",
+        "Always include: dose, water, ratio, grind description, water temp, expected brew time",
+        "End with: 'Brew this, taste it, then come back and tell me how it went'"
+      ]
+    },
+
+    "action_bean_switch": {
+      "type": "terminal",
+      "action": "deliver_bean_switch_advice",
+      "data_sources": {
+        "roast_interaction": "brewing_variable_interactions.json → interactions.temp_roast_interaction",
+        "one_change_rule": "brewing_variable_interactions.json → one_change_at_a_time"
+      }
+    },
+
+    "action_improve": {
+      "type": "terminal",
+      "action": "deliver_improvement_advice",
+      "data_sources": {
+        "variable_interactions": "brewing_variable_interactions.json",
+        "recipes": "recipes_v4.json",
+        "symptoms": "flavour_symptom_map.json",
+        "bean_freshness": "bean_freshness_logic.json (if roast_date_age indicates past peak or stale)",
+        "ground_freshness": "ground_coffee_freshness_logic.json (if grind_state indicates pre-ground)"
+      },
+      "rules": [
+        "Compare user's current params against baseline recipe for their method",
+        "Identify the biggest deviation from standard parameters",
+        "Suggest ONE improvement at a time",
+        "If their params look good, focus on consistency advice (same technique every time)",
+        "Use taste description to guide which variable to suggest changing",
+        "If roast_date_age is 'Over 4 weeks' or grind_state is 'Pre-ground (store-bought)', append a freshness caveat note after the technique suggestion. Use the same caveat tone as action_fix.freshness_caveat_rules — helpful, not preachy."
+      ]
+    }
+  },
+
+  "conversation_state": {
+    "description": "The app should track these values as the user moves through the tree. Terminal nodes use them to generate personalized advice.",
+    "tracked_variables": [
+      "intent",
+      "method",
+      "roast_level",
+      "symptom",
+      "symptom_severity",
+      "current_params",
+      "already_tried",
+      "bean_freshness_zone",
+      "grind_state",
+      "days_since_ground",
+      "grinder_quality",
+      "freshness_caveat",
+      "grinder_quality_caveat"
+    ]
+  },
+
+  "guardrails": {
+    "one_fix_at_a_time": "NEVER suggest multiple changes at once. The user cannot learn what worked if they change two things. Always suggest exactly one change, explain why, and say 'try this, then come back'.",
+    "sour_bitter_confusion": "Always confirm sour vs bitter before giving a fix. If the user corrects themselves mid-flow, backtrack gracefully. Getting this wrong means giving the opposite fix.",
+    "strength_vs_extraction": "Weak coffee and sour coffee are DIFFERENT problems. Weak = ratio (add more coffee). Sour = extraction (grind finer). Don't conflate them. If someone says 'weak', ask if it's also sour before deciding.",
+    "roast_matters": "Dark roast bitterness is partially inherent — don't tell someone they can eliminate all bitterness from dark roast through technique alone. Manage expectations.",
+    "equipment_honesty": "If someone's grinder is producing very inconsistent particles, no amount of recipe tweaking will fix it. Be honest about equipment limitations, but suggest the cheapest fix (e.g. a hand grinder) rather than expensive gear.",
+    "dont_overwhelm": "Beginners don't need to know about TDS, extraction percentage, or refractometers. Keep language accessible. Talk about taste, not numbers.",
+    "freshness_as_caveat_not_blocker": "Freshness issues (stale beans, old grounds) should be noted as caveats AFTER technique advice, never instead of it. The user has these beans — help them make the best cup they can, then mention what might be limiting them. Only too-fresh beans (needing rest) should pause the flow, because resting is the actual fix and technique can't compensate for trapped CO2.",
+    "pre_ground_honesty": "If someone uses pre-ground coffee, help them through the full coaching flow. Append a note about freshness at the end — not as a lecture, but as context. Mention grinder upgrades once, then move on. The user can't un-grind their coffee."
+  }
+}

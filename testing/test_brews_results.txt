@@ -1,0 +1,71 @@
+Coffee Coach App - Test Brews Results Simulation
+================================================
+
+TEST BREW 1: Balanced V60 brew – Blue Tokai Attikan Estate
+- Method: V60
+- Flavour Notes: expected: milk chocolate, caramel, mild citrus, balanced sweetness, medium body.
+- Simulated Rating: 9-10
+- Coaching Mode: Lock-in Mode
+- Diagnosis: None (balanced extraction).
+- Coach Response: 
+  * "Amazing brew! Save this recipe?"
+  * Offers to bookmark/favourite this bean + method + params combo.
+- Fix / Suggested Tweaks: No change recommended.
+
+------------------------------------------------
+
+TEST BREW 2: Under-extracted V60 brew – Blue Tokai Orchardale Estate
+- Method: V60
+- Flavour Notes: sharp acidity, lemon-like sourness, thin body, short finish.
+- Simulated Rating: 1-4
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "sour" (Root Cause: under-extraction)
+- Logic Assessment: Not enough soluble compounds have dissolved. Brew parameters show a fast 120s total brew time and low 92°C temperature, causing only early-extracting acids to make it into the cup.
+- Coach Response:
+  * "Let's fix this. What's wrong with the taste?" → User selects "Sour / Sharp / Acidic".
+  * Presents method-specific fixes for V60: Grind finer in small increments, pour slower to extend contact time, use water closer to 94–96°C, try a longer bloom (45s).
+- Fix / Suggested Tweaks (from rating_routing_config): {"grind_size": "significantly finer"}
+
+------------------------------------------------
+
+TEST BREW 3: Over-extracted French Press – Araku Signature Blend
+- Method: French Press
+- Flavour Notes: bitter dark chocolate, burnt sugar, harsh finish.
+- Simulated Rating: 1-4
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "bitter" (Root Cause: over-extraction)
+- Logic Assessment: Too many compounds have dissolved. A 6-minute steep at 96°C extracts harsh phenols, and dark roasts (implied by burnt sugar notes) easily over-extract.
+- Coach Response:
+  * "Let's fix this. What's wrong with the taste?" → User selects "Bitter / Harsh / Astringent".
+  * Presents method-specific fixes for French Press: Don't over-steep — stick to 4 minutes, skim the crust, grind coarser, decant immediately.
+- Fix / Suggested Tweaks (from rating_routing_config): 
+  * Standard: {"grind_size": "significantly coarser"}
+  * If Araku Signature Blend has 'dark' roast_level: {"water_temp_c": "lower by 5-10°C"} 
+
+------------------------------------------------
+
+TEST BREW 4: Weak AeroPress brew – Blue Tokai Silver Oak
+- Method: AeroPress
+- Flavour Notes: watery body, faint chocolate, low intensity.
+- Simulated Rating: 1-4
+- Coaching Mode: Diagnosis Mode
+- Matched Symptom: "weak_watery" (Root Cause: low_strength)
+- Logic Assessment: Not enough dissolved coffee solids in the cup due to a weak ratio. 12g to 250ml translates to a ~1:21 ratio.
+- Coach Response:
+  * "Let's fix this. What's wrong with the taste?" → User selects "Weak / Watery / Thin".
+  * Presents method-specific fixes for AeroPress: Increase dose, grind finer, use less water for a more concentrated result.
+- Fix / Suggested Tweaks (from rating_routing_config): {"brew_ratio": "decrease by 1-2"} (Suggest tightening ratio to 1:15 or 1:16 by using ~15-16g of coffee).
+
+------------------------------------------------
+
+TEST BREW 5: Flat Chemex brew – Araku Micro Climate
+- Method: Chemex
+- Flavour Notes: mild cocoa, nutty, clean but dull sweetness.
+- Simulated Rating: 1-4 or 5-6 (Diagnosis/Improvement)
+- Matched Symptom: "flat_no_sweetness" (Root Cause: stale_coffee_or_under_extraction)
+- Logic Assessment: Under-extraction due to brewing too cold (90°C), preventing sweetness compounds from extracting.
+- Coach Response:
+  * "Getting there — let's dial it in. Can you describe a specific taste issue?" → User selects "Flat / No Sweetness / Dull".
+  * Pre-check: "Check for staleness first." 
+  * Presents method-specific fixes for Chemex: Use fresh beans, hotter water.
+- Fix / Suggested Tweaks (from rating_routing_config): {"grind_size": "significantly finer"} (to compensate for lack of extraction, alongside advising hotter water).

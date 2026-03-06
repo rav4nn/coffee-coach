@@ -1,0 +1,240 @@
+{
+    "version": "1.0",
+    "description": "Rules for pairing bean attributes (process, roast level, tasting scores) with brewing methods to suggest intelligent starting parameters. These modifiers stack on top of baseline recipes and roast level modifiers.",
+    "process_method_adjustments": {
+        "washed": {
+            "pour_over": {
+                "grind_adjustment": "as baseline",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Washed coffees extract cleanly and predictably; standard baseline parameters work best."
+            },
+            "french_press": {
+                "grind_adjustment": "as baseline",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Standard extraction works perfectly for clean washed beans in immersion."
+            },
+            "aeropress": {
+                "grind_adjustment": "as baseline",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Washed beans behave predictably under pressure; use the baseline recipe."
+            },
+            "moka_pot": {
+                "grind_adjustment": "as baseline",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Baseline moka pot parameters suit washed coffees."
+            },
+            "cold_brew": {
+                "grind_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Standard steeping time and grind size are optimal for clear extraction."
+            },
+            "south_indian_filter": {
+                "grind_adjustment": "as baseline",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Standard decoction parameters work efficiently for washed Indian coffees."
+            }
+        },
+        "natural": {
+            "pour_over": {
+                "grind_adjustment": "slightly coarser",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Natural processed coffees extract surface sugars quickly; a slightly coarser grind prevents over-extraction and fermented harshness, though fast water flow mitigates some risk."
+            },
+            "french_press": {
+                "grind_adjustment": "slightly coarser",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Long immersion times can pull harsh, over-fermented notes from naturals; start slightly coarser to control extraction speed."
+            },
+            "aeropress": {
+                "grind_adjustment": "slightly coarser",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Immersion combined with pressure extracts naturals rapidly; grinding coarser keeps flavors clean and bright."
+            },
+            "moka_pot": {
+                "grind_adjustment": "slightly coarser",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "High heat and pressure easily over-extract the complex sugars in naturals; start coarser."
+            },
+            "cold_brew": {
+                "grind_adjustment": "slightly coarser",
+                "ratio_adjustment": "as baseline",
+                "notes": "Long steeps can highlight fermented, boozy notes in naturals; a coarser grind mitigates this over-extraction."
+            },
+            "south_indian_filter": {
+                "grind_adjustment": "slightly coarser",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Natural beans will over-extract in the slow South Indian gravity drip; grind slightly coarser than usual."
+            }
+        },
+        "honey": {
+            "pour_over": {
+                "grind_adjustment": "as baseline",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Honey process is generally forgiving; baseline parameters provide a good starting point."
+            },
+            "french_press": {
+                "grind_adjustment": "as baseline",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Maintains good sweetness and body at baseline settings without becoming harsh."
+            },
+            "aeropress": {
+                "grind_adjustment": "as baseline",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Baseline recipe works well, extracting the added sweetness smoothly."
+            },
+            "moka_pot": {
+                "grind_adjustment": "as baseline",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Honey process handles moka pot heat well; baseline parameters usually suffice unless it's a black honey."
+            },
+            "cold_brew": {
+                "grind_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Extracts sweetly with standard cold brew parameters."
+            },
+            "south_indian_filter": {
+                "grind_adjustment": "as baseline",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Produces a very sweet decoction; baseline works well."
+            }
+        },
+        "monsooned": {
+            "pour_over": {
+                "grind_adjustment": "slightly coarser",
+                "temp_adjustment": "2\u00b0C cooler",
+                "ratio_adjustment": "as baseline",
+                "notes": "Extremely porous structure means water absorbs rapidly; treat like one roast level darker than labeled."
+            },
+            "french_press": {
+                "grind_adjustment": "slightly coarser",
+                "temp_adjustment": "2\u00b0C cooler",
+                "ratio_adjustment": "as baseline",
+                "notes": "Readily gives up soluble material in immersion; lowering temp and grinding coarser prevents bitterness."
+            },
+            "aeropress": {
+                "grind_adjustment": "slightly coarser",
+                "temp_adjustment": "2\u00b0C cooler",
+                "ratio_adjustment": "as baseline",
+                "notes": "Extracts intensely under pressure; cool the water slightly and grind coarser to balance the heavy body."
+            },
+            "moka_pot": {
+                "grind_adjustment": "slightly coarser",
+                "temp_adjustment": "as baseline",
+                "ratio_adjustment": "as baseline",
+                "notes": "Monsooned beans extract very fast under intense pressure; use a coarser grind to slow it down."
+            },
+            "cold_brew": {
+                "grind_adjustment": "slightly coarser",
+                "ratio_adjustment": "as baseline",
+                "notes": "The high solubility of monsooned beans means they over-extract quickly even in cold water; grind coarser."
+            },
+            "south_indian_filter": {
+                "grind_adjustment": "slightly coarser",
+                "temp_adjustment": "2\u00b0C cooler",
+                "ratio_adjustment": "as baseline",
+                "notes": "A classic pairing, but its spongy, porous nature requires a slightly coarser grind and cooler water to avoid harshness."
+            }
+        }
+    },
+    "bean_attribute_modifiers": {
+        "body": {
+            "light": {
+                "score_range": "1-2",
+                "condition": "body score 1-2 (light body)",
+                "adjustment": "If user wants more body, the bean may not deliver it through this method. Suggest ratio decrease (more coffee) OR suggest french_press/south_indian_filter which naturally produce heavier body."
+            },
+            "heavy": {
+                "score_range": "4-5",
+                "condition": "body score 4-5 (heavy body)",
+                "adjustment": "Great for immersion methods. For pour_over, may taste muddy \u2014 suggest slightly coarser grind."
+            }
+        },
+        "acidity": {
+            "low": {
+                "score_range": "1-2",
+                "condition": "acidity score 1-2 (low acidity)",
+                "adjustment": "Don't push extraction hard looking for brightness \u2014 it's not in the bean. Focus on sweetness and body instead. Lower the user's expectations for clarity/brightness goals."
+            },
+            "high": {
+                "score_range": "4-5",
+                "condition": "acidity score 4-5 (high acidity)",
+                "adjustment": "Great for pour_over. For french_press/south_indian_filter, the long contact time may make it overly sharp \u2014 suggest slightly coarser grind."
+            }
+        },
+        "sweetness": {
+            "low": {
+                "score_range": "1-2",
+                "condition": "sweetness score 1-2 (low sweetness)",
+                "adjustment": "The 'more sweetness' improvement goal will have limited returns. Flag this to the user: 'This bean has naturally low sweetness \u2014 we can optimise extraction but sweetness ceiling is limited.'"
+            },
+            "high": {
+                "score_range": "4-5",
+                "condition": "sweetness score 4-5 (high sweetness)",
+                "adjustment": "Target the 18-22% extraction sweet spot more aggressively \u2014 the bean has sweetness to unlock."
+            }
+        },
+        "null_fallback_profiles": {
+            "light_washed": {
+                "condition": "light roast + washed process",
+                "assumptions": {
+                    "acidity": "moderate-high",
+                    "sweetness": "moderate",
+                    "body": "light"
+                }
+            },
+            "dark_natural": {
+                "condition": "dark roast + natural process",
+                "assumptions": {
+                    "acidity": "low",
+                    "sweetness": "moderate",
+                    "body": "heavy"
+                }
+            },
+            "monsooned": {
+                "condition": "is_monsooned is true OR process is monsooned",
+                "assumptions": {
+                    "acidity": "very low",
+                    "sweetness": "low",
+                    "body": "very heavy"
+                }
+            }
+        }
+    },
+    "method_suitability_hints": {
+        "light_washed": {
+            "pour_over": "excellent",
+            "aeropress": "excellent",
+            "south_indian_filter": "challenging"
+        },
+        "dark_natural": {
+            "french_press": "excellent",
+            "cold_brew": "excellent",
+            "pour_over": "acceptable"
+        },
+        "monsooned": {
+            "south_indian_filter": "excellent",
+            "french_press": "excellent",
+            "pour_over": "challenging"
+        }
+    },
+    "blend_handling": {
+        "condition": "is_blend is true",
+        "behavior": "Process adjustments don't apply cleanly (blend may mix processes). Fall back to roast level only.",
+        "warning_message": "This is a blend \u2014 process-specific adjustments are less reliable. Using roast-level defaults."
+    }
+}

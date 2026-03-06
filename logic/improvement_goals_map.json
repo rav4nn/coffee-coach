@@ -1,0 +1,300 @@
+{
+    "version": "1.0",
+    "description": "Magnitude calibration rules for adjusting coffee brewing parameters based on user ratings and declared improvement goals.",
+    "rating_tiers": {
+        "1-4": "aggressive",
+        "5-6": "moderate",
+        "7-8": "nudge",
+        "9-10": "none"
+    },
+    "goals": [
+        {
+            "id": "more_sweetness",
+            "display_name": "More Sweetness",
+            "description": "Increase extraction to hit the 18-22% sweet spot where natural coffee sugars are most prominent.",
+            "magnitude_modifier": "neutral",
+            "primary_variable": "grind_size",
+            "direction": "finer",
+            "secondary_variable": "water_temperature",
+            "secondary_direction": "hotter",
+            "method_exceptions": {
+                "cold_brew": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "longer"
+                },
+                "french_press": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "longer"
+                },
+                "aeropress": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "longer"
+                },
+                "south_indian_filter": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "longer"
+                }
+            },
+            "roast_exceptions": {}
+        },
+        {
+            "id": "more_body",
+            "display_name": "More Body",
+            "description": "Increase dissolved solids for a heavier mouthfeel and more weight on the palate.",
+            "magnitude_modifier": "shift_up",
+            "primary_variable": "brew_ratio",
+            "direction": "decrease",
+            "secondary_variable": "grind_size",
+            "secondary_direction": "finer",
+            "method_exceptions": {},
+            "roast_exceptions": {}
+        },
+        {
+            "id": "less_bitterness",
+            "display_name": "Less Bitterness",
+            "description": "Reduce extraction to eliminate harsh, astringent, and bitter over-extracted compounds.",
+            "magnitude_modifier": "shift_down",
+            "primary_variable": "grind_size",
+            "direction": "coarser",
+            "secondary_variable": "water_temperature",
+            "secondary_direction": "cooler",
+            "method_exceptions": {
+                "cold_brew": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "shorter"
+                },
+                "french_press": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "shorter"
+                },
+                "aeropress": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "shorter"
+                },
+                "south_indian_filter": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "shorter"
+                }
+            },
+            "roast_exceptions": {
+                "dark": {
+                    "primary_variable": "water_temperature",
+                    "direction": "cooler",
+                    "secondary_variable": "grind_size",
+                    "secondary_direction": "coarser"
+                }
+            }
+        },
+        {
+            "id": "less_acidity",
+            "display_name": "Less Acidity",
+            "description": "Increase extraction to balance out sharp, sour brightness with more sweetness.",
+            "magnitude_modifier": "neutral",
+            "primary_variable": "grind_size",
+            "direction": "finer",
+            "secondary_variable": "water_temperature",
+            "secondary_direction": "hotter",
+            "method_exceptions": {
+                "cold_brew": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "longer"
+                },
+                "french_press": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "longer"
+                },
+                "aeropress": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "longer"
+                },
+                "south_indian_filter": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "longer"
+                }
+            },
+            "roast_exceptions": {}
+        },
+        {
+            "id": "more_clarity",
+            "display_name": "More Clarity",
+            "description": "Reduce muddiness and fines for a cleaner, more defined cup.",
+            "magnitude_modifier": "neutral",
+            "primary_variable": "grind_size",
+            "direction": "coarser",
+            "secondary_variable": "brew_ratio",
+            "secondary_direction": "increase",
+            "method_exceptions": {},
+            "roast_exceptions": {}
+        },
+        {
+            "id": "stronger_cup",
+            "display_name": "Stronger Cup",
+            "description": "Increase intensity and concentration with a higher proportion of coffee to water.",
+            "magnitude_modifier": "neutral",
+            "primary_variable": "brew_ratio",
+            "direction": "decrease",
+            "secondary_variable": "grind_size",
+            "secondary_direction": "finer",
+            "method_exceptions": {},
+            "roast_exceptions": {}
+        },
+        {
+            "id": "more_complexity",
+            "display_name": "More Complexity",
+            "description": "Push extraction gently to reveal more layered, interesting flavour compounds.",
+            "magnitude_modifier": "shift_down",
+            "primary_variable": "grind_size",
+            "direction": "finer",
+            "secondary_variable": "water_temperature",
+            "secondary_direction": "hotter",
+            "method_exceptions": {
+                "cold_brew": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "longer"
+                },
+                "french_press": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "longer"
+                },
+                "aeropress": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "longer"
+                },
+                "south_indian_filter": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "longer"
+                }
+            },
+            "roast_exceptions": {}
+        },
+        {
+            "id": "smoother_mouthfeel",
+            "display_name": "Smoother Mouthfeel",
+            "description": "Reduce harshness and late-stage extraction compounds for a more rounded texture.",
+            "magnitude_modifier": "neutral",
+            "primary_variable": "water_temperature",
+            "direction": "cooler",
+            "secondary_variable": "grind_size",
+            "secondary_direction": "coarser",
+            "method_exceptions": {
+                "cold_brew": {
+                    "primary_variable": "brew_time",
+                    "direction": "shorter",
+                    "secondary_variable": "grind_size",
+                    "secondary_direction": "coarser"
+                },
+                "french_press": {
+                    "primary_variable": "brew_time",
+                    "direction": "shorter",
+                    "secondary_variable": "grind_size",
+                    "secondary_direction": "coarser"
+                },
+                "aeropress": {
+                    "primary_variable": "brew_time",
+                    "direction": "shorter",
+                    "secondary_variable": "grind_size",
+                    "secondary_direction": "coarser"
+                },
+                "south_indian_filter": {
+                    "primary_variable": "brew_time",
+                    "direction": "shorter",
+                    "secondary_variable": "grind_size",
+                    "secondary_direction": "coarser"
+                }
+            },
+            "roast_exceptions": {}
+        },
+        {
+            "id": "cleaner_finish",
+            "display_name": "Cleaner Finish",
+            "description": "Reduce lingering aftertaste often caused by slight over-extraction or excessive fines.",
+            "magnitude_modifier": "shift_down",
+            "primary_variable": "grind_size",
+            "direction": "coarser",
+            "secondary_variable": "water_temperature",
+            "secondary_direction": "cooler",
+            "method_exceptions": {
+                "cold_brew": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "shorter"
+                },
+                "french_press": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "shorter"
+                },
+                "aeropress": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "shorter"
+                },
+                "south_indian_filter": {
+                    "secondary_variable": "brew_time",
+                    "secondary_direction": "shorter"
+                }
+            },
+            "roast_exceptions": {}
+        }
+    ],
+    "conflicts": [
+        {
+            "goals": [
+                "more_sweetness",
+                "less_bitterness"
+            ],
+            "why_they_conflict": "Sweetness requires higher extraction, but fixing bitterness requires lower extraction.",
+            "resolution": "Address less_bitterness first because overwhelming bitter compounds will mask any natural sweetness present.",
+            "combined_approach": null
+        },
+        {
+            "goals": [
+                "more_body",
+                "more_clarity"
+            ],
+            "why_they_conflict": "Body relies on high dissolved solids and oils, while clarity is achieved by removing them.",
+            "resolution": "Address more_clarity first, as excessive fines and muddiness can ruin the flavour profile, though this is ultimately a fundamental preference tradeoff.",
+            "combined_approach": null
+        },
+        {
+            "goals": [
+                "stronger_cup",
+                "less_bitterness"
+            ],
+            "why_they_conflict": "Increasing the coffee dose for a stronger cup also increases the total amount of bitter compounds in the final brew.",
+            "resolution": "Address less_bitterness first to fix the extraction balance before scaling up the intensity.",
+            "combined_approach": null
+        },
+        {
+            "goals": [
+                "more_complexity",
+                "smoother_mouthfeel"
+            ],
+            "why_they_conflict": "Complexity often involves extracting nuanced, bright, and sharp acidic edges, which works against a rounded, smooth texture.",
+            "resolution": "Address smoother_mouthfeel first by lowering extraction slightly to remove harshness, then evaluate if complexity is sufficient.",
+            "combined_approach": "Decrease water temperature slightly. This removes harsh edges but retains more acidity and complexity than changing the grind size would."
+        }
+    ],
+    "magnitude_resolution": {
+        "description": "How rating tier + goal modifier combine to form final recommendation magnitude. Ratings provide baseline, modifiers shift up or down one tier (capped at aggressive and nudge).",
+        "matrix": {
+            "aggressive": {
+                "shift_up": "aggressive",
+                "neutral": "aggressive",
+                "shift_down": "moderate"
+            },
+            "moderate": {
+                "shift_up": "aggressive",
+                "neutral": "moderate",
+                "shift_down": "nudge"
+            },
+            "nudge": {
+                "shift_up": "moderate",
+                "neutral": "nudge",
+                "shift_down": "nudge"
+            },
+            "none": {
+                "shift_up": "none",
+                "neutral": "none",
+                "shift_down": "none"
+            }
+        }
+    }
+}

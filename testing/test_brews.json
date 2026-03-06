@@ -1,0 +1,186 @@
+[
+    {
+        "recipe_id": "test-blue-tokai-attikan-v60-balanced",
+        "source_url": "internal_test_case",
+        "title": "Balanced V60 brew – Blue Tokai Attikan Estate",
+        "author": "coffee_coach_test_suite",
+        "method": "v60",
+        "coffee_g": 18,
+        "water_ml": 300,
+        "water_temp_c": 96,
+        "grind_size": "medium_fine",
+        "brew_time_seconds": 165,
+        "is_iced": false,
+        "bloom_water_g": 40,
+        "bloom_duration_seconds": 40,
+        "notes": "Expected flavour: milk chocolate, caramel, mild citrus, balanced sweetness, medium body.",
+        "steps": [
+            {
+                "time_seconds": 0,
+                "instruction": "Add 18g medium-fine coffee to V60 with rinsed filter.",
+                "duration_seconds": null
+            },
+            {
+                "time_seconds": 0,
+                "instruction": "Bloom with 40g water for 40 seconds.",
+                "duration_seconds": 40
+            },
+            {
+                "time_seconds": 40,
+                "instruction": "Pour remaining water in slow circular pours until reaching 300ml.",
+                "duration_seconds": 120
+            }
+        ]
+        // EXPECTED COACH RESPONSE
+        // Diagnosis: None (balanced extraction)
+        // Fix: No change recommended
+    },
+    {
+        "recipe_id": "test-blue-tokai-orchardale-v60-underextracted",
+        "source_url": "internal_test_case",
+        "title": "Under-extracted V60 brew – Blue Tokai Orchardale Estate",
+        "author": "coffee_coach_test_suite",
+        "method": "v60",
+        "coffee_g": 18,
+        "water_ml": 300,
+        "water_temp_c": 92,
+        "grind_size": "medium",
+        "brew_time_seconds": 120,
+        "is_iced": false,
+        "bloom_water_g": 40,
+        "bloom_duration_seconds": 30,
+        "notes": "Expected flavour: sharp acidity, lemon-like sourness, thin body, short finish.",
+        "steps": [
+            {
+                "time_seconds": 0,
+                "instruction": "Add 18g medium-ground coffee to V60.",
+                "duration_seconds": null
+            },
+            {
+                "time_seconds": 0,
+                "instruction": "Bloom with 40g water for 30 seconds.",
+                "duration_seconds": 30
+            },
+            {
+                "time_seconds": 30,
+                "instruction": "Finish pour to 300ml quickly.",
+                "duration_seconds": 90
+            }
+        ]
+        // EXPECTED COACH RESPONSE
+        // Diagnosis: Under-extraction
+        // Reason: Brew time too fast + grind too coarse + lower temperature
+        // Fix: Grind one step finer
+    },
+    {
+        "recipe_id": "test-araku-frenchpress-overextracted",
+        "source_url": "internal_test_case",
+        "title": "Over-extracted French Press – Araku Signature Blend",
+        "author": "coffee_coach_test_suite",
+        "method": "french_press",
+        "coffee_g": 20,
+        "water_ml": 300,
+        "water_temp_c": 96,
+        "grind_size": "medium_fine",
+        "brew_time_seconds": 360,
+        "is_iced": false,
+        "bloom_water_g": null,
+        "bloom_duration_seconds": null,
+        "notes": "Expected flavour: bitter dark chocolate, burnt sugar, harsh finish.",
+        "steps": [
+            {
+                "time_seconds": 0,
+                "instruction": "Add 20g medium-fine coffee to French press.",
+                "duration_seconds": null
+            },
+            {
+                "time_seconds": 0,
+                "instruction": "Pour 300ml hot water and stir gently.",
+                "duration_seconds": null
+            },
+            {
+                "time_seconds": 0,
+                "instruction": "Steep for 6 minutes before pressing.",
+                "duration_seconds": 360
+            }
+        ]
+        // EXPECTED COACH RESPONSE
+        // Diagnosis: Over-extraction
+        // Fix: Grind coarser OR shorten brew time
+        // For dark roasts: temperature reduction may also help
+    },
+    {
+        "recipe_id": "test-blue-tokai-silveroak-aeropress-weak",
+        "source_url": "internal_test_case",
+        "title": "Weak AeroPress brew – Blue Tokai Silver Oak",
+        "author": "coffee_coach_test_suite",
+        "method": "aeropress",
+        "coffee_g": 12,
+        "water_ml": 250,
+        "water_temp_c": 95,
+        "grind_size": "medium",
+        "brew_time_seconds": 90,
+        "is_iced": false,
+        "bloom_water_g": null,
+        "bloom_duration_seconds": null,
+        "notes": "Expected flavour: watery body, faint chocolate, low intensity.",
+        "steps": [
+            {
+                "time_seconds": 0,
+                "instruction": "Add 12g coffee to AeroPress.",
+                "duration_seconds": null
+            },
+            {
+                "time_seconds": 0,
+                "instruction": "Add 250ml hot water and stir briefly.",
+                "duration_seconds": null
+            },
+            {
+                "time_seconds": 60,
+                "instruction": "Press slowly after 1 minute.",
+                "duration_seconds": 30
+            }
+        ]
+        // EXPECTED COACH RESPONSE
+        // Diagnosis: Weak coffee (strength issue)
+        // Cause: Ratio too weak (~1:21)
+        // Fix: Increase coffee dose to ~15–16g (1:16 ratio)
+    },
+    {
+        "recipe_id": "test-araku-chemex-flat",
+        "source_url": "internal_test_case",
+        "title": "Flat Chemex brew – Araku Micro Climate",
+        "author": "coffee_coach_test_suite",
+        "method": "chemex",
+        "coffee_g": 20,
+        "water_ml": 340,
+        "water_temp_c": 90,
+        "grind_size": "medium_coarse",
+        "brew_time_seconds": 210,
+        "is_iced": false,
+        "bloom_water_g": 50,
+        "bloom_duration_seconds": 40,
+        "notes": "Expected flavour: mild cocoa, nutty, clean but dull sweetness.",
+        "steps": [
+            {
+                "time_seconds": 0,
+                "instruction": "Add 20g medium-coarse coffee to Chemex with rinsed filter.",
+                "duration_seconds": null
+            },
+            {
+                "time_seconds": 0,
+                "instruction": "Bloom with 50g water for 40 seconds.",
+                "duration_seconds": 40
+            },
+            {
+                "time_seconds": 40,
+                "instruction": "Continue pouring to 340ml total water.",
+                "duration_seconds": 170
+            }
+        ]
+        // EXPECTED COACH RESPONSE
+        // Diagnosis: Mild under-extraction
+        // Cause: Low brew temperature for medium-light roast
+        // Fix: Increase water temperature to ~95°C
+    }
+]

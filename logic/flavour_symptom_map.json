@@ -1,0 +1,336 @@
+{
+  "version": "1.0",
+  "description": "Flavour symptom \u2192 extraction diagnosis \u2192 per-method fixes. Grounded in James Hoffmann transcripts + SCA extraction science.",
+  "sour_bitter_note": "IMPORTANT: Sour and bitter are often confused. Sour = acidity felt on sides of tongue, like green apple or lemon. Bitter = harsh finish that fills the mouth, like dark chocolate or tonic water. Misidentifying means fixing the wrong problem and making it worse.",
+  "flavour_symptoms": [
+    {
+      "id": "sour",
+      "symptom": "Sour / Sharp / Acidic",
+      "describes": "Unpleasant tingling on the sides of the tongue; tastes like lemon juice or unripe fruit. Acidity with no sweetness to balance it.",
+      "root_cause": "under-extraction",
+      "cause_explanation": "Not enough soluble compounds have dissolved. The pleasant sugars and balancing compounds extract later than acids. Short contact time or low temp means only early-extracting acids make it into the cup.",
+      "confusion_warning": "Often mislabelled as 'bitter'. If the sharpness is on the sides of your tongue and the coffee tastes thin, it's sour. If it's a heavy finish at the back of the mouth, it's bitter.",
+      "universal_fixes": [
+        "Grind finer to increase surface area and slow flow rate",
+        "Increase water temperature",
+        "Increase brew time / contact time",
+        "Use more coffee relative to water (adjust ratio)"
+      ],
+      "method_fixes": {
+        "v60": [
+          "Grind finer in small increments",
+          "Pour slower to extend contact time",
+          "Use water closer to 94\u201396\u00b0C",
+          "Try a longer bloom (45s instead of 30s)"
+        ],
+        "french_press": [
+          "Grind slightly finer (counter to traditional advice)",
+          "Extend steep time from 4 to 5\u20136 minutes",
+          "Use just-boiled water, don't let it cool"
+        ],
+        "aeropress": [
+          "Grind finer",
+          "Extend steep time before pressing",
+          "Use hotter water (85\u201395\u00b0C range)",
+          "Press slower"
+        ],
+        "espresso": [
+          "Grind finer \u2014 this is your primary lever",
+          "Increase brew time to 25\u201335s window",
+          "Check dose: increase by 0.5\u20131g",
+          "Reduce yield (less liquid out)"
+        ],
+        "moka_pot": [
+          "Use medium-fine grind",
+          "Keep heat low and steady to slow extraction",
+          "Don't let it sputter \u2014 remove from heat as soon as flow slows"
+        ],
+        "chemex": [
+          "Grind slightly finer",
+          "Pour more slowly and steadily",
+          "Use water at 94\u201396\u00b0C"
+        ],
+        "clever_dripper": [
+          "Grind finer",
+          "Extend steep time by 1\u20132 minutes",
+          "Use hotter water"
+        ]
+      }
+    },
+    {
+      "id": "bitter",
+      "symptom": "Bitter / Harsh / Astringent",
+      "describes": "Unpleasant, heavy finish that fills the back of the mouth. Like over-steeped tea, burnt toast, or tonic water. Lingers uncomfortably.",
+      "root_cause": "over-extraction",
+      "cause_explanation": "Too many compounds have dissolved, including the late-extracting harsh phenols and woody compounds. Also triggered by dirty equipment, dark roast, or excessively hot water.",
+      "confusion_warning": "Bitterness felt in the finish vs sourness felt on the tongue sides. A little bitterness is natural and desirable \u2014 it becomes a problem when it dominates.",
+      "other_causes": [
+        "Dark roast \u2014 inherently more bitter regardless of extraction",
+        "Dirty machine \u2014 old oils go rancid and add harsh bitterness",
+        "Very hard water \u2014 high bicarbonate amplifies bitter notes"
+      ],
+      "universal_fixes": [
+        "Grind coarser to reduce extraction",
+        "Lower water temperature",
+        "Reduce brew time / contact time",
+        "Clean your equipment thoroughly"
+      ],
+      "method_fixes": {
+        "v60": [
+          "Grind coarser",
+          "Pour faster or reduce total pour time",
+          "Use water at 90\u201393\u00b0C for darker roasts",
+          "Reduce steep/bloom time"
+        ],
+        "french_press": [
+          "Don't over-steep \u2014 stick to 4 minutes",
+          "Skim the crust and remove floating grounds before decanting",
+          "Grind coarser (medium, not fine)",
+          "Decant immediately \u2014 don't leave coffee sitting on grounds"
+        ],
+        "aeropress": [
+          "Grind coarser",
+          "Reduce steep time",
+          "Lower water temperature to 80\u201385\u00b0C",
+          "Press faster"
+        ],
+        "espresso": [
+          "Grind coarser \u2014 primary lever",
+          "Shorten brew time",
+          "Clean portafilter, basket, and group head",
+          "Try a medium roast instead of dark"
+        ],
+        "moka_pot": [
+          "Reduce heat \u2014 high temperature extracts harsh compounds",
+          "Remove from heat earlier, before the final sputtering",
+          "Grind coarser",
+          "Use medium roast beans"
+        ],
+        "chemex": [
+          "Grind coarser",
+          "Pour faster",
+          "Lower water temperature slightly"
+        ],
+        "clever_dripper": [
+          "Grind coarser",
+          "Reduce steep time",
+          "Release earlier"
+        ]
+      }
+    },
+    {
+      "id": "weak_watery",
+      "symptom": "Weak / Watery / Thin",
+      "describes": "Coffee tastes like dirty water. No body, no weight on the palate. Feels like you're drinking very faint coffee.",
+      "root_cause": "low_strength",
+      "cause_explanation": "Not enough dissolved coffee solids in the cup. Either too little coffee was used relative to water (ratio problem) or grind was too coarse and water passed through too quickly.",
+      "universal_fixes": [
+        "Use more coffee \u2014 increase dose",
+        "Tighten your ratio (e.g. from 1:17 to 1:15)",
+        "Grind finer to slow flow and increase extraction",
+        "Check your scale \u2014 you may be using less coffee than you think"
+      ],
+      "method_fixes": {
+        "v60": [
+          "Increase dose (e.g. from 15g to 17g per 250ml)",
+          "Grind finer",
+          "Pour in smaller pulses to keep water contact time up"
+        ],
+        "french_press": [
+          "Increase coffee to 65\u201375g per litre",
+          "Grind medium, not coarse",
+          "Don't rush \u2014 full 4-minute steep minimum"
+        ],
+        "aeropress": [
+          "Increase dose",
+          "Grind finer",
+          "Use less water for a more concentrated result, then dilute if needed"
+        ],
+        "espresso": [
+          "Increase dose by 1\u20132g",
+          "Grind finer to slow the shot",
+          "Reduce yield (aim for 1:2 ratio, not 1:3)"
+        ],
+        "moka_pot": [
+          "Fill the basket fully and level",
+          "Don't tamp \u2014 just level the grounds",
+          "Ensure a tight seal on the brewer"
+        ],
+        "chemex": [
+          "Use more coffee \u2014 at least 1:15 ratio",
+          "Grind slightly finer"
+        ],
+        "clever_dripper": [
+          "Increase dose",
+          "Extend steep time",
+          "Grind slightly finer"
+        ]
+      }
+    },
+    {
+      "id": "flat_no_sweetness",
+      "symptom": "Flat / No Sweetness / Dull",
+      "describes": "Coffee has no brightness, no sweetness, no life. Everything tastes muted. Not offensive, just boring and one-dimensional.",
+      "root_cause": "stale_coffee_or_under_extraction",
+      "cause_explanation": "Sweetness and complexity come from volatile aromatics and sugars \u2014 these are destroyed by staleness (CO2 off-gassing carrying away aromas) or under-extraction. Can also indicate the wrong bean for your taste.",
+      "other_causes": [
+        "Stale coffee \u2014 most common cause; use coffee within 2\u20136 weeks of roast date",
+        "Pre-ground coffee loses aromatics within minutes",
+        "Robusta or low-quality beans lack sweetness potential",
+        "Brewing too cold \u2014 sweetness compounds need heat to extract"
+      ],
+      "universal_fixes": [
+        "Check roast date \u2014 switch to fresher beans first",
+        "Grind just before brewing",
+        "Increase water temperature slightly",
+        "Try a slight grind adjustment finer to increase extraction"
+      ],
+      "method_fixes": {
+        "v60": [
+          "Use 94\u201396\u00b0C water",
+          "Ensure bloom is vigorous \u2014 fresh coffee should bubble"
+        ],
+        "french_press": [
+          "Use just-boiled water",
+          "Check coffee freshness first"
+        ],
+        "aeropress": [
+          "Try hotter water",
+          "Extend steep time by 30s"
+        ],
+        "espresso": [
+          "Check roast date",
+          "Ensure machine is at full temperature before brewing"
+        ],
+        "moka_pot": [
+          "Medium roast tends to show more sweetness than dark",
+          "Don't let it overheat"
+        ],
+        "chemex": [
+          "Use fresh beans, hotter water"
+        ],
+        "clever_dripper": [
+          "Hotter water, slightly longer steep"
+        ]
+      }
+    },
+    {
+      "id": "muddy_silty",
+      "symptom": "Muddy / Silty / Gritty",
+      "describes": "Unpleasant sediment or sludge in the cup. Texture feels sandy or gritty. Cup looks cloudy.",
+      "root_cause": "fines_in_cup",
+      "cause_explanation": "Fine coffee particles (fines) have made it into the cup, either due to a coarse grind producing many fines, a worn grinder burr, or incorrect brewing technique with metal filters or a plunger.",
+      "universal_fixes": [
+        "Ensure filter paper is properly seated and rinsed",
+        "Don't disturb settled grounds before decanting",
+        "Check grinder for worn burrs producing inconsistent particle size"
+      ],
+      "method_fixes": {
+        "v60": [
+          "Rinse paper filter thoroughly before adding coffee",
+          "Don't stir aggressively"
+        ],
+        "french_press": [
+          "After 4 min steep, skim and wait 5\u20138 more minutes for grounds to settle",
+          "Push plunger only to surface \u2014 do not press all the way down",
+          "Pour gently, stop before the last 10% which holds all sediment"
+        ],
+        "aeropress": [
+          "Use two paper filters for cleaner cup",
+          "Press slowly and stop before you hear hissing"
+        ],
+        "espresso": [
+          "Not typically an issue \u2014 the basket filters fines"
+        ],
+        "moka_pot": [
+          "Ensure basket holes aren't clogged",
+          "Don't grind too fine or fines block the filter plate"
+        ],
+        "chemex": [
+          "Paper filter should fully cover the bottom and sides of the funnel",
+          "Rinse paper well"
+        ],
+        "clever_dripper": [
+          "Rinse filter paper",
+          "Don't agitate during steep"
+        ]
+      }
+    },
+    {
+      "id": "woody_papery",
+      "symptom": "Woody / Papery / Cardboard",
+      "describes": "A dry, papery or cardboard-like taste. Like drinking weak tea made with old teabags. Sometimes described as wooden or dusty.",
+      "root_cause": "unrinsed_filter_or_stale_coffee",
+      "cause_explanation": "Most commonly caused by unrinsed paper filters leaching paper flavour. Also caused by stale coffee that has lost all volatiles, or over-roasted coffee.",
+      "universal_fixes": [
+        "Always rinse paper filters with hot water before adding coffee and discard rinse water",
+        "Check coffee freshness",
+        "Try different roaster \u2014 some papers taste more neutral than others"
+      ],
+      "method_fixes": {
+        "v60": [
+          "Rinse filter for 10+ seconds before brewing",
+          "Discard rinse water from server"
+        ],
+        "french_press": [
+          "No paper filter \u2014 if you get this taste, it's stale coffee"
+        ],
+        "aeropress": [
+          "Rinse filter cap before assembling"
+        ],
+        "espresso": [
+          "Not a paper issue \u2014 check coffee age and machine cleanliness"
+        ],
+        "moka_pot": [
+          "No filter paper used \u2014 check coffee freshness"
+        ],
+        "chemex": [
+          "Thick Chemex filters especially need thorough rinsing \u2014 20\u201330 seconds"
+        ],
+        "clever_dripper": [
+          "Rinse filter well before use"
+        ]
+      }
+    },
+    {
+      "id": "hollow",
+      "symptom": "Hollow / No Body / Bright but Empty",
+      "describes": "Interesting acidity and some flavour but no weight, no mouthfeel, no aftertaste. The coffee feels thin despite tasting okay initially.",
+      "root_cause": "under_extraction_of_body_compounds",
+      "cause_explanation": "Body and mouthfeel come from oils, proteins and later-extracting compounds. If extraction is slightly short, you get acidity first but body doesn't develop. Often happens with very light roasts or coarse grinds.",
+      "universal_fixes": [
+        "Grind slightly finer",
+        "Increase brew ratio (more coffee)",
+        "Extend contact time",
+        "Try a slightly lower temperature to slow extraction and allow body compounds more time"
+      ],
+      "method_fixes": {
+        "v60": [
+          "Grind finer",
+          "Reduce agitation \u2014 swirling increases clarity but reduces body"
+        ],
+        "french_press": [
+          "French press naturally adds body via metal filter \u2014 ensure full steep time"
+        ],
+        "aeropress": [
+          "Press slower",
+          "Extend steep",
+          "Use metal filter instead of paper for more body"
+        ],
+        "espresso": [
+          "Increase dose",
+          "Reduce yield for a ristretto-style"
+        ],
+        "moka_pot": [
+          "Ensure full extraction \u2014 don't remove from heat too early"
+        ],
+        "chemex": [
+          "Chemex filters remove oils \u2014 some body loss is natural; try a slightly finer grind"
+        ],
+        "clever_dripper": [
+          "Extend steep by 1\u20132 minutes"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+{
+  "version": "1.0",
+  "description": "Brewing variable interaction map. Defines how the 6 core variables affect extraction, how they interact with each other, and the priority order for adjustments per method. Grounded in SCA brewing science, Hoffmann/Rao methodology.",
+
+  "variables": {
+    "grind_size": {
+      "what_it_controls": "Surface area exposed to water. Finer = more surface = faster extraction.",
+      "direction": {
+        "finer": "increases extraction, slows flow (in percolation), increases body",
+        "coarser": "decreases extraction, speeds flow (in percolation), reduces body"
+      },
+      "sensitivity": "high",
+      "notes": "The single most impactful variable in most methods. Always adjust in small increments — one notch at a time on a stepped grinder."
+    },
+    "water_temperature": {
+      "what_it_controls": "Extraction energy. Hotter water dissolves compounds faster and more aggressively.",
+      "direction": {
+        "hotter": "increases extraction, extracts more bitter compounds at extremes",
+        "cooler": "decreases extraction, preserves delicate aromatics but risks under-extraction"
+      },
+      "sensitivity": "medium",
+      "range_guide": {
+        "light_roast": "94-100C (needs more energy to extract dense beans)",
+        "medium_roast": "90-96C",
+        "dark_roast": "85-92C (already very soluble, high temp = harsh bitterness)"
+      },
+      "notes": "Hoffmann advocates boiling water for most filter brewing — the argument is that heat loss during pour and contact means actual slurry temp is always lower than kettle temp."
+    },
+    "brew_time": {
+      "what_it_controls": "How long water is in contact with coffee. Longer = more extraction.",
+      "direction": {
+        "longer": "increases extraction, increases body, risk of over-extraction",
+        "shorter": "decreases extraction, brighter/thinner cup"
+      },
+      "sensitivity": "method-dependent",
+      "notes": "In immersion methods (French press, clever dripper), you control this directly. In percolation (V60), brew time is mostly a RESULT of grind size — you don't set it, you observe it as feedback."
+    },
+    "ratio": {
+      "what_it_controls": "Strength (concentration) of the final cup. Does NOT directly change extraction percentage much.",
+      "direction": {
+        "more_coffee": "stronger cup, slightly lower extraction (less water per gram of coffee)",
+        "less_coffee": "weaker cup, slightly higher extraction (more water per gram of coffee)"
+      },
+      "sensitivity": "medium",
+      "range_guide": {
+        "filter": "1:15 to 1:17 (coffee:water by weight)",
+        "espresso": "1:1.5 to 1:2.5",
+        "cold_brew": "1:8 to 1:15 (concentrate to ready-to-drink)",
+        "south_indian_filter": "TODO: add later"
+      },
+      "notes": "Ratio changes STRENGTH, not extraction. A weak but over-extracted coffee is possible (too little coffee, brewed too long). Adjusting ratio is best for fixing weak/strong issues, not sour/bitter."
+    },
+    "agitation": {
+      "what_it_controls": "Evenness of extraction. Moving water across grounds prevents stale concentration gradients.",
+      "direction": {
+        "more": "increases extraction speed and evenness, risk of over-agitation causing fines migration and channeling",
+        "less": "slower, less even extraction, can lead to some grounds under-extracted"
+      },
+      "sensitivity": "low-medium",
+      "forms": ["stirring", "swirling the brewer", "pour pattern (concentric circles vs center pour)", "Rao spin"],
+      "notes": "Most under-appreciated variable. Consistency matters more than amount — do the same thing every time so you can isolate other variables."
+    },
+    "water_quality": {
+      "what_it_controls": "How efficiently water extracts coffee solubles. Mineral content acts as a catalyst.",
+      "direction": {
+        "harder_water": "extracts more, amplifies bitterness, can taste chalky or flat",
+        "softer_water": "extracts less, brighter acidity, can taste sour and empty if too soft"
+      },
+      "sensitivity": "high (but often ignored)",
+      "notes": "If someone is doing everything right and coffee still tastes flat or harsh, water is the likely culprit. Use good quality filtered or bottled water — avoid distilled or heavily softened water."
+    }
+  },
+
+  "interactions": [
+    {
+      "id": "grind_temp_coupling",
+      "variables": ["grind_size", "water_temperature"],
+      "rule": "Adjust only ONE at a time. Both increase extraction in the same direction. Changing both simultaneously will overshoot.",
+      "example": "If coffee is sour, grind finer OR increase temp — not both. Taste, then decide if you need the second adjustment.",
+      "priority": "Adjust grind first. Temperature is your secondary lever.",
+      "exception": "For dark roasts, lower temp first (to avoid burning) and only then adjust grind."
+    },
+    {
+      "id": "grind_time_percolation",
+      "variables": ["grind_size", "brew_time"],
+      "rule": "In percolation methods (V60, Chemex, Kalita), grind size directly controls brew time. They are NOT independent — finer grind = longer drawdown.",
+      "implication": "You cannot independently set both. If your V60 is draining in 2 minutes with a 3:30 target, grind finer. The time will increase as a consequence.",
+      "method_scope": ["v60", "chemex", "kalita_wave", "origami"]
+    },
+    {
+      "id": "grind_time_immersion",
+      "variables": ["grind_size", "brew_time"],
+      "rule": "In immersion methods (French press, clever dripper, AeroPress), grind and time ARE independent. You can set each separately.",
+      "implication": "This makes immersion methods easier to dial in — change time without changing grind, or vice versa.",
+      "method_scope": ["french_press", "clever_dripper", "aeropress"]
+    },
+    {
+      "id": "ratio_vs_extraction",
+      "variables": ["ratio", "grind_size"],
+      "rule": "Ratio changes STRENGTH. Grind changes EXTRACTION. These solve different problems. Weak coffee needs more coffee (ratio). Sour coffee needs finer grind (extraction). A common mistake is adding more coffee to fix sourness — this makes it stronger but still sour.",
+      "diagnostic": "If coffee is weak AND sour: fix grind first (extraction), then adjust ratio (strength). If coffee is strong but sour: definitely a grind/temp problem, not ratio."
+    },
+    {
+      "id": "temp_roast_interaction",
+      "variables": ["water_temperature", "grind_size"],
+      "rule": "Dark roasts are more soluble than light roasts. The same grind+temp that works for a light roast will over-extract a dark roast.",
+      "light_roast": "Use hotter water (96-100C), can grind finer, longer brew time is fine",
+      "medium_roast": "Standard parameters (92-96C, medium-fine)",
+      "dark_roast": "Use cooler water (85-92C), grind slightly coarser, shorter contact time",
+      "notes": "This is the #1 reason people get bitter coffee with dark roasts — they use the same recipe that works for lighter coffees."
+    },
+    {
+      "id": "agitation_grind_interaction",
+      "variables": ["agitation", "grind_size"],
+      "rule": "More agitation + finer grind compounds extraction rapidly. If you stir aggressively with a fine grind, you will almost certainly over-extract.",
+      "safe_approach": "If you increase agitation, consider going slightly coarser to compensate. Hoffmann's V60 technique uses a swirl (moderate agitation) with medium-fine grind as a balanced pairing."
+    },
+    {
+      "id": "water_quality_masks_everything",
+      "variables": ["water_quality", "grind_size", "water_temperature"],
+      "rule": "Bad water can make perfect technique taste wrong. Very soft water (RO) will taste sour/empty regardless of grind or temp. Very hard water will taste bitter/chalky regardless of how coarse you grind.",
+      "diagnostic": "If you've adjusted grind, temp, and ratio and STILL can't get a balanced cup — it's probably your water. Switch to good quality filtered or bottled water and try again."
+    },
+    {
+      "id": "brew_time_feedback",
+      "variables": ["brew_time", "grind_size"],
+      "rule": "In pour-over, total brew time is your feedback signal. It tells you if grind is right without needing to taste.",
+      "targets": {
+        "v60_single_cup": "2:30-3:30 total",
+        "v60_large": "3:00-4:00 total",
+        "chemex": "3:30-4:30 total",
+        "kalita_wave": "2:30-3:30 total",
+        "clever_dripper": "set by you (typically 2:00-3:00 steep)",
+        "french_press": "4:00 standard, up to 8-10 for Hoffmann method",
+        "aeropress": "1:00-2:30 depending on recipe",
+        "south_indian_filter": "TODO: add later"
+      },
+      "notes": "If V60 drains in under 2 minutes, grind finer. If it takes over 4 minutes, grind coarser. Taste confirms, time guides."
+    }
+  ],
+
+  "adjustment_priority": {
+    "description": "When something tastes wrong, adjust variables in this order. Fix one thing at a time, taste, then move to the next.",
+    "general_order": [
+      {
+        "priority": 1,
+        "variable": "grind_size",
+        "why": "Highest impact, easiest to change between brews, affects extraction most directly."
+      },
+      {
+        "priority": 2,
+        "variable": "water_temperature",
+        "why": "Second lever for extraction. Especially important for dark roasts where grind alone may not solve bitterness."
+      },
+      {
+        "priority": 3,
+        "variable": "ratio",
+        "why": "Fixes strength (weak/strong) but not extraction (sour/bitter). Only adjust after extraction is balanced."
+      },
+      {
+        "priority": 4,
+        "variable": "brew_time",
+        "why": "In immersion methods, this is a direct lever. In percolation, it's a consequence of grind — don't fight it."
+      },
+      {
+        "priority": 5,
+        "variable": "agitation",
+        "why": "Fine-tuning. Keep it consistent first, then experiment if other variables are dialed in."
+      },
+      {
+        "priority": 6,
+        "variable": "water_quality",
+        "why": "Last resort — but if nothing else works, this is almost certainly the problem. Check before buying a new grinder."
+      }
+    ],
+    "method_overrides": {
+      "espresso": {
+        "order": ["grind_size", "ratio", "brew_time", "water_temperature", "water_quality"],
+        "notes": "In espresso, grind is king. Ratio (dose in / liquid out) is second. Temp is usually fixed by the machine. Time is a RESULT of grind — target 25-35 seconds for most recipes."
+      },
+      "french_press": {
+        "order": ["brew_time", "grind_size", "water_temperature", "ratio", "water_quality"],
+        "notes": "Immersion method — time is your primary lever since grind doesn't affect flow. Coarser grind = less sediment, but Hoffmann actually suggests medium grind with longer steep."
+      },
+      "aeropress": {
+        "order": ["grind_size", "brew_time", "water_temperature", "ratio", "agitation"],
+        "notes": "AeroPress is the most forgiving brewer. Grind and time are both independently adjustable. Hard to make truly bad coffee with it."
+      },
+      "moka_pot": {
+        "order": ["grind_size", "water_temperature", "ratio", "brew_time"],
+        "notes": "Heat control is critical — low and steady. Grind should be medium-fine (NOT espresso fine). Remove from heat the moment coffee starts sputtering. Pre-heat water in the base to reduce time grounds spend on heat."
+      }
+    }
+  },
+
+  "one_change_at_a_time": {
+    "rule": "Never adjust more than one variable between brews. If you change grind AND temp simultaneously, you cannot know which change caused the improvement (or made it worse).",
+    "exception": "When switching to a completely different bean or roast level, reset multiple variables to known starting points for that roast profile, then dial in from there."
+  },
+
+  "the_extraction_spectrum": {
+    "description": "What extracts at each stage, in order. Early extraction pulls acids, middle pulls sugars and aromatics, late extraction pulls bitter phenols and astringent compounds.",
+    "stages": [
+      {
+        "stage": "early",
+        "percentage": "below 18%",
+        "compounds": "fruit acids, citric acid, malic acid",
+        "taste": "sour, bright, thin, acidic, no sweetness",
+        "diagnosis": "under-extracted"
+      },
+      {
+        "stage": "middle",
+        "percentage": "18-22%",
+        "compounds": "sugars, caramels, chocolate, fruit sweetness, Maillard products",
+        "taste": "balanced, sweet, complex, pleasant acidity with body",
+        "diagnosis": "well-extracted (SCA ideal zone)"
+      },
+      {
+        "stage": "late",
+        "percentage": "above 22%",
+        "compounds": "tannins, phenols, woody/ashy compounds, caffeine (more dissolves)",
+        "taste": "bitter, astringent, harsh, dry finish, hollow",
+        "diagnosis": "over-extracted"
+      }
+    ],
+    "notes": "The goal is not to hit exactly 20% — it's to get into the 18-22% range where sweetness and complexity live. The exact sweet spot depends on the bean, roast, and personal preference."
+  }
+}

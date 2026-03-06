@@ -1,0 +1,834 @@
+[
+    {
+        "recipe_id": "debug_brew_01_balanced_v60",
+        "title": "Balanced V60 – Blue Tokai Attikan Estate",
+        "author": "Debug Dataset",
+        "method": "v60",
+        "coffee_g": 18,
+        "water_ml": 300,
+        "water_temp_c": 95,
+        "grind_size": "medium",
+        "brew_time_seconds": 150,
+        "is_iced": false,
+        "bloom_water_g": 40,
+        "bloom_duration_seconds": 30,
+        "notes": "Control brew – expected excellent extraction.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 16.7,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 40
+            },
+            {
+                "time_seconds": 30,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "medium",
+            "sweetness": "high",
+            "body": "medium",
+            "bitterness": "low"
+        },
+        "debug_expected": {
+            "mode": "lock_in",
+            "symptom": "none",
+            "likely_cause": "well extracted",
+            "suggested_fix": "save recipe"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_02_underextracted_v60",
+        "title": "Sour V60 – Araku Selection",
+        "author": "Debug Dataset",
+        "method": "v60",
+        "coffee_g": 18,
+        "water_ml": 300,
+        "water_temp_c": 90,
+        "grind_size": "coarse",
+        "brew_time_seconds": 110,
+        "is_iced": false,
+        "bloom_water_g": 40,
+        "bloom_duration_seconds": 20,
+        "notes": "Classic under extraction case.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 16.7,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 40
+            },
+            {
+                "time_seconds": 20,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "very_high",
+            "sweetness": "low",
+            "body": "thin",
+            "bitterness": "low"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "sour",
+            "likely_cause": "under_extraction",
+            "suggested_fix": "grind finer"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_03_overextracted_french_press",
+        "title": "Bitter French Press – Blue Tokai Vienna Roast",
+        "author": "Debug Dataset",
+        "method": "french_press",
+        "coffee_g": 20,
+        "water_ml": 300,
+        "water_temp_c": 96,
+        "grind_size": "medium",
+        "brew_time_seconds": 420,
+        "is_iced": false,
+        "bloom_water_g": null,
+        "bloom_duration_seconds": null,
+        "notes": "Dark roast bitterness test.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 15,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "immersion",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "low",
+            "sweetness": "low",
+            "body": "heavy",
+            "bitterness": "very_high"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "bitter",
+            "likely_cause": "over_extraction",
+            "suggested_fix": "lower water temperature"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_04_weak_aeropress",
+        "title": "Weak AeroPress – Araku Microclimate",
+        "author": "Debug Dataset",
+        "method": "aeropress",
+        "coffee_g": 12,
+        "water_ml": 250,
+        "water_temp_c": 92,
+        "grind_size": "medium",
+        "brew_time_seconds": 90,
+        "is_iced": false,
+        "bloom_water_g": null,
+        "bloom_duration_seconds": null,
+        "notes": "Weak ratio test.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 21,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "immersion",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 250
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "medium",
+            "sweetness": "low",
+            "body": "very_low",
+            "bitterness": "low"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "weak_watery",
+            "likely_cause": "low_strength_ratio",
+            "suggested_fix": "increase coffee dose"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_05_flat_chemex",
+        "title": "Flat Chemex – Blue Tokai Orchardale",
+        "author": "Debug Dataset",
+        "method": "chemex",
+        "coffee_g": 30,
+        "water_ml": 500,
+        "water_temp_c": 88,
+        "grind_size": "coarse",
+        "brew_time_seconds": 210,
+        "is_iced": false,
+        "bloom_water_g": 60,
+        "bloom_duration_seconds": 30,
+        "notes": "Low temperature extraction failure.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 16.6,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 60
+            },
+            {
+                "time_seconds": 30,
+                "target_water_g": 500
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "low",
+            "sweetness": "very_low",
+            "body": "thin",
+            "bitterness": "low"
+        },
+        "debug_expected": {
+            "mode": "improvement",
+            "symptom": "flat_no_sweetness",
+            "likely_cause": "low_extraction_temp",
+            "suggested_fix": "increase water temperature"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_06_channeling_v60",
+        "title": "Channeling V60 – Araku Micro Lot",
+        "author": "Debug Dataset",
+        "method": "v60",
+        "coffee_g": 18,
+        "water_ml": 300,
+        "water_temp_c": 95,
+        "grind_size": "medium",
+        "brew_time_seconds": 85,
+        "is_iced": false,
+        "bloom_water_g": 40,
+        "bloom_duration_seconds": 20,
+        "notes": "Extremely fast drawdown indicates channeling.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 16.7,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 40
+            },
+            {
+                "time_seconds": 20,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "sharp",
+            "sweetness": "low",
+            "body": "thin",
+            "bitterness": "low"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "sour_thin_fast",
+            "likely_cause": "channeling",
+            "suggested_fix": "improve pour distribution"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_07_stale_beans",
+        "title": "Stale Beans Pour Over",
+        "author": "Debug Dataset",
+        "method": "v60",
+        "coffee_g": 18,
+        "water_ml": 300,
+        "water_temp_c": 95,
+        "grind_size": "medium",
+        "brew_time_seconds": 150,
+        "is_iced": false,
+        "bloom_water_g": 40,
+        "bloom_duration_seconds": 30,
+        "notes": "Coffee roasted 3 months ago.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 16.7,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 40
+            },
+            {
+                "time_seconds": 30,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "muted",
+            "sweetness": "low",
+            "body": "flat",
+            "bitterness": "low"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "flat_dull",
+            "likely_cause": "stale_beans",
+            "suggested_fix": "use fresher coffee"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_08_papery_filter",
+        "title": "Papery Chemex",
+        "author": "Debug Dataset",
+        "method": "chemex",
+        "coffee_g": 30,
+        "water_ml": 500,
+        "water_temp_c": 95,
+        "grind_size": "medium_coarse",
+        "brew_time_seconds": 240,
+        "is_iced": false,
+        "bloom_water_g": 60,
+        "bloom_duration_seconds": 30,
+        "notes": "Filter not rinsed before brewing.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 16.6,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 60
+            },
+            {
+                "time_seconds": 30,
+                "target_water_g": 500
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "medium",
+            "sweetness": "low",
+            "body": "medium",
+            "bitterness": "papery"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "papery",
+            "likely_cause": "unrinsed_filter",
+            "suggested_fix": "rinse paper filter"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_09_grinder_inconsistency",
+        "title": "Inconsistent Grinder Brew",
+        "author": "Debug Dataset",
+        "method": "v60",
+        "coffee_g": 18,
+        "water_ml": 300,
+        "water_temp_c": 95,
+        "grind_size": "uneven",
+        "brew_time_seconds": 140,
+        "is_iced": false,
+        "bloom_water_g": 40,
+        "bloom_duration_seconds": 30,
+        "notes": "Mix of fines and boulders.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 16.7,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 40
+            },
+            {
+                "time_seconds": 30,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "sharp",
+            "sweetness": "low",
+            "body": "muddy",
+            "bitterness": "medium"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "sour_and_bitter",
+            "likely_cause": "grinder_inconsistency",
+            "suggested_fix": "use better grinder"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_10_too_strong",
+        "title": "Overly Strong AeroPress",
+        "author": "Debug Dataset",
+        "method": "aeropress",
+        "coffee_g": 22,
+        "water_ml": 200,
+        "water_temp_c": 94,
+        "grind_size": "medium",
+        "brew_time_seconds": 90,
+        "is_iced": false,
+        "bloom_water_g": null,
+        "bloom_duration_seconds": null,
+        "notes": "Extremely concentrated brew.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 9,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "immersion",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 200
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "low",
+            "sweetness": "medium",
+            "body": "very_heavy",
+            "bitterness": "high"
+        },
+        "debug_expected": {
+            "mode": "improvement",
+            "symptom": "too_strong",
+            "likely_cause": "low_ratio",
+            "suggested_fix": "add more water"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_11_fast_drawdown",
+        "title": "Fast V60 Drawdown",
+        "author": "Debug Dataset",
+        "method": "v60",
+        "coffee_g": 18,
+        "water_ml": 300,
+        "water_temp_c": 94,
+        "grind_size": "very_coarse",
+        "brew_time_seconds": 80,
+        "is_iced": false,
+        "bloom_water_g": 40,
+        "bloom_duration_seconds": 20,
+        "notes": "Too coarse grind.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 16.7,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 40
+            },
+            {
+                "time_seconds": 20,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "very_high",
+            "sweetness": "low",
+            "body": "thin",
+            "bitterness": "low"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "sour",
+            "likely_cause": "grind_too_coarse",
+            "suggested_fix": "grind finer"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_12_slow_drawdown",
+        "title": "Clogged V60",
+        "author": "Debug Dataset",
+        "method": "v60",
+        "coffee_g": 18,
+        "water_ml": 300,
+        "water_temp_c": 96,
+        "grind_size": "very_fine",
+        "brew_time_seconds": 280,
+        "is_iced": false,
+        "bloom_water_g": 40,
+        "bloom_duration_seconds": 30,
+        "notes": "Too many fines clogging filter.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 16.7,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 40
+            },
+            {
+                "time_seconds": 30,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "low",
+            "sweetness": "low",
+            "body": "heavy",
+            "bitterness": "very_high"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "bitter",
+            "likely_cause": "grind_too_fine",
+            "suggested_fix": "grind coarser"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_13_low_temp",
+        "title": "Cold Brew Water Error",
+        "author": "Debug Dataset",
+        "method": "v60",
+        "coffee_g": 18,
+        "water_ml": 300,
+        "water_temp_c": 85,
+        "grind_size": "medium",
+        "brew_time_seconds": 150,
+        "is_iced": false,
+        "bloom_water_g": 40,
+        "bloom_duration_seconds": 30,
+        "notes": "Too low brew temperature.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 16.7,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 40
+            },
+            {
+                "time_seconds": 30,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "muted",
+            "sweetness": "low",
+            "body": "thin",
+            "bitterness": "low"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "flat",
+            "likely_cause": "low_temperature",
+            "suggested_fix": "increase water temp"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_14_high_temp",
+        "title": "Scorched Brew",
+        "author": "Debug Dataset",
+        "method": "french_press",
+        "coffee_g": 20,
+        "water_ml": 300,
+        "water_temp_c": 100,
+        "grind_size": "medium",
+        "brew_time_seconds": 300,
+        "is_iced": false,
+        "bloom_water_g": null,
+        "bloom_duration_seconds": null,
+        "notes": "Boiling water bitterness test.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 15,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "immersion",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "low",
+            "sweetness": "low",
+            "body": "heavy",
+            "bitterness": "burnt"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "burnt_bitter",
+            "likely_cause": "water_too_hot",
+            "suggested_fix": "cool water"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_15_under_ratio",
+        "title": "Watery Chemex",
+        "author": "Debug Dataset",
+        "method": "chemex",
+        "coffee_g": 20,
+        "water_ml": 500,
+        "water_temp_c": 95,
+        "grind_size": "medium_coarse",
+        "brew_time_seconds": 240,
+        "is_iced": false,
+        "bloom_water_g": 60,
+        "bloom_duration_seconds": 30,
+        "notes": "Weak ratio scenario.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 25,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 60
+            },
+            {
+                "time_seconds": 30,
+                "target_water_g": 500
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "low",
+            "sweetness": "very_low",
+            "body": "very_thin",
+            "bitterness": "low"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "weak_watery",
+            "likely_cause": "ratio_too_high",
+            "suggested_fix": "increase coffee"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_16_over_ratio",
+        "title": "Strong V60",
+        "author": "Debug Dataset",
+        "method": "v60",
+        "coffee_g": 30,
+        "water_ml": 300,
+        "water_temp_c": 95,
+        "grind_size": "medium",
+        "brew_time_seconds": 150,
+        "is_iced": false,
+        "bloom_water_g": 50,
+        "bloom_duration_seconds": 30,
+        "notes": "Extremely strong brew.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 10,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 50
+            },
+            {
+                "time_seconds": 30,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "medium",
+            "sweetness": "medium",
+            "body": "very_heavy",
+            "bitterness": "high"
+        },
+        "debug_expected": {
+            "mode": "improvement",
+            "symptom": "too_strong",
+            "likely_cause": "ratio_low",
+            "suggested_fix": "increase water"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_17_bloom_failure",
+        "title": "No Bloom Degassing Issue",
+        "author": "Debug Dataset",
+        "method": "v60",
+        "coffee_g": 18,
+        "water_ml": 300,
+        "water_temp_c": 95,
+        "grind_size": "medium",
+        "brew_time_seconds": 140,
+        "is_iced": false,
+        "bloom_water_g": 0,
+        "bloom_duration_seconds": 0,
+        "notes": "Fresh beans but bloom skipped.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 16.7,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "sharp",
+            "sweetness": "low",
+            "body": "thin",
+            "bitterness": "low"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "uneven_extraction",
+            "likely_cause": "no_bloom",
+            "suggested_fix": "add bloom phase"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_18_channeling_ring",
+        "title": "Edge Channeling Pour",
+        "author": "Debug Dataset",
+        "method": "v60",
+        "coffee_g": 18,
+        "water_ml": 300,
+        "water_temp_c": 95,
+        "grind_size": "medium",
+        "brew_time_seconds": 100,
+        "is_iced": false,
+        "bloom_water_g": 40,
+        "bloom_duration_seconds": 30,
+        "notes": "Pour only around filter edge.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 16.7,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "pour_over",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 40
+            },
+            {
+                "time_seconds": 30,
+                "target_water_g": 300
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "high",
+            "sweetness": "low",
+            "body": "thin",
+            "bitterness": "low"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "sour_thin",
+            "likely_cause": "channeling",
+            "suggested_fix": "pour centrally"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_19_dirty_grinder",
+        "title": "Rancid Oils Grinder",
+        "author": "Debug Dataset",
+        "method": "aeropress",
+        "coffee_g": 16,
+        "water_ml": 250,
+        "water_temp_c": 94,
+        "grind_size": "medium",
+        "brew_time_seconds": 90,
+        "is_iced": false,
+        "bloom_water_g": null,
+        "bloom_duration_seconds": null,
+        "notes": "Old rancid grinder oils.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 15.6,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "immersion",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 250
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "low",
+            "sweetness": "low",
+            "body": "medium",
+            "bitterness": "rancid"
+        },
+        "debug_expected": {
+            "mode": "diagnosis",
+            "symptom": "rancid",
+            "likely_cause": "dirty_grinder",
+            "suggested_fix": "clean grinder"
+        }
+    },
+    {
+        "recipe_id": "debug_brew_20_perfect_aeropress",
+        "title": "Perfect AeroPress – Araku Grand Reserve",
+        "author": "Debug Dataset",
+        "method": "aeropress",
+        "coffee_g": 16,
+        "water_ml": 240,
+        "water_temp_c": 93,
+        "grind_size": "medium",
+        "brew_time_seconds": 90,
+        "is_iced": false,
+        "bloom_water_g": null,
+        "bloom_duration_seconds": null,
+        "notes": "Final control brew.",
+        "steps": [],
+        "is_concentrate": false,
+        "brew_ratio": 15,
+        "ratio_type": "standard",
+        "serve_dilution_ratio": null,
+        "brew_style": "immersion",
+        "pours": [
+            {
+                "time_seconds": 0,
+                "target_water_g": 240
+            }
+        ],
+        "expected_flavour": {
+            "acidity": "medium",
+            "sweetness": "high",
+            "body": "medium",
+            "bitterness": "low"
+        },
+        "debug_expected": {
+            "mode": "lock_in",
+            "symptom": "none",
+            "likely_cause": "well_extracted",
+            "suggested_fix": "save_recipe"
+        }
+    }
+]
