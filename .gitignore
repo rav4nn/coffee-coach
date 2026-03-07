@@ -2,6 +2,7 @@
 **/redundant/
 **/.claude/
 **/.clineignore
+**/testing/
 
 # IDE and editor files
 .vscode/
