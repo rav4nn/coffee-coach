@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply min-h-screen bg-cream text-charcoal font-sans;
+  background-image:
+    radial-gradient(circle at top, rgba(111, 78, 55, 0.08), transparent 28%),
+    linear-gradient(180deg, #fffaf3 0%, #f6f0e7 45%, #efe6d8 100%);
+}
+
+a {
+  @apply text-inherit no-underline;
+}
+
+button {
+  @apply disabled:cursor-not-allowed;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-soft {
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 260ms ease-out;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 1.2s ease-in-out infinite;
+}

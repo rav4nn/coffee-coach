@@ -1,0 +1,1542 @@
+You are helping me build the frontend for a project called Coffee Coach.
+
+The frontend will live inside the /frontend folder of this repository. The backend lives in /backend and exposes a FastAPI API that handles all coaching logic (decision trees, freshness checks, trend detection, recipe suggestions). The frontend's job is to collect user input and display what the API returns.
+
+Goal of the app:
+A mobile-first web app built around an iterative brew-rate-improve loop:
+Pick beans → Pick method → Pick recipe → Log brew → Rate & add flavour notes → Get coaching feedback → Brew again with tweaks.
+
+The app is single-user, mobile-first. No espresso support. Indian specialty coffee focus.
+
+Core coaching flow (the backend drives this, but the frontend must support the UI for it):
+
+After logging a brew, the user rates it 1-10. The rating determines the coaching mode:
+
+Diagnosis (1-4): "What's wrong?" → User picks from 7 taste symptoms (sour, bitter, weak/watery, flat/no sweetness, muddy/silty, woody/papery, hollow) → Backend returns a method-specific fix
+Improvement (5-6): User can either pick a symptom OR select improvement goals (e.g., "more sweetness", "more body") → Backend returns a moderate fix
+Refinement (7-8): User selects up to 2 improvement goals → Backend returns a nudge-level tweak
+Lock-in (9-10): Backend congratulates and offers to save the recipe as a favourite
+The backend may also return freshness caveats (appended after the technique fix, never instead of it) and trend observations (improving, worsening, oscillating, plateau) based on brew history.
+
+Frontend tech stack:
+
+Framework:
+
+Next.js (App Router)
+TypeScript
+Styling:
+
+Tailwind CSS
+Mobile-first layout
+Max width container for phone UI
+UI Components:
+
+shadcn/ui
+State management:
+
+Zustand
+Forms:
+
+React Hook Form
+Zod validation
+Charts:
+
+Recharts (for brew rating trends over time — improving, plateau, oscillating patterns)
+API communication:
+
+Fetch requests to the FastAPI backend
+Architecture rules:
+
+Use a clean feature-based structure.
+Components should be reusable.
+Keep business logic in lib/.
+Keep API calls in a dedicated API client.
+Optimize for mobile UX first, but ensure desktop compatibility.
+Expected folder structure:
+
+
+frontend/
+  src/
+    app/
+      page.tsx
+      log-brew/
+      coaching/
+      history/
+      profile/
+
+    components/
+      BrewCard.tsx
+      BrewForm.tsx
+      SymptomPicker.tsx
+      GoalPicker.tsx
+      CoachingResponse.tsx
+      RatingSlider.tsx
+      Navbar.tsx
+
+    lib/
+      api.ts
+      store.ts
+      validators.ts
+      types.ts
+Key pages to build:
+
+Dashboard (/)
+
+Show recent brews with ratings
+Quick "Log Brew" button
+Show trend summary (e.g., "Improving over last 4 brews")
+Show last coaching suggestion so the user remembers what to change
+Log Brew (/log-brew)
+
+Two-phase form:
+Phase 1 (before brewing): brew method, bean name, roast level (light/medium/dark), roast date (optional), grind state (fresh ground / pre-ground), dose, water temperature, grind size (qualitative: fine/medium/coarse — never numbered settings), brew time, ratio
+Phase 2 (after brewing): rating (1-10), flavour notes (free text)
+Brew method selection: 6 methods (aeropress, cold_brew, french_press, moka_pot, pour_over, south_indian_filter). Pour-over has sub-devices (v60, chemex, kalita_wave, clever_dripper) shown as a secondary selector.
+Cold brew: hide water temperature field (not controllable)
+South Indian filter and pour-over: show brew time as read-only / informational (it's a result of grind, not an input the user controls)
+Send POST request to backend
+Coaching (/coaching)
+
+Shown after a brew is logged, or accessible from history
+If rating 1-4: show SymptomPicker (7 symptom options as tappable cards) → display the backend's fix
+If rating 5-6: show choice between symptom picker and GoalPicker → display fix
+If rating 7-8: show GoalPicker (max 2 selections) → display nudge
+If rating 9-10: show celebration + "Save as favourite" option
+Display the coaching response with: the technique fix, any freshness caveat (shown as a subtle note below the fix), and any trend observation
+If the backend detects an oscillating trend, show a consistency message instead of goals
+Brew History (/history)
+
+List of previous brews as cards showing: method, bean, rating, date, coaching suggestion received
+Rating trend chart (Recharts line chart showing rating over time)
+Tap a card to see full brew details + coaching response
+Profile (/profile)
+
+Basic user settings
+Favourite/saved recipes list
+Design requirements:
+
+Clean coffee-themed UI (warm browns, cream backgrounds)
+Card-based layout
+Simple bottom navigation bar (Dashboard, Log Brew, History, Profile)
+Fast and minimal — no unnecessary animations or clutter
+Grind size always described qualitatively ("slightly finer", "medium-fine") — never numbers or grinder settings
+Important:
+Do NOT generate everything at once. First:
+
+Create the folder structure
+Scaffold the base layout with bottom nav
+Add Tailwind container layout (max-width phone container, centered on desktop)
+Create placeholder pages
+Then we will build features step by step.
+
+
+
+
+Remove the profile section from bottom right, that will be moved to the top right (replacing the coffee icon witha user's icon or profile picture)
+Add a My Beans page on the bottom panel, the My Beans section should have the option to add beans (from the list of Indian beans we have in /backend/data/beans_AI.json
+There should be an option to choose roaster (mandatory), choose beans name (mandatory) and pick the roast date and choose whether it is pre ground or not (both there are optional).
+The user should be able to choose all roaster names from a drop down list and type out the name (after which the matching roaster name appears in the drop down. The beans choosing will work the same way.
+If no beans have been added to the app and the user opens the 'log brew' page, the user must be pushed to the 'My Beans'.
+When the user moves to the log brew part, they should be able to select the beans first (as a drop down list of their saved beans from 'My Beans', and then choose the brewing method from the 6 we offer. These brewing methods should appear as cards with minimal images of them + their name in those cards. 3 per row, 2 rows.
+Make suggestions and ideate about this with me before generating the prompt for gemini. Do not go through any project files.
+
+User: <ide_opened_file>The user opened the file c:\Users\harde\coffee-coach\frontend\frontend_guidelines.txt in the IDE. This may or may not be related to the current task.</ide_opened_file>This is the Log Brew page of my app, Give me a gemini prompt to do the following:
+1. Remove the profile section from bottom right, that will be moved to the top right (replacing the coffee icon witha user's icon or profile picture)
+2. Add a My Beans page on the bottom panel, the My Beans section should have the option to add beans (from the list of Indian beans we have in /backend/data/beans_AI.json
+There should be an option to choose roaster (mandatory), choose beans name (mandatory) and pick the roast date and choose whether it is pre ground or not (both there are optional).
+The user should be able to choose all roaster names from a drop down list and type out the name (after which the matching roaster name appears in the drop down. The beans choosing will work the same way.
+3. If no beans have been added to the app and the user opens the 'log brew' page, the user must be pushed to the 'My Beans'.
+4. When the user moves to the log brew part, they should be able to select the beans first (as a drop down list of their saved beans from 'My Beans', and then choose the brewing method from the 6 we offer. These brewing methods should appear as cards with minimal images of them + their name in those cards. 3 per row, 2 rows.
+
+Make suggestions and ideate about this with me before generating the prompt for gemini. Do not go through any project files.
+
+Claude: Great idea to discuss before jumping to a prompt. Here are my thoughts and suggestions on each point:
+
+## 1. Profile to Top-Right
+
+Moving profile out of the bottom nav and into a header icon is a solid pattern (Instagram, most modern apps). A few considerations:
+
+- **Avatar vs icon**: If you don't have auth/profile pictures yet, a generic user circle icon works. But plan for it to show initials or a photo later.
+- **What happens on tap?** A dedicated profile page, or a slide-out drawer/bottom sheet? A bottom sheet feels lighter if profile is simple (name, preferences, reset data).
+- **Header placement**: The top bar currently seems minimal. You'd want the app name/logo on the left, profile icon on the right. Consider if you need any other header actions (settings gear, notifications) so you design the header with room to grow.
+
+## 2. My Beans Page
+
+This is the meatiest change. Some suggestions:
+
+- **Bottom nav order**: Home | Log Brew | My Beans | History (4 tabs feels right, balanced)
+- **Empty state**: When no beans are added, show a friendly illustration + "Add your first beans" CTA — don't just show a blank list.
+- **Add Beans flow**: I'd suggest a **bottom sheet or modal** rather than a full page, since there are only 4 fields. Keeps it snappy.
+- **Roaster → Bean dependency**: The bean dropdown should **filter based on selected roaster**. This is important UX — if someone picks "Blue Tokai", they should only see Blue Tokai beans, not all beans from every roaster.
+- **Searchable dropdowns**: The "type to filter" pattern you described is good. Consider showing the full list on tap, then narrowing as they type. Also consider: what if a roaster/bean isn't in the JSON? Do you allow custom entries, or is it strictly from the list?
+- **Roast date**: A date picker defaulting to today. Maybe add a visual freshness indicator later (days since roast).
+- **Pre-ground toggle**: A simple switch/toggle rather than a dropdown, since it's binary.
+- **Saved beans list**: Show as cards with roaster name, bean name, roast date, and a "pre-ground" badge if applicable. Allow swipe-to-delete or a delete icon.
+
+## 3. Redirect to My Beans if Empty
+
+- Rather than a hard redirect (which can be confusing), consider showing an **inline prompt on the Log Brew page** itself: "You haven't added any beans yet" with a button that navigates to My Beans. This way users understand *why* they're being redirected.
+- Alternatively, a blocking overlay/modal on the Log Brew page: "Add beans first to start logging brews" → takes them to My Beans. This is clearer than a silent redirect.
+
+## 4. Log Brew Redesign — Bean Selection + Method Cards
+
+- **Bean selection first**: A dropdown of saved beans showing "Roaster - Bean Name (roast date)" so they're distinguishable. If they only have one bean, auto-select it.
+- **Brewing method cards**: 6 methods, 3×2 grid. For minimal images, you could use:
+  - Simple line-art icons or silhouettes (V60 cone, AeroPress cylinder, French Press, etc.)
+  - A muted background color per card for visual distinction
+- **Selection behavior**: Tapping a card selects it (highlighted border/fill), then the rest of the form (parameters) appears below. This creates a nice progressive disclosure flow.
+- **Flow order**: Bean → Method → Parameters → Outcome/Notes → Submit. This is more logical than the current layout where method is at the top.
+
+## Questions for You
+
+Before I write the Gemini prompt:
+
+1. **Custom beans**: Can users only pick from the JSON list, or should they be able to add custom roaster/bean names not in the database?
+2. **Method list**: What are the 6 brewing methods? (I'm guessing pour over, AeroPress, French press, espresso, moka pot, cold brew — but want to confirm for the card designs)
+3. **Should the Gemini prompt target a specific framework?** (React Native, Flutter, plain React + Tailwind, etc.)
+4. **How opinionated should the prompt be on visuals?** Should I tell Gemini to match your current warm/serif aesthetic (I see the bold serif "Log Brew" heading), or give it creative freedom?
+
+Let me know your answers and any reactions to the suggestions above, and I'll craft a tight Gemini prompt.
+
+User: <ide_opened_file>The user opened the file c:\Users\harde\coffee-coach\frontend\tech_stack.txt in the IDE. This may or may not be related to the current task.</ide_opened_file>1. Avatar vs icon - use the user's name initials as profile picture for now.
+2. WHat happens on tap? - A slide out drawer with the same info as it has right now
+3. Header placement - No, put the settings in the profile icon drawer as well. Nothing else on the header for now.
+
+Beans page - Yes implement your suggestions of bottom nav order, empty state, bottom sheet for add beans flow, roaster bean dependency, searchable dropdowns, roast date should not default to today, it can be left as unknown if user does not input it (give a small msg that this is essntial for taste even though we are leaving it optional), pre ground toggle, saved beans list - no swipe to delete, just an icon.
+
+Yes, add a blocking overlay on the log brew page
+
+Yes auto select the bean if they have one, otherwise use the last used beans, same for brewing method, default select the last used one. simple inline art icons of the brewing methods work.
+Selection behaviour should be exactly how you put it, your flow order is also correct.
+
+Answers - For now i only want them to pick from the custom beans json we have. Yes those 6 are the brewing methods. Gemini Prompt should be based on the tech stack I have saved in /frontend/tech_stack.txt Do not go through any other file
+You give your opinions about visuals, I like the current aesthetic already though
+
+Ask me more questions if you have any before giving the prompt
+
+Claude: 
+
+Let me check the tech stack file.
+
+Used tool: ToolSearch
+
+User: Tool loaded.
+
+Claude: Read [](file:///c%3A/Users/harde/coffee-coach/frontend/tech_stack.txt)
+
+Good, got it. A few more questions before I craft the prompt:
+
+1. **Last-used memory**: You want the app to remember the last-used bean and brewing method. Is this being stored in Zustand (client-side, lost on refresh), or do you want it persisted (localStorage / backend)? I'd suggest localStorage via Zustand's `persist` middleware since you already use Zustand.
+
+2. **Beans data shape**: The Gemini prompt will need to reference the beans JSON structure for the roaster→bean filtering. Do you know the shape off the top of your head (e.g., `{ roaster: string, name: string, ... }`)? Or should I just tell Gemini to inspect `/backend/data/beans_AI.json` and build from whatever structure it finds?
+
+3. **My Beans storage**: Where should saved user beans live? Options:
+   - **localStorage** (simple, no backend work, but per-device)
+   - **Backend API** (persisted across devices, but needs a new endpoint)
+   
+   For now localStorage seems fine if you want to move fast, and you can migrate to backend later.
+
+4. **Profile drawer content**: You said "same info as it has right now" — I'll tell Gemini to move the existing profile page content into a slide-out drawer. Should the drawer slide from the right?
+
+5. **Visual direction**: Since you like the current aesthetic, I'll tell Gemini to maintain the warm, serif-heading style with clean card layouts and muted tones. I'd also suggest:
+   - Brewing method cards with a subtle cream/warm-gray background
+   - A coffee-brown accent for selected states
+   - The line-art icons in a dark brown/charcoal color
+   
+   Sound good?
+
+User: yes save it on the backend. I will be putting the backend on a Hetzner server and use FastAPI, PostgresSQL and the data + logic of the coffee coach on it, so make sure this is in accordance to those future plans
+you can inspect the file in /backend/data/beans_AI.json to tell gemini that json structure but do not go through any other files
+Save the beans on the backend . Deicde yourself how to do this and tell me what you need from me
+Yes drawer slides out from the right
+Yes apply all the visual direction prompts you have
+
+Claude: Read [](file:///c%3A/Users/harde/coffee-coach/backend/data/beans_AI.json)
+
+Large file. Let me check its structure.
+
+Read [](file:///c%3A/Users/harde/coffee-coach/backend/data/beans_AI.json)
+
+Used tool: ToolSearch
+
+User: Tool loaded.
+
+Claude: Ran terminal command: cd /c/Users/harde/coffee-coach && python -c "import json; data=json.load(open('backend/data/beans_AI.json')); print(type(data)); print(len(data) if isinstance(data,list) else list(data.keys())[:10]); print(json.dumps(data[0] if isinstance(data,list) else list(data.values())[0], indent=2)[:2000])"
+
+Ran terminal command: cd /c/Users/harde/coffee-coach && python -c "import json; data=json.load(open('backend/data/beans_AI.json')); roasters=set(d['roaster'] for d in data); print(f'Total beans: {len(data)}'); print(f'Unique roasters: {len(roasters)}'); print(sorted(roasters)[:15])"
+
+Got all the context I need. Here's what I need from you for the backend:
+
+**What I need from you (backend side):**
+
+You'll need **3 new FastAPI endpoints**:
+
+1. **`GET /api/beans/catalog`** — Returns the full beans_AI.json list (roaster + name pairs at minimum) for the searchable dropdowns. Could be cached/paginated since it's 1270 entries across 86 roasters.
+
+2. **`POST /api/user/beans`** — Saves a user's bean to their collection. Payload:
+   ```json
+   {
+     "coffee_id": "uuid-from-catalog",
+     "roast_date": "2026-02-15" | null,
+     "is_pre_ground": false
+   }
+   ```
+   Links to the catalog bean by `coffee_id`, so we don't duplicate roaster/name/etc.
+
+3. **`GET /api/user/beans`** — Returns the user's saved beans (joined with catalog data for display).
+
+4. **`DELETE /api/user/beans/{id}`** — Removes a bean from user's collection.
+
+**PostgreSQL**: A `user_beans` table with `id`, `user_id`, `coffee_id` (FK to catalog), `roast_date`, `is_pre_ground`, `created_at`. The catalog itself can be a `beans_catalog` table seeded from the JSON.
+
+**Last-used tracking**: Store `last_used_bean_id` and `last_used_brew_method` on the user profile or a separate preferences table. Updated each time a brew is logged.
+
+Does this backend plan work for you? Now let me write the full plan and Gemini prompt.
+
+Used tool: ToolSearch
+
+User: Tool loaded.
+
+Claude: Used tool: ToolSearch
+
+User: Tool loaded.
+
+Claude: Read [](file:///c%3A/Users/harde/.claude/plans/humming-mapping-crayon.md)
+
+Same task, continuing. Let me finalize the plan with the complete Gemini prompt.
+
+Used tool: ToolSearch
+
+User: Tool loaded.
+
+Claude: 
+
+The plan is ready. It covers the full Gemini prompt specification including all 4 UI changes, the API contract with mock layer, visual direction, Zustand store updates, and the exact component/interaction behaviors we discussed.
+
+One key addition I made: the prompt will tell Gemini to **mock the API endpoints with localStorage** so the app works standalone right now, but structured so you can swap in real FastAPI calls later with minimal changes. This way you can develop frontend and backend in parallel.
+
+Here is Claude's plan:
+
+# Plan: Gemini Prompt for Coffee Coach UI Overhaul
+
+## Context
+The user wants a detailed Gemini prompt to implement 4 major UI changes to their Coffee Coach app. The deliverable is the Gemini prompt itself, not code. The prompt must be comprehensive enough for Gemini to execute all frontend changes, coding against planned backend API endpoints.
+
+## Deliverable
+A single Gemini prompt written to a file (e.g., `frontend/gemini_prompt.md`) containing all specifications below.
+
+---
+
+## Gemini Prompt Content
+
+### Preamble / Tech Stack
+- Next.js (App Router, TypeScript)
+- Tailwind CSS (mobile-first)
+- shadcn/ui (forms, cards, dialogs, buttons, sheets)
+- Zustand (client state, with persist middleware for last-used tracking)
+- React Hook Form + Zod (validation)
+- API via fetch to FastAPI backend
+
+### Visual Direction
+- Maintain existing warm, serif-heading aesthetic (bold serif for page titles, clean sans-serif body)
+- Muted warm tones: cream/warm-gray card backgrounds, coffee-brown accents for selected/active states
+- Line-art icons in dark brown/charcoal
+- Consistent with current "Log Brew" page styling
+
+### Change 1: Profile to Header
+- Remove Profile tab from bottom navigation
+- Add a circular avatar (user's initials, coffee-brown background, cream text) to the top-right of the app header
+- Header: app name/logo left, avatar right
+- On avatar tap: open a shadcn/ui Sheet (slide from right) containing the existing profile page content + settings
+- Bottom nav becomes 4 tabs: Home | Log Brew | My Beans | History
+
+### Change 2: My Beans Page
+- New page at `/my-beans` accessible from bottom nav
+- **Empty state**: Warm illustration/icon + "You haven't added any beans yet" message + prominent "Add Your First Beans" CTA button
+- **Add Beans flow**: Opens as a shadcn/ui Sheet (bottom sheet) with:
+  - **Roaster** (mandatory): Searchable dropdown (Combobox). Shows full list on tap, filters as user types. Data from `GET /api/beans/catalog` (86 unique roasters)
+  - **Bean Name** (mandatory): Searchable dropdown, filtered by selected roaster. Only shows beans from that roaster
+  - **Roast Date** (optional): Date picker, does NOT default to today. Show subtle hint text: "Adding the roast date helps us dial in freshness for better taste"
+  - **Pre-ground** (optional): Toggle/switch, defaults to off (whole bean)
+  - Save button calls `POST /api/user/beans { coffee_id, roast_date?, is_pre_ground }`
+- **Saved beans list**: Cards showing roaster name, bean name, roast date (or "Unknown" if not set), "Pre-ground" badge if applicable. Each card has a trash icon for delete (`DELETE /api/user/beans/{id}`)
+- **Floating action button** or top-right "+" to add more beans
+
+### Change 3: Log Brew Gate
+- When Log Brew page loads, check user's saved beans via `GET /api/user/beans`
+- If empty: show a blocking overlay/modal on the Log Brew page with message "Add your beans first to start logging brews" and a button that navigates to My Beans
+- Overlay uses a semi-transparent backdrop, centered card with the message
+
+### Change 4: Log Brew Redesign
+- **New flow order**: Bean Selection -> Brew Method -> Parameters -> Outcome/Notes -> Submit
+- **Step 1 - Bean Selection**: Dropdown of user's saved beans from `GET /api/user/beans`, displayed as "Roaster - Bean Name (roast date)". Auto-select logic:
+  - If only 1 bean: auto-select it
+  - If multiple: select last-used bean from `GET /api/user/preferences` (`last_used_bean_id`)
+- **Step 2 - Brew Method**: 6 methods displayed as cards in a 3x2 grid:
+  - Pour Over, AeroPress, French Press, Espresso, Moka Pot, Cold Brew
+  - Each card: simple line-art icon (dark brown/charcoal) + method name below
+  - Subtle cream/warm-gray background, coffee-brown border/fill when selected
+  - Auto-select last-used method from preferences (`last_used_brew_method`)
+- **Step 3 - Parameters**: Existing parameter inputs (coffee weight, water, temp, grind size) appear below after method selection (progressive disclosure)
+- **Step 4+**: Rest of existing form (outcome, notes, submit)
+
+### API Contract (mock until backend is ready)
+Tell Gemini to create a mock API layer / service file that the app calls, so it's easy to swap in real endpoints later:
+
+```
+GET  /api/beans/catalog         -> { beans: [{ coffee_id, name, roaster, roast_level, process, flavor_notes, is_blend }] }
+GET  /api/user/beans            -> { beans: [{ id, coffee_id, name, roaster, roast_date, is_pre_ground, created_at }] }
+POST /api/user/beans            -> { coffee_id: string, roast_date?: string, is_pre_ground: boolean }
+DELETE /api/user/beans/{id}     -> 204
+GET  /api/user/preferences      -> { last_used_bean_id?: string, last_used_brew_method?: string }
+```
+
+For now, mock these with local JSON data and localStorage so the app is functional without a backend.
+
+### Zustand Store Updates
+- Add a `beansStore` for user's saved beans (with persist middleware to localStorage as interim)
+- Add `preferencesStore` for last-used bean/method (persisted)
+- Keep existing stores intact
+
+---
+
+## Verification
+- User reviews the Gemini prompt for completeness before sending to Gemini
+- Gemini output tested in Next.js dev environment (`npm run dev`)
+- Check: bottom nav has 4 tabs, profile avatar in header opens drawer, My Beans CRUD works, Log Brew gate blocks when no beans, Log Brew flow follows new order with card selection
+
+
+User: [Request interrupted by user for tool use]
+
+Implement the backend requirements you have by yourself, do not waste tokens going through the full prject, you have enough context about what to do. Do not touch the frontend since I am implementing changes to that using your prompt on gemini
+
+Claude: Ran terminal command: ls -la /c/Users/harde/coffee-coach/backend/
+
+Ran terminal command: ls /c/Users/harde/coffee-coach/backend/data/
+
+No existing FastAPI app yet — just data/logic files. I'll scaffold the full backend.
+
+Used tool: ToolSearch
+
+User: Tool loaded.
+
+Claude: Let me scaffold the backend app structure.
+
+Ran terminal command: mkdir -p /c/Users/harde/coffee-coach/backend/app/{routers,models,schemas,db} && ls -R /c/Users/harde/coffee-coach/backend/app/
+
+Now I'll create all the files. Starting with the core files in parallel:Now the database models:Now schemas and routers:Now the main app entry point:Now Alembic setup:
+
+Ran terminal command: mkdir -p /c/Users/harde/coffee-coach/backend/alembic/versions
+
+Now let me write the initial migration manually since we can't run alembic without a DB:All done. Here's what was created:
+
+## Backend Structure
+
+```
+backend/
+├── alembic.ini
+├── requirements.txt
+├── .env.example
+├── alembic/
+│   ├── env.py
+│   ├── script.py.mako
+│   └── versions/
+│       └── 001_initial_tables.py
+├── app/
+│   ├── __init__.py
+│   ├── main.py              ← FastAPI app entry point
+│   ├── config.py             ← reads DATABASE_URL from .env
+│   ├── seed.py               ← seeds beans_catalog from beans_AI.json
+│   ├── db/
+│   │   ├── base.py           ← SQLAlchemy declarative base
+│   │   └── session.py        ← engine + get_db dependency
+│   ├── models/
+│   │   ├── beans_catalog.py  ← 1270 Indian beans from your JSON
+│   │   ├── user_beans.py     ← user's saved beans (FK to catalog)
+│   │   └── user_preferences.py ← last-used bean + brew method
+│   ├── schemas/
+│   │   └── beans.py          ← Pydantic request/response models
+│   └── routers/
+│       ├── catalog.py        ← GET /api/beans/catalog, GET /api/beans/catalog/roasters
+│       ├── user_beans.py     ← GET/POST/DELETE /api/user/beans
+│       └── preferences.py    ← GET/PUT /api/user/preferences
+└── data/
+    └── beans_AI.json         ← existing file
+```
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/beans/catalog` | Full bean catalog (1270 beans) |
+| GET | `/api/beans/catalog/roasters` | List of 86 unique roaster names |
+| GET | `/api/user/beans` | User's saved beans |
+| POST | `/api/user/beans` | Add bean to user's collection |
+| DELETE | `/api/user/beans/{id}` | Remove a saved bean |
+| GET | `/api/user/preferences` | Get last-used bean/method |
+| PUT | `/api/user/preferences` | Update last-used bean/method |
+
+All user endpoints use an `X-User-Id` header for now — easy to swap for JWT auth later.
+
+## To run it
+
+1. Create a `.env` file from `.env.example` with your Postgres credentials
+2. `pip install -r requirements.txt`
+3. `alembic upgrade head` (creates tables)
+4. `python -m app.seed` (loads beans_AI.json into DB)
+5. `uvicorn app.main:app --reload`
+
+User: <ide_opened_file>The user opened the file c:\Users\harde\coffee-coach\backend\alembic.ini in the IDE. This may or may not be related to the current task.</ide_opened_file>1. I want to make the cards under recent brews smaller
+2. The app selects V60 for all brew methods, that's a bug. V60 is only for pour overs, there are no sub sets to any other brewing methods.
+3. Remove the coffee cup image under JD (top right), it's adding confusion.
+
+Claude: 
+
+Those are frontend changes — since you're working on the frontend via Gemini, I'd suggest feeding these 3 items to Gemini as a follow-up prompt. Here's what I'd send:
+
+---
+
+**Gemini follow-up prompt:**
+
+Make these 3 fixes to the Coffee Coach frontend:
+
+1. **Smaller Recent Brews cards on Home page**: The brew history cards on the home page are too tall. Reduce vertical padding, make the font sizes smaller (method name ~text-base, bean name ~text-sm, date/rating ~text-xs), and tighten the spacing between elements. The cards should feel compact — aim for roughly 60% of their current height.
+
+2. **Bug fix — V60 showing for all brew methods**: The app is incorrectly showing "V60" as a device sub-selection for every brewing method. V60 is a device that only applies to Pour Over. The other 5 methods (AeroPress, French Press, Espresso, Moka Pot, Cold Brew) have no device sub-selection. Remove the device picker for all methods except Pour Over. For Pour Over, keep V60, Chemex, Kalita Wave, etc. as device options.
+
+3. **Remove the coffee cup icon below the profile avatar**: On the home page, there's a decorative coffee cup icon appearing below/near the "JD" initials avatar in the top-right header area. Remove it — it creates visual confusion with the header.
+
+---
+
+Want me to adjust anything in this prompt, or is there something else on the backend side I can help with?
+
+User: <ide_opened_file>The user opened the file c:\Users\harde\coffee-coach\frontend\src\components\BrewCard.tsx in the IDE. This may or may not be related to the current task.</ide_opened_file>continue with this strategy of giving me pointed prompts to make changes through gemini
+I want this bottom drawer to be less wide, only as wide as the main app page, I am using it on a desktop so I want to make sure it is supported everywhere.
+I also want to change how Log Brew functions, I want it to be in 2 separate pages, first page the user selects the bean from his saved beans. He also selects the brew method (If pourover is selected, I want you come up with a way to give him 4 sub-options of v60, chemex, kalita wave and clever dripper). This is all the function of the first page. 
+Give me a gemini prompt to implement this. We will discuss the 2nd page later.
+
+Claude: 
+
+Here's your Gemini prompt:
+
+---
+
+**Gemini prompt:**
+
+Two changes to the Coffee Coach frontend:
+
+### 1. Constrain Add Beans bottom sheet width for desktop
+
+The "Add Beans" bottom sheet (shadcn/ui Sheet) currently stretches to full viewport width on desktop. Constrain it to match the app's max-width container. Specifically:
+
+- The Sheet content should have a `max-width` matching the app's mobile container width (e.g., `max-w-md` or whatever the app's main content uses), centered horizontally with `mx-auto`.
+- On mobile it should still feel full-width as it does now.
+- Apply this same constraint to any other bottom sheets in the app (profile drawer, etc.) for consistency.
+
+### 2. Redesign Log Brew as a 2-step flow (implement Step 1 only)
+
+Replace the current single Log Brew page with a multi-step flow. For now, only implement Step 1 — the bean and method selection page. Step 2 (parameters/details) will come later.
+
+**Step 1 page — Bean & Method Selection:**
+
+**Bean Selection (top of page):**
+- Show a dropdown/select of the user's saved beans from My Beans.
+- Display each option as "Roaster — Bean Name" (and roast date in lighter text if available).
+- If the user has only 1 saved bean, auto-select it.
+- If the user has multiple beans, auto-select the last-used bean (from user preferences/Zustand store).
+- If no beans are saved, show the existing blocking overlay that redirects to My Beans.
+
+**Brew Method Selection (below bean selection):**
+- Display 6 brewing methods as selectable cards in a 3-column, 2-row grid.
+- Methods: Pour Over, AeroPress, French Press, Espresso, Moka Pot, Cold Brew.
+- Each card: simple line-art SVG icon (dark brown/charcoal, ~32px) + method name below in small text.
+- Card styling: `bg-warm-gray-50` or `bg-stone-100` background, rounded-lg, subtle border. On selection: `border-coffee-brown` (the app's brown accent color) + light brown background tint.
+- Auto-select the last-used brew method from preferences if available.
+
+**Pour Over sub-selection:**
+- When "Pour Over" is selected, smoothly expand/reveal a row of 4 device options directly below the Pour Over card (or below the entire grid — whichever looks cleaner). Use a subtle slide-down animation.
+- Devices: V60, Chemex, Kalita Wave, Clever Dripper.
+- Display these as smaller pill-shaped buttons or mini-cards in a single row. Same selected styling (brown border + tint).
+- The selected device should be remembered alongside the brew method.
+- No other brew method has sub-options.
+
+**"Next" button:**
+- At the bottom of the page, a full-width "Next" button (styled like "Save Beans" — brown background, white text).
+- Disabled until both a bean and a brew method are selected (and a device, if Pour Over is chosen).
+- On tap, navigate to Step 2 (which we'll build later — for now just have it go nowhere or show a placeholder).
+
+**Navigation:**
+- The bottom nav "Log Brew" tab should open this Step 1 page.
+- Add a subtle step indicator at the top (e.g., "Step 1 of 2" or two small dots) so the user knows there's more.
+
+---
+
+Want me to tweak anything before you send it?
+
+User: <ide_opened_file>The user opened the file c:\Users\harde\coffee-coach\frontend\src\app\log-brew\page.tsx in the IDE. This may or may not be related to the current task.</ide_opened_file>For the next part, I want to implement a suggested recipes flow where the user selects from the relevant recipes we have in /backend/data/recipes_v4.json. The user can either select a saved recipe to get coaching, or can say I used my own recipe and just go on to logging the brew paramters they used for it. Read the following and ideate with me further about this idea. How should the UX flow be. It will be different based on whether the user is a beginner or an intermediate, so we need to make sure it's usable for both.
+
+The guided brew flow (during the brew)
+The timer page is the right call. Think of it less like a stopwatch and more like a step-by-step conductor. Each step has:
+
+A prompt ("Pour 50ml bloom water")
+A timer for that step
+A quick "did you do this?" or a small deviation field ("I used 60ml actually")
+
+The key UX insight here: deviation capture should be zero-friction and non-judgmental. A small thumbs up / tweak button per step, not a form. You're not quizzing them — you're just noting what actually happened. Most beginners will just hit confirm on everything, and that's fine. Enthusiasts will tweak.
+At the end of the brew, their "actual recipe" is auto-assembled from those micro-confirmations/tweaks. They didn't have to "log" anything — it just happened.
+
+The two coaching layers
+You've actually identified something quite sophisticated here:
+Layer 1 — Recipe coaching (simpler, good for beginners)
+
+"You bloomed for 25s instead of 45s — a longer bloom usually improves clarity and reduces grassiness. Try extending it next time."
+
+This is recipe-diff coaching. You know the canonical recipe, you know their actuals, you flag meaningful deviations and explain why the recipe asks for what it does. Educational, low-complexity.
+Layer 2 — Sensory coaching (richer, better for intermediate users)
+
+"You rated it 6/10, noted it was bitter and thin-bodied. Given your grind was medium-coarse on this Robusta-blend, the bitterness likely came from over-extraction despite the shorter steep..."
+
+This is your decision tree layer — working backwards from the cup experience through the bean parameters and brew variables to suggest what to change. This is where your beans_AI.json inferred params become really powerful.
+
+How they connect
+The elegant thing is these two layers feed each other over time. Early brews = mostly Layer 1 (recipe corrections). As the user's actuals stabilise and match the recipe more closely, Layer 2 becomes the dominant signal — because now the recipe isn't the variable anymore, their palate and their specific setup is.
+You could even surface this progression to the user:
+
+"Your technique is getting consistent — you're within range on all steps. Now let's focus on dialling in the flavour profile."
+
+That's a genuinely motivating moment.
+
+Claude: Let me read the recipes file to understand the data structure before we ideate.
+
+Read [](file:///c%3A/Users/harde/coffee-coach/backend/data/recipes_v4.json)
+
+Ran terminal command: cd /c/Users/harde/coffee-coach && python -c "
+import json
+data = json.load(open('backend/data/recipes_v4.json'))
+print(f'Total recipes: {len(data)}')
+methods = {}
+for r in data:
+    m = r['method']
+    methods[m] = methods.get(m, 0) + 1
+for m, c in sorted(methods.items(), key=lambda x: -x[1]):
+    print(f'  {m}: {c}')
+print()
+# Check step structure variety
+has_bloom = sum(1 for r in data if r.get('bloom_duration_seconds'))
+has_pours = sum(1 for r in data if r.get('pours') and len(r['pours']) > 1)
+has_steps = sum(1 for r in data if r.get('steps'))
+timed_steps = 0
+for r in data:
+    for s in r.get('steps', []):
+        if s.get('duration_seconds'):
+            timed_steps += 1
+            break
+print(f'Has bloom: {has_bloom}, Has multi-pours: {has_pours}, Has steps: {has_steps}, Has timed steps: {timed_steps}')
+print()
+# Show a pour_over recipe with pours
+for r in data:
+    if r['method'] == 'pour_over' and r.get('pours') and len(r['pours']) > 2:
+        print(f'Example pour_over: {r[\"title\"]}')
+        print(f'  Steps: {len(r[\"steps\"])}')
+        print(f'  Pours: {json.dumps(r[\"pours\"], indent=2)[:500]}')
+        for s in r['steps']:
+            print(f'    [{s[\"time_seconds\"]}s, dur:{s.get(\"duration_seconds\")}] {s[\"instruction\"][:80]}')
+        break
+"
+
+Ran terminal command: cd /c/Users/harde/coffee-coach && python -c "
+import json
+data = json.load(open('backend/data/recipes_v4.json'))
+for r in data:
+    if r['method'] == 'v60' and r.get('pours') and len(r['pours']) > 2:
+        print(f'Example: {r[\"title\"]}')
+        print(f'  coffee: {r[\"coffee_g\"]}g, water: {r[\"water_ml\"]}ml, temp: {r[\"water_temp_c\"]}C, grind: {r[\"grind_size\"]}')
+        print(f'  bloom: {r[\"bloom_water_g\"]}g for {r[\"bloom_duration_seconds\"]}s')
+        print(f'  Pours:')
+        for p in r['pours']:
+            print(f'    @{p[\"time_seconds\"]}s -> {p[\"target_water_g\"]}g')
+        print(f'  Steps:')
+        for s in r['steps']:
+            print(f'    [{s[\"time_seconds\"]}s, dur:{s.get(\"duration_seconds\")}] {s[\"instruction\"][:100]}')
+        print()
+        break
+# Also show a simpler method
+for r in data:
+    if r['method'] == 'french_press':
+        print(f'Example: {r[\"title\"]}')
+        print(f'  Steps:')
+        for s in r['steps']:
+            print(f'    [{s[\"time_seconds\"]}s, dur:{s.get(\"duration_seconds\")}] {s[\"instruction\"][:100]}')
+        break
+"
+
+Great data. Now I have a clear picture. Here are my thoughts:
+
+## Ideation: Guided Brew + Recipe Flow
+
+### The recipe data situation
+You have 48 recipes across methods, but the method names in recipes (`v60`, `chemex`, `kalita_wave`, `clever_dripper`) are **device-specific**, not grouped under `pour_over`. This is actually perfect — it means after the user selects "Pour Over → V60" in Step 1, we can filter directly to the 7 V60 recipes.
+
+Here's the method→recipe mapping:
+- **Pour Over → V60**: 7 recipes
+- **Pour Over → Chemex**: 4 recipes
+- **Pour Over → Kalita Wave**: 3 recipes
+- **Pour Over → Clever Dripper**: 4 recipes
+- **AeroPress**: 8 recipes
+- **French Press**: 4 recipes
+- **Moka Pot**: 3 recipes
+- **Cold Brew**: 2 recipes
+- **Espresso**: 0 recipes (no recipes in the JSON)
+
+### Proposed UX Flow (Step 2)
+
+After Step 1 (bean + method selection), the user enters Step 2:
+
+**Fork: "Follow a Recipe" vs "Freestyle"**
+
+A clean choice screen with two cards:
+- **"Follow a Recipe"** — "We'll guide you step by step" (shows count: "7 V60 recipes available")
+- **"I'll use my own recipe"** — "Just log what I brew"
+
+**If Freestyle**: Skip straight to a simple parameter logging form (coffee g, water ml, temp, grind, brew time, notes). This is your current Log Brew form essentially. No coaching Layer 1 possible here — only Layer 2 (sensory) after tasting.
+
+**If Follow a Recipe**:
+
+1. **Recipe picker** — Show relevant recipes as cards: title, author, key params (coffee/water/time) at a glance. Sorted by simplicity (fewer steps first) for beginners. The user taps one.
+
+2. **Recipe overview** — Quick summary showing all params + step count. A "Start Brewing" button.
+
+3. **Guided brew timer** — This is the core experience:
+   - One step visible at a time, large text instruction
+   - A running timer at the top (total elapsed)
+   - Per-step countdown when the step has a `duration_seconds`
+   - For pour steps: show target weight (e.g., "Pour to 220g")
+   - **Deviation capture** (the key insight you described):
+     - Each step has a **confirm button** (checkmark / "Done") — tap and move on
+     - Next to it, a small **"Tweak" button** — opens a minimal inline input to note what they actually did (e.g., "I poured 60g instead of 50g", or changed time)
+     - Beginners just tap confirm. Enthusiasts tweak. Zero friction either way.
+   - Auto-advance to next step when timer completes (with a gentle chime/haptic)
+   - The "actual recipe" assembles itself from confirmations + tweaks
+
+4. **Brew complete** — Transition to tasting/rating (which we can design later)
+
+### Beginner vs Intermediate UX
+
+Rather than two separate modes, I'd suggest **progressive complexity**:
+
+- **Everyone starts the same** — pick recipe, follow steps, confirm/tweak
+- **Beginners** mostly confirm everything → they get **Layer 1 coaching** ("You bloomed for 25s instead of 45s — try extending it next time")
+- **Intermediates** tweak more → as their actuals stabilize close to the recipe, Layer 1 fades and **Layer 2 coaching** (sensory-based, using bean data + decision tree) becomes dominant
+- The app can detect this transition naturally: "Your technique is getting consistent — let's focus on dialing in flavor"
+
+The only beginner-specific UX touch I'd add: **on first brew with a recipe, show brief tooltips explaining what bloom/drawdown/etc mean**. These auto-dismiss after a few brews.
+
+### Questions for you
+
+Used tool: AskUserQuestion
+
+Good — espresso removed entirely, one step per pour, and UI + deviation capture only for now. Let me update the plan with the full Gemini prompt for this step.
+
+Read [](file:///c%3A/Users/harde/.claude/plans/humming-mapping-crayon.md)
+
+Here is Claude's plan:
+
+# Plan: Gemini Prompt — Log Brew Step 2: Recipe Selection + Guided Brew Timer
+
+## Context
+The user has already implemented Step 1 of Log Brew (bean + method selection with pour-over sub-devices). Now we need Step 2: after selecting bean + method, the user either follows a guided recipe (step-by-step timer with deviation capture) or logs a freestyle brew. This is UI + deviation capture only — coaching logic comes later.
+
+Espresso is removed from the app entirely. The 5 supported methods are: Pour Over (V60/Chemex/Kalita Wave/Clever Dripper), AeroPress, French Press, Moka Pot, Cold Brew.
+
+## Recipe Data Summary (from `/backend/data/recipes_v4.json`)
+- 48 total recipes across methods
+- Method keys in recipes match device names: `v60` (7), `chemex` (4), `kalita_wave` (3), `clever_dripper` (4), `aeropress` (8), `french_press` (4), `moka_pot` (3), `cold_brew` (2), plus some we won't use
+- Each recipe has: `recipe_id`, `title`, `author`, `method`, `coffee_g`, `water_ml`, `water_temp_c`, `grind_size`, `brew_time_seconds`, `bloom_water_g`, `bloom_duration_seconds`, `steps[]`, `pours[]`, `expected_flavour`
+- Steps have: `time_seconds` (when it starts), `instruction`, `duration_seconds` (optional countdown)
+- Pours have: `time_seconds`, `target_water_g`
+- Some steps are timed (have `duration_seconds`), some are action-only
+
+## Deliverable
+A Gemini prompt for the user to implement this frontend flow.
+
+---
+
+## Gemini Prompt
+
+### Tech Stack (same as app)
+Next.js App Router, TypeScript, Tailwind CSS, shadcn/ui, Zustand, React Hook Form + Zod.
+
+### Visual Direction
+Maintain the existing warm aesthetic: serif headings, cream/warm-gray backgrounds, coffee-brown accents for active/selected states, dark brown/charcoal icons and text.
+
+### Overview
+After the user completes Step 1 (bean + brew method selection) and taps "Next", they enter Step 2. Step 2 has a fork: follow a guided recipe OR freestyle. The step indicator at the top updates to show "Step 2 of 2".
+
+---
+
+### Screen 1: Recipe or Freestyle Choice
+
+After tapping "Next" from Step 1, show a choice screen with two large tappable cards, stacked vertically:
+
+**Card 1 — "Follow a Recipe"**
+- Icon: a simple list/recipe line-art icon
+- Title: "Follow a Recipe"
+- Subtitle: "We'll guide you step by step"
+- Small badge showing recipe count for the selected method (e.g., "7 recipes" for V60)
+- Coffee-brown accent border
+
+**Card 2 — "Use My Own Recipe"**
+- Icon: a simple pencil/freestyle line-art icon
+- Title: "Use My Own Recipe"
+- Subtitle: "Just log what you brew"
+- Lighter/muted styling compared to Card 1 (gently nudge toward guided)
+
+**Method-to-recipe-key mapping** (for filtering recipes from the API):
+- Pour Over → V60 maps to `method: "v60"`
+- Pour Over → Chemex maps to `method: "chemex"`
+- Pour Over → Kalita Wave maps to `method: "kalita_wave"`
+- Pour Over → Clever Dripper maps to `method: "clever_dripper"`
+- AeroPress maps to `method: "aeropress"`
+- French Press maps to `method: "french_press"`
+- Moka Pot maps to `method: "moka_pot"`
+- Cold Brew maps to `method: "cold_brew"`
+
+---
+
+### Path A: Freestyle Brew
+
+If the user taps "Use My Own Recipe", show a simple logging form:
+
+- **Coffee (g)**: Number input
+- **Water (ml)**: Number input
+- **Water Temperature (°C)**: Number input
+- **Grind Size**: Dropdown (extra_fine, fine, medium_fine, medium, medium_coarse, coarse)
+- **Brew Time**: A time input (mm:ss) or a simple timer the user can start/stop
+- **Notes**: Optional text area
+
+A "Log Brew" button at the bottom submits the data. (For now, save to Zustand store / localStorage. Backend endpoint will come later.)
+
+After submit, navigate to a placeholder "Brew Logged!" success screen with a button to go Home.
+
+---
+
+### Path B: Guided Brew — Recipe Picker
+
+If the user taps "Follow a Recipe", show the recipe picker screen.
+
+**Data source**: `GET /api/recipes?method={method_key}` — for now, mock this by filtering the local recipes JSON by method. The recipe JSON is at `/backend/data/recipes_v4.json`.
+
+**Recipe list**: Show matching recipes as cards in a vertical scrollable list. Each card shows:
+- **Title** (e.g., "Easy and Effective V60 by Lance Hedrick")
+- **Author** in lighter text
+- Key params as small pills/badges: `20g coffee` · `340ml water` · `99°C` · `medium-fine`
+- Total brew time: e.g., "~3:30"
+- Tap to select → navigates to the recipe overview
+
+Sort recipes by number of steps ascending (simpler recipes first).
+
+---
+
+### Path B: Guided Brew — Recipe Overview
+
+After selecting a recipe, show a summary screen:
+
+- **Recipe title** (serif heading)
+- **Author**
+- **Parameters grid** (2 columns):
+  - Coffee: 20g
+  - Water: 340ml
+  - Temp: 99°C
+  - Grind: medium-fine
+  - Bloom: 50g / 10s (if applicable, omit if null)
+  - Total time: ~3:30
+- **Steps preview**: A numbered list of all steps with brief text, so the user can see what's coming
+- **"Start Brewing" button** — full width, coffee-brown, prominent
+
+---
+
+### Path B: Guided Brew — Step-by-Step Timer (Core Experience)
+
+This is the main guided brew screen. It works like a step-by-step conductor.
+
+**Layout:**
+- **Top bar**: Total elapsed timer (large, always visible, monospace font), step counter "Step 3 of 8"
+- **Center**: Current step card (takes up most of the screen)
+- **Bottom**: Action buttons
+
+**Building the step list from recipe data:**
+
+The steps should be constructed by merging the recipe's `steps[]` array with `pours[]` data. For pour-over recipes, each pour in the `pours[]` array corresponds to a step — display the pour target weight prominently on that step (e.g., large "Pour to 220g" text above the instruction). Match pours to steps by `time_seconds`.
+
+**Current step card contains:**
+- **Step instruction** — Large, readable text (e.g., "Pour 50g of water")
+- **Pour target** — If this step has a matching pour entry, show the target weight prominently: "Target: 220g" in large coffee-brown text
+- **Step timer** — If the step has `duration_seconds`, show a countdown timer for that step (circular progress or linear bar). If no duration, the step is action-only (user manually advances).
+- **Deviation capture** — Two buttons at the bottom of the card:
+  - **"Done" button** (checkmark icon, primary style) — Confirms the step was done as described. Tap to advance to next step.
+  - **"Tweak" button** (small pencil icon, subtle/ghost style) — Tapping opens a minimal inline row below the instruction with:
+    - For pour steps: a number input pre-filled with the target weight, user can change it (e.g., "I actually poured 60g")
+    - For timed steps: a number input pre-filled with the expected duration in seconds
+    - For general steps: a short text input ("What did you do differently?")
+    - A small "Save & Continue" button to confirm the tweak and advance
+  - The tweak UI should feel non-judgmental and lightweight — no forms, no labels like "deviation". Just a quick note.
+
+**Timer behavior:**
+- The total elapsed timer starts when the user taps "Start Brewing" on the overview screen
+- For steps with `duration_seconds`: auto-advance to the next step when the countdown reaches 0, with a gentle visual pulse or color change. Show a brief "Next step starting..." toast. Give 2-3 seconds before auto-advancing so the user isn't rushed.
+- For action-only steps (no duration): wait for the user to tap "Done" or "Tweak → Save"
+- The total timer keeps running regardless of individual steps
+
+**Step transition**: Smooth slide-left animation when advancing to the next step.
+
+**Storing the actual brew data:**
+As the user progresses through steps, build an `actualBrew` object in Zustand state:
+```typescript
+{
+  recipe_id: string,
+  bean_id: string,
+  method: string,
+  started_at: ISO string,
+  steps: [
+    {
+      step_index: number,
+      instruction: string,
+      expected_duration_seconds: number | null,
+      actual_duration_seconds: number | null,
+      expected_pour_weight_g: number | null,
+      actual_pour_weight_g: number | null,
+      deviation_note: string | null,
+      confirmed: boolean,
+      completed_at: ISO string
+    }
+  ],
+  total_brew_time_seconds: number,
+  completed_at: ISO string
+}
+```
+
+**Last step**: After the final step is confirmed, show a "Brew Complete!" screen with:
+- Total brew time
+- A summary of any tweaks/deviations highlighted
+- "Rate Your Brew" button (placeholder for now — navigates to home)
+
+---
+
+### New API Endpoints to Mock
+
+```
+GET /api/recipes?method={method_key}  -> { recipes: [{ recipe_id, title, author, method, coffee_g, water_ml, water_temp_c, grind_size, brew_time_seconds, bloom_water_g, bloom_duration_seconds, steps, pours, expected_flavour }] }
+GET /api/recipes/{recipe_id}          -> single recipe object
+POST /api/brews                       -> save the actualBrew object (mock to localStorage for now)
+```
+
+### Zustand Store Additions
+- Add `brewSessionStore` to track the in-progress guided brew state (current step index, actual brew data, timer state)
+- Persist completed brews to localStorage under a `brewHistory` key
+
+---
+
+## Backend Work (for me to implement separately)
+- Add a `/api/recipes` endpoint to the FastAPI backend that serves recipes filtered by method
+- Add a `/api/brews` endpoint to accept completed brew logs
+- Add a `brew_logs` table to PostgreSQL (links to user, recipe, bean, stores the actualBrew data)
+
+## Verification
+- User reviews and sends the Gemini prompt
+- Test: Step 1 → Next → Recipe/Freestyle choice appears
+- Test: Freestyle path → form → submit → success
+- Test: Guided path → recipe list → pick recipe → overview → Start Brewing → step through all steps → Brew Complete
+- Test: Deviation capture on a pour step (tweak the weight)
+- Test: Auto-advance on timed steps
+- Test: Total elapsed timer runs correctly throughout
+
+
+User: [Request interrupted by user for tool use]
+
+Claude: 
+
+User: <ide_opened_file>The user opened the file c:\Users\harde\coffee-coach\frontend\src\app\log-brew\guided\[id]\brew\page.tsx in the IDE. This may or may not be related to the current task.</ide_opened_file>On the step 2 of 2: How do you want to brew?
+I need a confirmation button on the bottom which the users pushes to move ahead, after he chooses follow a recipe or use my own recipe
+
+Also I am getting this error when I try to open a suggested recipe page
+Should we store the recipes_v4.json on the frontend? Can we format it better for this app.
+
+[Request interrupted by user]
+
+On the step 2 of 2: How do you want to brew?
+I need a confirmation button on the bottom which the users pushes to move ahead, after he chooses follow a recipe or use my own recipe
+
+Also I am getting this error when I try to open a suggested recipe page
+Console TypeError
+
+
+
+Cannot read properties of undefined (reading 'map')
+src/app/log-brew/guided/[id]/brew/page.tsx (47:42) @ fetchRecipe
+
+
+  45 |         
+  46 |         // Merge pours with steps based on time_seconds (for pour over methods)
+> 47 |         const enrichedSteps = data.steps.map((step: any) => {
+     |                                          ^
+  48 |           const matchingPour = data.pours?.find((p: any) => p.time_seconds === step.time_seconds);
+  49 |           return {
+  50 |             ...step,
+Call Stack
+1
+
+fetchRecipe
+src/app/log-brew/guided/[id]/brew/page.tsx (47:42)
+
+Should we store the recipes_v4.json on the frontend? Can we format it better for this app.
+
+Claude: Let me read the relevant files to understand the current state.
+
+Used tool: ToolSearch
+
+User: Tool loaded.
+
+Claude: Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/log-brew/guided/%5Bid%5D/brew/page.tsx)
+
+Used tool: Agent
+
+Ran terminal command: find /c/Users/harde/coffee-coach/frontend -type f -name "*.tsx" -o -name "*.ts" -o -name "*.jsx" -o -name "*.js" | head -50
+
+Searched for files matching `c:/Users/harde/coffee-coach/frontend/app/**/*.{tsx,ts,jsx,js}`
+
+Searched for files matching `c:/Users/harde/coffee-coach/frontend/src/**/*.{tsx,ts,jsx,js}`
+
+Searched for files matching `c:/Users/harde/coffee-coach/frontend/public/**/*.{json}`
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/log-brew/step-2/page.tsx)
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/log-brew/guided/page.tsx)
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/api/recipes/route.ts)
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/api/recipes/%5Bid%5D/route.ts)
+
+Ran terminal command: find /c/Users/harde/coffee-coach/frontend -type f -name "*recipe*" | grep -v node_modules | grep -v ".next"
+
+Ran terminal command: find /c/Users/harde/coffee-coach/frontend/src -type d | head -30
+
+Found the issue. The error is because `recipes_v4.json` is in the backend directory but marked as **deleted in git** — the API routes try to read `../backend/data/recipes_v4.json` and it's likely not being found, returning an error response instead of recipe data, so `data.steps` is undefined.
+
+Let me read the API route and the step-2 page to confirm.
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/api/recipes/%5Bid%5D/route.ts)
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/log-brew/step-2/page.tsx)
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/api/recipes/route.ts)
+
+Good, I now have the full picture. Let me write the plan.
+
+Read [](file:///c%3A/Users/harde/.claude/plans/humming-mapping-crayon.md)
+
+Here is Claude's plan:
+
+# Plan: Fix Step 2 Issues — Confirmation Button + Recipe Data
+
+## Context
+Two issues on the frontend Log Brew flow:
+1. The "How do you want to brew?" page (Step 2 of 2) navigates immediately on card tap — needs a confirmation "Next" button like Step 1 has.
+2. Recipes fail to load (`Cannot read properties of undefined (reading 'map')`) because the API routes read from `../backend/data/recipes_v4.json` which is deleted from git. The recipes data needs to live in the frontend properly.
+
+## Root Cause of the Error
+- `frontend/src/app/api/recipes/route.ts` and `frontend/src/app/api/recipes/[id]/route.ts` both read from `path.join(process.cwd(), '../backend/data/recipes_v4.json')`
+- The file is marked as deleted in git status (` D data/recipes_v4.json` under backend)
+- The API returns a 500 error, the brew page doesn't handle the error, and tries `data.steps.map()` on an error object → crash
+
+## Changes
+
+### 1. Add confirmation button to Step 2 choice page
+**File:** `frontend/src/app/log-brew/step-2/page.tsx`
+
+- Add `useState` to track which option is selected (`"guided"` | `"freestyle"` | `null`)
+- Change the two cards from `onClick={() => router.push(...)}` to `onClick={() => setSelected("guided"/"freestyle")}` — they become selection cards, not navigation buttons
+- Add selected styling: the tapped card gets `border-amber-900 bg-amber-50` (guided) or `border-stone-400 bg-stone-100` (freestyle), the other stays muted
+- Add a "Next" button at the bottom (full-width, coffee-brown, same style as Step 1) that is disabled until a selection is made
+- On "Next" tap: `router.push("/log-brew/guided")` or `router.push("/log-brew/freestyle")` based on selection
+
+### 2. Move and format recipes data into frontend
+**Action:** Copy `backend/data/recipes_v4.json` → `frontend/src/data/recipes.json`
+
+Format it better for the app by trimming unnecessary fields. The frontend only needs:
+```typescript
+{
+  recipe_id: string
+  title: string
+  author: string
+  method: string  // "v60", "aeropress", "french_press", etc.
+  coffee_g: number
+  water_ml: number
+  water_temp_c: number
+  grind_size: string
+  brew_time_seconds: number
+  bloom_water_g: number | null
+  bloom_duration_seconds: number | null
+  steps: { time_seconds: number, instruction: string, duration_seconds: number | null }[]
+  pours: { time_seconds: number, target_water_g: number }[] | null
+  expected_flavour: { acidity: string, sweetness: string, body: string, bitterness: string } | null
+}
+```
+
+Strip out fields not used by the frontend: `source_url`, `is_iced`, `notes`, `is_concentrate`, `brew_ratio`, `ratio_type`, `serve_dilution_ratio`, `brew_style`.
+
+Also filter out methods we don't support (e.g., `south_indian_filter`, `batch_brew`, `hario_switch`, `wilfa_pour_over`, `origami_dripper`). Only keep: `v60`, `chemex`, `kalita_wave`, `clever_dripper`, `aeropress`, `french_press`, `moka_pot`, `cold_brew`.
+
+### 3. Update API routes to use local data
+**File:** `frontend/src/app/api/recipes/route.ts`
+- Change import path from `../backend/data/recipes_v4.json` to `@/data/recipes.json` (or direct import since it's now in the frontend)
+
+**File:** `frontend/src/app/api/recipes/[id]/route.ts`
+- Same path change
+
+### 4. Add error handling to brew page
+**File:** `frontend/src/app/log-brew/guided/[id]/brew/page.tsx` (line 47)
+- Add a null check: `if (!data || !data.steps)` → show error state instead of crashing
+
+## Files to Modify
+1. `frontend/src/app/log-brew/step-2/page.tsx` — add selection state + Next button
+2. `frontend/src/data/recipes.json` — new file, trimmed recipe data
+3. `frontend/src/app/api/recipes/route.ts` — update data path
+4. `frontend/src/app/api/recipes/[id]/route.ts` — update data path
+5. `frontend/src/app/log-brew/guided/[id]/brew/page.tsx` — add error handling
+
+## Verification
+- Step 2 page: tap a card → it highlights but doesn't navigate → tap "Next" → navigates correctly
+- Recipe list page loads without errors
+- Selecting a recipe → guided brew page loads with steps
+- The trimmed JSON only contains supported methods (8 types)
+
+
+Used tool: ToolSearch
+
+User: Tool loaded.
+
+Claude: I see I got pulled into plan mode mid-execution. Let me note: the Step 2 edit was already applied successfully. Now I need to continue with the remaining tasks. Let me update the plan to reflect what's done and what's left, then exit plan mode to continue.Good, plan mode exited. Step 2 button is done. Now let me create the trimmed recipes JSON and fix the API routes.
+
+Ran terminal command: cd /c/Users/harde/coffee-coach && mkdir -p frontend/src/data && python -c "
+import json
+
+with open('backend/data/recipes_v4.json', 'r', encoding='utf-8') as f:
+    recipes = json.load(f)
+
+KEEP_METHODS = {'v60', 'chemex', 'kalita_wave', 'clever_dripper', 'aeropress', 'french_press', 'moka_pot', 'cold_brew'}
+STRIP_FIELDS = {'source_url', 'is_iced', 'notes', 'is_concentrate', 'brew_ratio', 'ratio_type', 'serve_dilution_ratio', 'brew_style', 'inferred_process', 'inferred_roast_level', 'inferred_brew_methods', 'inferred_body', 'data_quality_score', 'is_scraping_artifact', 'display_name', 'low_data_quality', 'inferred_roaster_location', 'is_monsooned', 'inferred_roast_confidence', 'process_conflict', 'roast_profile'}
+
+trimmed = []
+for r in recipes:
+    if r.get('method') not in KEEP_METHODS:
+        continue
+    cleaned = {k: v for k, v in r.items() if k not in STRIP_FIELDS}
+    trimmed.append(cleaned)
+
+print(f'Kept {len(trimmed)} recipes from {len(recipes)} total')
+methods = {}
+for r in trimmed:
+    methods[r['method']] = methods.get(r['method'], 0) + 1
+print(methods)
+
+with open('frontend/src/data/recipes.json', 'w', encoding='utf-8') as f:
+    json.dump(trimmed, f, indent=2, ensure_ascii=False)
+print('Written to frontend/src/data/recipes.json')
+"
+
+35 recipes kept across 8 supported methods. Now update the API routes.The file was already read earlier but let me re-read it per the tool requirement.
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/api/recipes/route.ts)
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/api/recipes/%5Bid%5D/route.ts)
+
+Now add error handling to the brew page.
+
+Pre-existing unused variable, not related to my changes. Now let me also update the loading/error state to show a message if the recipe is invalid.
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/log-brew/guided/%5Bid%5D/brew/page.tsx)
+
+All 4 changes done:
+
+1. **Step 2 confirmation button** — Cards are now selection-only (highlight on tap), with a "Next" button at the bottom that's disabled until a choice is made.
+
+2. **Trimmed recipes data** — Created [recipes.json](frontend/src/data/recipes.json) with 35 recipes across 8 supported methods, stripped of unused fields.
+
+3. **API routes fixed** — Both [route.ts](frontend/src/app/api/recipes/route.ts) and [route.ts](frontend/src/app/api/recipes/[id]/route.ts) now import directly from `@/data/recipes.json` instead of reading from the backend filesystem.
+
+4. **Error handling** — The guided brew page now gracefully shows a "Could not load this recipe" message with a back button instead of crashing on invalid data.
+
+---
+
+*Conversation compacted*
+
+User: /compact
+
+Claude: CompactedLet me read the current recipes file and plan file first.
+
+Used tool: ToolSearch
+
+User: Tool loaded.
+
+Claude: Read [](file:///c%3A/Users/harde/coffee-coach/backend/data/recipes_v4.json)
+
+Read [](file:///c%3A/Users/harde/.claude/plans/humming-mapping-crayon.md)
+
+Let me check what methods exist in the recipes file.
+
+Used tool: Agent
+
+Read [](file:///c%3A/Users/harde/coffee-coach/backend/data/recipes_v4.json)
+
+Searched for files matching `**/*method*config* `
+
+Searched for files matching `**/brew*config*`
+
+Searched for regex `"method":\s*"([^"]+)"`
+
+Searched for files matching `**/config*`
+
+Searched for files matching `**/brew_method* `
+
+Searched for files matching `**/coffee_method*`
+
+Ran terminal command: ls -la /c/Users/harde/coffee-coach/backend/data/
+
+Ran terminal command: grep -o '"method":\s*"[^"]*"' /c/Users/harde/coffee-coach/backend/data/recipes_v4.json | sort | uniq -c
+
+Ran terminal command: find /c/Users/harde/coffee-coach -type f \( -name "*.json" -o -name "*.py" \) | grep -i "method\|brew" | grep -v node_modules | grep -v ".git"
+
+Read [](file:///c%3A/Users/harde/coffee-coach/backend/logic/bean_method_pairing.json)
+
+Read [](file:///c%3A/Users/harde/coffee-coach/backend/schema/brew_log_schema.json)
+
+Ran terminal command: ls -la /c/Users/harde/coffee-coach/backend/logic/ | head -20
+
+Ran terminal command: grep -l "method" /c/Users/harde/coffee-coach/backend/logic/*.json
+
+Read [](file:///c%3A/Users/harde/coffee-coach/backend/logic/roast_level_modifiers.json)
+
+Ran terminal command: find /c/Users/harde/coffee-coach/backend -type f \( -name "*.json" -o -name "*.py" \) | xargs grep -l "pour_over\|v60\|chemex\|aeropress\|french_press\|cold_brew" | grep -v node_modules | head -15
+
+
+
+Good findings. Here's the situation:
+
+**13 methods in recipes_v4.json**, but you want to support only **9**: AeroPress, Moka Pot, French Press, Cold Brew, South Indian Filter, V60, Chemex, Kalita Wave, Clever Dripper. That means filtering out `hario_switch`, `wilfa_pour_over`, `origami_dripper`, `batch_brew`.
+
+Currently there's **no single source of truth** for brew methods — they're scattered across multiple logic files. This is the core problem to solve.
+
+Here's my thinking on your two questions:
+
+**Where to store the methods config:**
+A separate `brew_methods.json` file (not inside recipes_v4.json) is the right call. Recipes are *instances* of a method — the method definitions (name, category, display name, supported devices) are metadata *about* methods. Mixing them conflates two concerns. A dedicated config means:
+- Adding a new method = add one entry to the config
+- Adding a recipe = add to recipes, referencing an existing method ID
+- Frontend and backend both consume the same config
+- Validation: recipes can be checked against the config to reject unknown methods
+
+**Structure idea:**
+```json
+{
+  "methods": [
+    {
+      "method_id": "v60",
+      "display_name": "V60",
+      "category": "pour_over",
+      "default_params": { "grind_size": "medium-fine", "water_temp_c": 96 }
+    },
+    {
+      "method_id": "french_press",
+      "display_name": "French Press",
+      "category": "immersion",
+      ...
+    }
+  ],
+  "categories": {
+    "pour_over": { "display_name": "Pour Over", "sub_methods": ["v60", "chemex", "kalita_wave", "clever_dripper"] },
+    "immersion": { ... },
+    ...
+  }
+}
+```
+
+Before I write the plan, a few questions:
+
+Used tool: AskUserQuestion
+
+Good choices. Let me write the plan.
+
+Here is Claude's plan:
+
+# Plan: Centralize Brew Methods Config + Clean Up Recipes
+
+## Context
+The app supports 9 brewing methods but there's no single source of truth — method references are scattered across multiple logic/data files. We need a centralized brew methods config in the backend that the frontend fetches via API. This also means:
+- Removing espresso entirely
+- Adding south_indian_filter back (was previously filtered out)
+- Filtering unsupported methods from recipes
+- Future-proofing: adding a new method = add one entry to config + add recipes referencing it
+
+## Supported Methods (9 total)
+| method_id | display_name | parent_method |
+|---|---|---|
+| v60 | V60 | pour_over |
+| chemex | Chemex | pour_over |
+| kalita_wave | Kalita Wave | pour_over |
+| clever_dripper | Clever Dripper | pour_over |
+| aeropress | AeroPress | null |
+| french_press | French Press | null |
+| moka_pot | Moka Pot | null |
+| cold_brew | Cold Brew | null |
+| south_indian_filter | South Indian Filter | null |
+
+**Filtered out** (removed from recipes): `hario_switch`, `wilfa_pour_over`, `origami_dripper`, `batch_brew`, `espresso`
+
+## Changes
+
+### 1. Create `backend/data/brew_methods.json`
+New file — the single source of truth for all supported brew methods.
+
+```json
+[
+  { "method_id": "v60", "display_name": "V60", "parent_method": "pour_over" },
+  { "method_id": "chemex", "display_name": "Chemex", "parent_method": "pour_over" },
+  { "method_id": "kalita_wave", "display_name": "Kalita Wave", "parent_method": "pour_over" },
+  { "method_id": "clever_dripper", "display_name": "Clever Dripper", "parent_method": "pour_over" },
+  { "method_id": "aeropress", "display_name": "AeroPress", "parent_method": null },
+  { "method_id": "french_press", "display_name": "French Press", "parent_method": null },
+  { "method_id": "moka_pot", "display_name": "Moka Pot", "parent_method": null },
+  { "method_id": "cold_brew", "display_name": "Cold Brew", "parent_method": null },
+  { "method_id": "south_indian_filter", "display_name": "South Indian Filter", "parent_method": null }
+]
+```
+
+Flat list. Each entry has `method_id` (snake_case, used as the key everywhere), `display_name` (human-readable), and `parent_method` (only `"pour_over"` for the 4 pour-over sub-devices, `null` otherwise).
+
+### 2. Add backend API endpoint: `GET /api/brew-methods`
+**File:** `backend/app/routers/brew_methods.py` (new)
+
+- Reads `brew_methods.json` at startup (cached in module scope, not per-request)
+- `GET /api/brew-methods` → returns the full list
+- `GET /api/brew-methods?parent=pour_over` → optional filter by parent_method
+- No DB table needed — this is static config data served from a JSON file
+
+**File:** `backend/app/main.py`
+- Register the new router
+
+### 3. Update `frontend/src/data/recipes.json`
+Currently has 35 recipes filtered to 8 methods. Need to:
+- **Add back** south_indian_filter recipes (2 recipes from recipes_v4.json)
+- Ensure the 4 filtered-out methods stay excluded (`hario_switch`, `wilfa_pour_over`, `origami_dripper`, `batch_brew`)
+- Result: ~37 recipes across 9 methods
+
+### 4. Validate recipes against brew_methods config
+In the backend recipe-serving code (when we build the `/api/recipes` backend endpoint later), we can validate that every recipe's `method` field matches a known `method_id` from `brew_methods.json`. For now, this is a manual check since recipes are served from the frontend's static JSON.
+
+## Files to Create/Modify
+1. `backend/data/brew_methods.json` — **new**, the canonical methods config
+2. `backend/app/routers/brew_methods.py` — **new**, API endpoint
+3. `backend/app/main.py` — register new router
+4. `frontend/src/data/recipes.json` — add south_indian_filter recipes back
+
+## Future-Proofing
+Adding a new brew method requires:
+1. Add entry to `backend/data/brew_methods.json`
+2. Add recipes to `backend/data/recipes_v4.json` (and sync to frontend `recipes.json`)
+3. Done — no schema changes, no DB migrations, no code changes
+
+Adding a new parent category (e.g., `espresso` with sub-methods like `lever`, `semi_auto`):
+1. Add entries with `"parent_method": "espresso"` to brew_methods.json
+2. Frontend already handles parent grouping via the `parent_method` field
+
+## Verification
+- `GET /api/brew-methods` returns 9 methods
+- `GET /api/brew-methods?parent=pour_over` returns 4 pour-over sub-methods
+- Frontend recipes.json contains recipes for all 9 methods (no unsupported methods)
+- Existing guided brew flow still works with the updated recipes list
+
+
+User: [Request interrupted by user for tool use]
+
+Filter out only espresso and batch_brew. Include Hario Switch, Wilfa Pour Over and Origami Dripper under parent method pour_over as well. Other  than that I approve all your plan changes. Apply them.
+
+Claude: Got it — 12 methods total, 7 pour-over sub-devices. Let me execute.
+
+Used tool: ToolSearch
+
+User: Tool loaded.
+
+Claude: Now the API endpoint. Let me check the existing router structure first.
+
+Read [](file:///c%3A/Users/harde/coffee-coach/backend/app/main.py)
+
+Read [](file:///c%3A/Users/harde/coffee-coach/backend/app/routers/catalog.py)
+
+Now I need to extract the missing recipes from `recipes_v4.json` (south_indian_filter, hario_switch, wilfa_pour_over, origami_dripper) and add them to the frontend's `recipes.json`. Let me use an agent to extract and trim those recipes.
+
+Used tool: Agent
+
+Used tool: ToolSearch
+
+Read [](file:///c%3A/Users/harde/coffee-coach/backend/data/recipes_v4.json)
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/data/recipes.json)
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/data/recipes.json)
+
+Read [](file:///c%3A/Users/harde/coffee-coach/backend/data/recipes_v4.json)
+
+Used tool: ToolSearch
+
+Ran terminal command: cd /c/Users/harde/coffee-coach && python3 -c "
+import json
+
+with open('backend/data/recipes_v4.json', 'r', encoding='utf-8') as f:
+    backend = json.load(f)
+
+target_methods = {'south_indian_filter', 'hario_switch', 'wilfa_pour_over', 'origami_dripper'}
+matches = [r for r in backend if r.get('method') in target_methods]
+print(f'Found {len(matches)} recipes')
+for r in matches:
+    print(f'  - {r[\"recipe_id\"]} ({r[\"method\"]})')
+"
+
+Ran terminal command: cd /c/Users/harde/coffee-coach && python3 -c "
+import json
+
+with open('frontend/src/data/recipes.json', 'r', encoding='utf-8') as f:
+    frontend = json.load(f)
+
+print(f'Frontend has {len(frontend)} recipes')
+methods = set(r.get('method') for r in frontend)
+print(f'Methods: {sorted(methods)}')
+
+espresso_batch = [r for r in frontend if r.get('method') in ('espresso', 'batch_brew')]
+print(f'Espresso/batch_brew recipes: {len(espresso_batch)}')
+for r in espresso_batch:
+    print(f'  - {r[\"recipe_id\"]} ({r[\"method\"]})')
+"
+
+Ran terminal command: cd /c/Users/harde/coffee-coach && python3 -c "
+import json
+
+with open('backend/data/recipes_v4.json', 'r', encoding='utf-8') as f:
+    backend = json.load(f)
+
+with open('frontend/src/data/recipes.json', 'r', encoding='utf-8') as f:
+    frontend = json.load(f)
+
+target_methods = {'south_indian_filter', 'hario_switch', 'wilfa_pour_over', 'origami_dripper'}
+matches = [r for r in backend if r.get('method') in target_methods]
+
+# Fields to strip
+strip_fields = {'source_url', 'is_iced', 'notes', 'is_concentrate', 'brew_ratio', 'ratio_type', 'serve_dilution_ratio', 'brew_style'}
+
+trimmed = []
+for r in matches:
+    t = {
+        'recipe_id': r.get('recipe_id'),
+        'title': r.get('title'),
+        'author': r.get('author'),
+        'method': r.get('method'),
+        'coffee_g': r.get('coffee_g'),
+        'water_ml': r.get('water_ml'),
+        'water_temp_c': r.get('water_temp_c'),
+        'grind_size': r.get('grind_size'),
+        'brew_time_seconds': r.get('brew_time_seconds'),
+        'bloom_water_g': r.get('bloom_water_g') if r.get('bloom_water_g') is not None else None,
+        'bloom_duration_seconds': r.get('bloom_duration_seconds') if r.get('bloom_duration_seconds') is not None else None,
+        'steps': [],
+        'pours': None,
+        'expected_flavour': None,
+    }
+    
+    # Process steps
+    if r.get('steps'):
+        for s in r['steps']:
+            t['steps'].append({
+                'time_seconds': s.get('time_seconds'),
+                'instruction': s.get('instruction'),
+                'duration_seconds': s.get('duration_seconds'),
+            })
+    
+    # Process pours
+    if r.get('pours') is not None:
+        t['pours'] = []
+        for p in r['pours']:
+            t['pours'].append({
+                'time_seconds': p.get('time_seconds'),
+                'target_water_g': p.get('target_water_g'),
+            })
+    
+    # Process expected_flavour
+    if r.get('expected_flavour') is not None:
+        ef = r['expected_flavour']
+        t['expected_flavour'] = {
+            'acidity': ef.get('acidity'),
+            'sweetness': ef.get('sweetness'),
+            'body': ef.get('body'),
+            'bitterness': ef.get('bitterness'),
+        }
+    
+    trimmed.append(t)
+
+# Append to frontend
+combined = frontend + trimmed
+print(f'Original frontend: {len(frontend)} recipes')
+print(f'Adding: {len(trimmed)} recipes')
+print(f'Total: {len(combined)} recipes')
+
+with open('frontend/src/data/recipes.json', 'w', encoding='utf-8') as f:
+    json.dump(combined, f, indent=2, ensure_ascii=False)
+    f.write('\n')
+
+print('Written successfully.')
+
+# Verify
+with open('frontend/src/data/recipes.json', 'r', encoding='utf-8') as f:
+    verify = json.load(f)
+print(f'Verified: {len(verify)} recipes, valid JSON.')
+"
+
+All done. Here's what was implemented:
+
+**1. [brew_methods.json](backend/data/brew_methods.json)** — Single source of truth with 12 methods:
+- 7 pour-over sub-methods: V60, Chemex, Kalita Wave, Clever Dripper, Hario Switch, Wilfa Pour Over, Origami Dripper
+- 5 standalone: AeroPress, French Press, Moka Pot, Cold Brew, South Indian Filter
+- Espresso and batch_brew excluded
+
+**2. [brew_methods.py](backend/app/routers/brew_methods.py)** — New API endpoint:
+- `GET /api/brew-methods` → all 12 methods
+- `GET /api/brew-methods?parent=pour_over` → just the 7 pour-over devices
+
+**3. [main.py](backend/app/main.py)** — Router registered
+
+**4. [recipes.json](frontend/src/data/recipes.json)** — Now has 47 recipes (added 12: 2 south_indian_filter, 4 hario_switch, 3 wilfa_pour_over, 3 origami_dripper)
+
+**Future-proofing**: Adding a new method = one entry in `brew_methods.json` + add recipes. No code changes needed.
+
+User: /model
+
+Claude: Set model to haiku (claude-haiku-4-5-20251001)The frontend is still using hardcoded method/device lists. It needs to fetch from the new `GET /api/brew-methods` backend endpoint. Let me find where the method selection UI is.
+
+Searched for files matching `frontend/src/**/*method*.tsx`
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/log-brew/page.tsx)
+
+Read [](file:///c%3A/Users/harde/coffee-coach/frontend/src/app/log-brew/guided/page.tsx)
+
+Found it! The methods are hardcoded in `frontend/src/app/log-brew/page.tsx`. I need to fetch them from the backend API instead. Let me update it.Now I need to add icons for the new methods and update the method rendering. Let me add the missing icons first:Done! I've updated the frontend to fetch brew methods from the backend API instead of hardcoding them. Here's what changed:
+
+**[frontend/src/app/log-brew/page.tsx](frontend/src/app/log-brew/page.tsx)**:
+- Added icons for the 4 new pour-over devices (Hario Switch, Wilfa Pour Over, Origami Dripper, South Indian Filter)
+- Added `useEffect` to fetch methods from `/api/brew-methods` and filter out espresso
+- Updated method grid to render dynamically from `allMethods` instead of hardcoded `BREW_METHODS`
+- Updated pour-over device selector to render from `pourOverDevices` instead of hardcoded list
+
+The page now:
+- ✅ Displays all 7 pour-over devices (no longer just 4)
+- ✅ Removes Espresso from the main method list
+- ✅ Shows the 5 standalone methods (AeroPress, French Press, Moka Pot, Cold Brew, South Indian Filter)
+
+Future-proofing: Adding a new method now only requires adding an entry to `backend/data/brew_methods.json` and adding recipes. No frontend code changes needed (as long as icons exist in `ICON_MAP`).
