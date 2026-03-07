@@ -1,0 +1,2378 @@
+[
+  {
+    "recipe_id": "james-hoffmann-moka-pot-recipe",
+    "title": "James Hoffmann Ultimate Moka Pot recipe",
+    "author": "James Hoffmann",
+    "method": "moka_pot",
+    "coffee_g": 20,
+    "water_ml": null,
+    "water_temp_c": 100,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 300,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Pre-boil water in a kettle. While water boils, grind 20g of coffee to a medium-fine consistency (similar to table salt — slightly coarser than espresso, finer than drip).",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Using heat protection (oven mitt or cloth), fill the bottom chamber of the Moka Pot with the boiling water up to just below the safety valve. Do not exceed the valve.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Optionally place a paper Aeropress filter in the top basket above the coffee for a cleaner cup. Fill the filter basket with ground coffee. Level off the top — do not tamp.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Assemble the Moka Pot firmly. Place on the stove over medium-low heat. Keep the lid open so you can observe the brew.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 240,
+        "instruction": "As soon as the coffee begins to flow into the upper chamber (it should be a dark, steady stream), immediately reduce to the lowest heat setting.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 270,
+        "instruction": "Remove the Moka Pot from heat entirely as soon as you hear the first sign of gurgling or hissing. The residual heat will complete the brew without scorching.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 300,
+        "instruction": "Run the base of the Moka Pot under cold tap water for a few seconds to halt extraction and stop any further heating. Pour immediately and serve.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": null,
+    "expected_flavour": {
+      "acidity": "low",
+      "sweetness": "medium",
+      "body": "heavy",
+      "bitterness": "high"
+    }
+  },
+  {
+    "recipe_id": "farm-forest-specialty-moka-pot-recipe",
+    "title": "Farm & Forest Organic Coffee Moka Pot recipe",
+    "author": "Farm & Forest Organic Coffee Roasters",
+    "method": "moka_pot",
+    "coffee_g": 15,
+    "water_ml": 112,
+    "water_temp_c": 100,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 300,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Boil water in a separate kettle. Grind 15g of coffee to a medium-fine consistency — the texture of table salt. Adjust slightly finer for light roasts, slightly coarser for dark roasts.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Fill the bottom chamber with boiling water to just below the safety valve. Using pre-boiled water prevents the coffee bed from scorching during the warm-up phase on the stove.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Add the ground coffee to the basket. Fill it to the brim and level the surface — do not tamp or press down. Brush any stray grounds off the rim of the basket.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Assemble the Moka Pot and place on medium heat. The correct ratio naturally aligns with filling the basket loosely to the top and water to the safety valve — trust the device's geometry.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 240,
+        "instruction": "Coffee will begin to flow as a dark, even stream. As soon as you see steady flow, reduce heat to low.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 270,
+        "instruction": "Remove from heat at the first soft gurgling sound. Run the base under cold water to halt extraction immediately.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 300,
+        "instruction": "Pour and serve immediately. If the brew tastes bitter, adjust: go slightly coarser first before reducing dose or temperature.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": null,
+    "expected_flavour": {
+      "acidity": "low",
+      "sweetness": "medium",
+      "body": "heavy",
+      "bitterness": "high"
+    }
+  },
+  {
+    "recipe_id": "traditional-italian-moka-pot-recipe",
+    "title": "Traditional Italian Moka Pot (Bialetti Method)",
+    "author": "Traditional Italian Method",
+    "method": "moka_pot",
+    "coffee_g": 16,
+    "water_ml": 160,
+    "water_temp_c": 100,
+    "grind_size": "medium",
+    "brew_time_seconds": 360,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Fill the lower chamber of the Moka Pot with cold filtered water up to the safety valve line. Do not exceed the valve.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Grind 16g of coffee to a medium consistency — slightly finer than drip, coarser than espresso. Use a medium-dark roast for the traditional Italian character.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Fill the filter basket with ground coffee, mounded slightly at the top. Level gently with your finger — no tamping. Brush away any loose grounds from the rim before assembly.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Screw the top chamber onto the base firmly. Place on the stove over medium heat. Leave the lid open to monitor the brew.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 300,
+        "instruction": "As the water heats, it will begin to rise through the coffee and flow into the upper chamber as a dark, rich stream. When the stream turns from dark brown to a lighter honey-gold colour, close the lid.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 330,
+        "instruction": "When you hear the characteristic hissing and gurgling sound, remove the pot from heat immediately. The brewing is complete.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 360,
+        "instruction": "Pour into a small pre-warmed cup and serve immediately, black, or cut with equal parts hot water for an Americano-style drink. Do not reheat.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": null,
+    "expected_flavour": {
+      "acidity": "low",
+      "sweetness": "medium",
+      "body": "heavy",
+      "bitterness": "high"
+    }
+  },
+  {
+    "recipe_id": "james-hoffmann-cold-brew-recipe",
+    "title": "James Hoffmann Cold Brew recipe",
+    "author": "James Hoffmann",
+    "method": "cold_brew",
+    "coffee_g": 80,
+    "water_ml": 640,
+    "water_temp_c": 4,
+    "grind_size": "coarse",
+    "brew_time_seconds": 64800,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Grind 80g of coffee to a coarse setting — similar to raw sugar or coarse sea salt. A consistent burr grind is important; avoid blade grinders.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Add the grounds to a large jar, pitcher, or dedicated cold brew vessel. Pour 640ml of cold filtered water over the grounds. Stir gently to ensure all grounds are fully saturated — no dry pockets.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Seal the container with a lid. Place in the refrigerator and steep for 18 hours (acceptable range: 12–20 hours). Do not steep at room temperature unless reducing to 12 hours or less.",
+        "duration_seconds": 64800
+      },
+      {
+        "time_seconds": 64800,
+        "instruction": "After steeping, strain the concentrate through a fine-mesh sieve to remove the bulk of the grounds.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 64800,
+        "instruction": "For a cleaner result, strain again through a paper coffee filter or cheesecloth. This second pass removes fines and gives a smooth, clear concentrate.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 64800,
+        "instruction": "Store concentrate in a sealed container in the fridge for up to 2 weeks. To serve: dilute 1:1 with cold water or milk over ice. Adjust dilution to taste — a higher dilution ratio (e.g. 1:1.5) is better for very light or fruity beans.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 640
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "medium",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "scott-rao-cold-brew-recipe",
+    "title": "Scott Rao Cold Brew recipe",
+    "author": "Scott Rao",
+    "method": "cold_brew",
+    "coffee_g": 100,
+    "water_ml": 900,
+    "water_temp_c": 4,
+    "grind_size": "medium-coarse",
+    "brew_time_seconds": 57600,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Use filtered water with alkalinity (bicarbonate/KH) of 30–50 ppm. Grind 100g of coffee to a medium-coarse setting — slightly finer than the coarsest French press grind. Use a calibrated burr grinder for particle consistency.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Add grounds to a large, clean jar or cold brew vessel. Pour 900ml of cold filtered water over the grounds. Stir gently but thoroughly to saturate all the coffee. Seal the container.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Steep in the refrigerator for 16 hours (range: 14–18 hours). Rao's principle: fix steep time as a constant and adjust grind between batches to dial in extraction, rather than changing multiple variables at once.",
+        "duration_seconds": 57600
+      },
+      {
+        "time_seconds": 57600,
+        "instruction": "Strain through a fine-mesh sieve, then filter a second time through a paper filter for clarity and to remove fines that affect mouthfeel.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 57600,
+        "instruction": "Measure TDS of the strained concentrate if a refractometer is available — target 4–5% TDS for the concentrate before dilution. Final diluted cup should target 1.3–1.4% TDS.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 57600,
+        "instruction": "To serve: dilute concentrate approximately 1:1 to 1:1.5 with cold water over ice, adjusting to reach target strength. Store remaining concentrate sealed in the fridge for up to 10 days. If the brew tastes flat or sour, grind slightly finer on the next batch; if bitter or astringent, go coarser.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 900
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "medium",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "james-mccarthy-kalita-wave-recipe",
+    "title": "James McCarthy Kalita Wave recipe",
+    "author": "James McCarthy",
+    "method": "kalita_wave",
+    "coffee_g": 24,
+    "water_ml": 380,
+    "water_temp_c": 96,
+    "grind_size": "coarse",
+    "brew_time_seconds": 210,
+    "bloom_water_g": 48,
+    "bloom_duration_seconds": 15,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Grind and sift (optionally) coffee. Rinse filter, pour coffee into the Kalita, and shake to level the grounds.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pre-wet with 48g of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 15,
+        "instruction": "Let the coffee bloom.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 45,
+        "instruction": "Pulse pour up to (0.5 x 380)g., maintaining an even column of water above the grounds.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 75,
+        "instruction": "Pulse pour up to 380g., use flow-restricted kettle if possible.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 105,
+        "instruction": "Wait for the complete drawdown.",
+        "duration_seconds": 105
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 48
+      },
+      {
+        "time_seconds": 45,
+        "target_water_g": 238
+      },
+      {
+        "time_seconds": 75,
+        "target_water_g": 380
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "george-howell-coffee-kalita-wave-recipe",
+    "title": "George Howell Coffee Kalita Wave recipe",
+    "author": "George Howell",
+    "method": "kalita_wave",
+    "coffee_g": 25,
+    "water_ml": 390,
+    "water_temp_c": 96,
+    "grind_size": "medium",
+    "brew_time_seconds": 210,
+    "bloom_water_g": 62.4,
+    "bloom_duration_seconds": 15,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Rinse filter until dripper feels warm. Weigh coffee and grind. Pour into Kalita Wave and shake to level grounds.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pour until (0.16 x 390)g. of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 15,
+        "instruction": "Wait.",
+        "duration_seconds": 15
+      },
+      {
+        "time_seconds": 30,
+        "instruction": "Pour until (0.33 x 390)g. of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 45,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 60,
+        "instruction": "Pour until (0.5 x 390)g. of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 75,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 90,
+        "instruction": "Pour until (0.66 x 390)g. of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 105,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 120,
+        "instruction": "Pour until (0.83 x 390)g. of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 135,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 150,
+        "instruction": "Pour until 390g. of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 165,
+        "instruction": "Wait for the drawdown to complete.",
+        "duration_seconds": 45
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 62.4
+      },
+      {
+        "time_seconds": 30,
+        "target_water_g": 128.7
+      },
+      {
+        "time_seconds": 60,
+        "target_water_g": 195
+      },
+      {
+        "time_seconds": 90,
+        "target_water_g": 257.4
+      },
+      {
+        "time_seconds": 120,
+        "target_water_g": 323.7
+      },
+      {
+        "time_seconds": 150,
+        "target_water_g": 390
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "scott-rao-classic-v60-recipe",
+    "title": "Scott Rao classic V60 recipe",
+    "author": "Scott Rao",
+    "method": "v60",
+    "coffee_g": 22,
+    "water_ml": 360,
+    "water_temp_c": 95,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 180,
+    "bloom_water_g": 66,
+    "bloom_duration_seconds": 15,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Rinse filter & pre-heat V60, Pour in grounds, flatten",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pre-wet with 66g of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 15,
+        "instruction": "Gently excavate to wet all the grounds",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 25,
+        "instruction": "Let the coffee bloom.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 45,
+        "instruction": "Start main pour until 360g.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 95,
+        "instruction": "Gently stir to stop grounds from clinging to sides",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 120,
+        "instruction": "Swirl V60 to flatten coffee bed for even brew",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 130,
+        "instruction": "Drawdown should be complete within 3 minutes.",
+        "duration_seconds": 50
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 66
+      },
+      {
+        "time_seconds": 45,
+        "target_water_g": 360
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "easy-and-effective-v60-by-lance-hedrick",
+    "title": "Easy and Effective V60 by Lance Hedrick",
+    "author": "Lance Hedrick",
+    "method": "v60",
+    "coffee_g": 20,
+    "water_ml": 340,
+    "water_temp_c": 99,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 210,
+    "bloom_water_g": 50,
+    "bloom_duration_seconds": 10,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Put the filter in V60, rinse with hot water. Grind your coffee and put it into the brewer, create a divot in the middle. Place on the scales and zero them out.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pour 50g. of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Spin the V60 somewhat aggressively.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 30,
+        "instruction": "Pour up to 100g. of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 40,
+        "instruction": "Spin the V60 gently.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 60,
+        "instruction": "Pour up to 220g. of water, fast flowrate, behind the center.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 70,
+        "instruction": "Spin the V60 very lightly.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 90,
+        "instruction": "Pour up to 340g. of water, fast flowrate, behind the center.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 100,
+        "instruction": "Give the V60 another light spin.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 110,
+        "instruction": "Wait for the complete drawdown.",
+        "duration_seconds": 100
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 50
+      },
+      {
+        "time_seconds": 30,
+        "target_water_g": 100
+      },
+      {
+        "time_seconds": 60,
+        "target_water_g": 220
+      },
+      {
+        "time_seconds": 90,
+        "target_water_g": 340
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "james-hoffmann-v60-one-cup-recipe",
+    "title": "James Hoffmann V60 - One cup recipe",
+    "author": "James Hoffmann",
+    "method": "v60",
+    "coffee_g": 15,
+    "water_ml": 250,
+    "water_temp_c": 95,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 180,
+    "bloom_water_g": 50,
+    "bloom_duration_seconds": 10,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Rinse filter & pre-heat V60. Pour in grounds.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pre-wet with (0.2 x 250)g of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Gently Swirl the V60.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 15,
+        "instruction": "Let the coffee bloom.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 45,
+        "instruction": "Pour up to (0.4 x 250)g. total.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 60,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 70,
+        "instruction": "Pour up to (0.6 x 250)g. total.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 80,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 90,
+        "instruction": "Pour up to (0.8 x 250)g. total.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 100,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 110,
+        "instruction": "Pour up to 250g. total",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 120,
+        "instruction": "Gently swirl.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 125,
+        "instruction": "Wait for the complete drawdown.",
+        "duration_seconds": 55
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 50
+      },
+      {
+        "time_seconds": 45,
+        "target_water_g": 100
+      },
+      {
+        "time_seconds": 70,
+        "target_water_g": 150
+      },
+      {
+        "time_seconds": 90,
+        "target_water_g": 200
+      },
+      {
+        "time_seconds": 110,
+        "target_water_g": 250
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "james-hoffmann-chemex-recipe",
+    "title": "James Hoffmann Chemex recipe",
+    "author": "James Hoffmann",
+    "method": "chemex",
+    "coffee_g": 30,
+    "water_ml": 500,
+    "water_temp_c": 95,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 250,
+    "bloom_water_g": 75,
+    "bloom_duration_seconds": 10,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Grind the beans, boil the water. Put the paper filter into the Chemex (3 folds towards the spout). Rinse filter with boiling water, dump the water. Add grounds, make a divot in the middle. Place on scale and zero it out.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Add 75g (range: 60–90g). of water",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Stir to wet all the grounds, let it bloom",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 45,
+        "instruction": "Add water in a circular motion, breaking up any clumps until you reach (0.6 x 500)g.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 75,
+        "instruction": "Continue to add water until you reach 500g.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 105,
+        "instruction": "Use a spoon to give a good stir clockwise, and then another counter clockwise",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 120,
+        "instruction": "Give the chemex a little shake.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 130,
+        "instruction": "Wait until drawdown completes.",
+        "duration_seconds": 120
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 75
+      },
+      {
+        "time_seconds": 45,
+        "target_water_g": 300
+      },
+      {
+        "time_seconds": 75,
+        "target_water_g": 500
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "lance-hedrick-s-ultimate-flash-brew",
+    "title": "Lance Hedrick's ultimate flash brew",
+    "author": "Lance Hedrick",
+    "method": "v60",
+    "coffee_g": 20,
+    "water_ml": 240,
+    "water_temp_c": 93,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 205,
+    "bloom_water_g": 60,
+    "bloom_duration_seconds": 60,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Rinse filter & pre-heat V60, Pour in grounds, flatten",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Bloom with (0.25 x 240)g of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 60,
+        "instruction": "Pour (0.375 x 240)g of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 105,
+        "instruction": "Pour (0.375 x 240)g again and swirl gently. Wait until completely drained.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 150,
+        "instruction": "Add (0.25 x 240)g of ice and stir until cooled to 5-10°C",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 180,
+        "instruction": "Serve over fresh ice cubes",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 60
+      },
+      {
+        "time_seconds": 60,
+        "target_water_g": 150
+      },
+      {
+        "time_seconds": 105,
+        "target_water_g": 240
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "james-hoffmann-v60-recipe",
+    "title": "James Hoffmann V60 recipe",
+    "author": "James Hoffmann",
+    "method": "v60",
+    "coffee_g": 30,
+    "water_ml": 500,
+    "water_temp_c": 95,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 210,
+    "bloom_water_g": 60,
+    "bloom_duration_seconds": 10,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Rinse filter & pre-heat V60. Pour in grounds, create well in the middle.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pre-wet with 60g. of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Swirl brewer until the slurry is even.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 20,
+        "instruction": "Let the coffee bloom.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 45,
+        "instruction": "Complete the first main pour till (0.6 x 500)g. in the next 30s.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 75,
+        "instruction": "Gently complete second main pour till 500g. in the next 30s.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 105,
+        "instruction": "Stir gently clockwise and anticlockwise to kick grounds from the sides",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 115,
+        "instruction": "Gently swirl brewer to flatten coffee bed for even extraction",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 125,
+        "instruction": "Aim to finish drawdown by 3min 30s.",
+        "duration_seconds": 85
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 60
+      },
+      {
+        "time_seconds": 45,
+        "target_water_g": 360
+      },
+      {
+        "time_seconds": 75,
+        "target_water_g": 500
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "tetsu-kasuya-4-6-method",
+    "title": "Tetsu Kasuya 4:6 Method",
+    "author": "Tetsu Kasuya",
+    "method": "v60",
+    "coffee_g": 20,
+    "water_ml": 300,
+    "water_temp_c": 95,
+    "grind_size": "medium-coarse",
+    "brew_time_seconds": 225,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Rinse filter & pre-heat V60. Pour in coffee grounds. Set on the scales and zero out.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pour (0.2 x 300)g of water. (First of two flavour pours — controls acidity/sweetness.)",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 45,
+        "instruction": "Pour up to (0.4 x 300)g of water. (Second flavour pour — completes the first 40%.)",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 55,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 90,
+        "instruction": "Pour up to (0.6 x 300)g of water. (First strength pour — one of three equal pours.)",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 100,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 135,
+        "instruction": "Pour up to (0.8 x 300)g of water. (Second strength pour.)",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 145,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 180,
+        "instruction": "Pour up to (1.0 x 300)g of water. (Third and final strength pour — completes the last 60%.)",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 190,
+        "instruction": "Wait for the complete drawdown. Target finish: 3:30–4:00 total.",
+        "duration_seconds": 35
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 60
+      },
+      {
+        "time_seconds": 45,
+        "target_water_g": 120
+      },
+      {
+        "time_seconds": 90,
+        "target_water_g": 180
+      },
+      {
+        "time_seconds": 135,
+        "target_water_g": 240
+      },
+      {
+        "time_seconds": 180,
+        "target_water_g": 300
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "james-hoffmann-iced-v60-recipe",
+    "title": "James Hoffmann iced V60 recipe",
+    "author": "James Hoffmann",
+    "method": "v60",
+    "coffee_g": 32.5,
+    "water_ml": 500,
+    "water_temp_c": 95,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 175,
+    "bloom_water_g": 97.5,
+    "bloom_duration_seconds": 10,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Rinse filter above the sink to avoid heating the server. Pour in coffee grounds. Place (0.4 x 500)g of ice in the server. Place on the scale and zero it out.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pre-wet with 97.5g of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Stir the bloom a little.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 20,
+        "instruction": "Let the coffee bloom.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 45,
+        "instruction": "Slowly pour till (0.6 x 500)g. of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 150,
+        "instruction": "Stir once clockwise and anticlockwise.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 160,
+        "instruction": "Swrl the server to melt the ice. Pour over fresh ice cubes in the glass.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 97.5
+      },
+      {
+        "time_seconds": 45,
+        "target_water_g": 397.5
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "scott-rao-kalita-wave-recipe",
+    "title": "Scott Rao Kalita Wave recipe",
+    "author": "Scott Rao",
+    "method": "kalita_wave",
+    "coffee_g": 20,
+    "water_ml": 340,
+    "water_temp_c": 95,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 260,
+    "bloom_water_g": 60,
+    "bloom_duration_seconds": 10,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Grind the coffee, rinse the paper filter with hot water and place it into the Kalita Wave. Put in the coffee grounds.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pre-wet with 60g of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Give the brewer a little spin, use the spoon to mix if needed.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 20,
+        "instruction": "Let the coffee bloom.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 45,
+        "instruction": "Pour until (0.6 x 340)g.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 75,
+        "instruction": "Wait for slurry to drain about halfway.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 115,
+        "instruction": "Add water until 340g.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 125,
+        "instruction": "Gently spin the brewer and wait for the complete drawdown.",
+        "duration_seconds": 135
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 60
+      },
+      {
+        "time_seconds": 45,
+        "target_water_g": 264
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "gwilym-davies-french-press-recipe",
+    "title": "Gwilym Davies French Press recipe",
+    "author": "Gwilym Davies",
+    "method": "french_press",
+    "coffee_g": 16,
+    "water_ml": 250,
+    "water_temp_c": 95,
+    "grind_size": "medium",
+    "brew_time_seconds": 765,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Grind the coffee and put it into French Press. Place on scale and zero it out.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Quickly add 250g of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Wait 5 minutes.",
+        "duration_seconds": 300
+      },
+      {
+        "time_seconds": 310,
+        "instruction": "Use a tablespoon to mix coffee with water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 320,
+        "instruction": "Insert the plunger, but don't press it down yet.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 325,
+        "instruction": "Wait 3 minutes.",
+        "duration_seconds": 180
+      },
+      {
+        "time_seconds": 505,
+        "instruction": "Press the plunger down slowly.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 525,
+        "instruction": "Wait 2 minutes.",
+        "duration_seconds": 120
+      },
+      {
+        "time_seconds": 645,
+        "instruction": "Pour the coffee into the carafe and wait for another 2 minutes before serving.",
+        "duration_seconds": 120
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 250
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "low",
+      "sweetness": "medium",
+      "body": "heavy",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "scott-rao-french-press-recipe",
+    "title": "Scott Rao French Press recipe",
+    "author": "Scott Rao",
+    "method": "french_press",
+    "coffee_g": 30,
+    "water_ml": 540,
+    "water_temp_c": 95,
+    "grind_size": "medium",
+    "brew_time_seconds": 320,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Grind the coffee and put it into French Press. Place on scale and zero it out.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pour 540g of water at once, quickly, ensuring all the grounds are wet.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Place plunger 1 cm below the surface of coffee.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 20,
+        "instruction": "Wait 4 minutes.",
+        "duration_seconds": 240
+      },
+      {
+        "time_seconds": 260,
+        "instruction": "Plunge the filter gently",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 270,
+        "instruction": "Wait for coffee particles to settle and serve.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 540
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "low",
+      "sweetness": "medium",
+      "body": "heavy",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "french-press-for-supertasters-by-the-coffee-chronicler",
+    "title": "French Press for Supertasters by The Coffee Chronicler",
+    "author": "The Coffee Chronicler",
+    "method": "french_press",
+    "coffee_g": 22,
+    "water_ml": 330,
+    "water_temp_c": 97,
+    "grind_size": "fine",
+    "brew_time_seconds": 240,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Fold your paper filter, place it in the brewer and rinse with hot water. Remove the filter and place it into the cup. Discard the water. Grind the coffee and put it into French Press. Place on scale and zero it out.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Add 330g of water, pouring aggressively.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Stir 8 times.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 20,
+        "instruction": "Gently squeeze the paper filter to get rid of excess water, and wrap it around the plunger.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 80,
+        "instruction": "Stir the surface of the brew gently to break any crust.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 90,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 150,
+        "instruction": "Carefully insert the plunger with the paper filter attached. Plunge slowly.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 210,
+        "instruction": "Decant the brewed coffee into a carafe to bring it to an ideal drinking temperature.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 330
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "low",
+      "sweetness": "medium",
+      "body": "heavy",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "clever-dripper-recipe-by-european-coffee-trip",
+    "title": "Clever Dripper recipe by European Coffee Trip",
+    "author": "European Coffee Trip",
+    "method": "clever_dripper",
+    "coffee_g": 20,
+    "water_ml": 300,
+    "water_temp_c": 95,
+    "grind_size": "coarse",
+    "brew_time_seconds": 320,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Place the paper filter into the Clever dripper, rinse it with hot water. Grind the coffee and put the grounds in the brewer.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Add 300g of water to the brewer.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Wait 2 minutes.",
+        "duration_seconds": 120
+      },
+      {
+        "time_seconds": 130,
+        "instruction": "Gently break the crust on the top with spoon.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 140,
+        "instruction": "Wait another 2 minutes.",
+        "duration_seconds": 120
+      },
+      {
+        "time_seconds": 260,
+        "instruction": "Place the clever Dripper on the carafe and let the coffee drain.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 300
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "low",
+      "sweetness": "medium",
+      "body": "heavy",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "aeropress-recipe-by-coffee-with-april",
+    "title": "AeroPress recipe by Coffee with April",
+    "author": "Coffee With April",
+    "method": "aeropress",
+    "coffee_g": 13,
+    "water_ml": 200,
+    "water_temp_c": 88,
+    "grind_size": "medium-coarse",
+    "brew_time_seconds": 120,
+    "bloom_water_g": 50,
+    "bloom_duration_seconds": 15,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Put the paper filter in, rinse it and put AeroPress on the server in standard position. Pour the coffee in.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pour (0.25 x 200)g. of water in quickly, stir it a little and put the piston on to avoid dripping.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 15,
+        "instruction": "Wait.",
+        "duration_seconds": 15
+      },
+      {
+        "time_seconds": 30,
+        "instruction": "Remove the piston, pour the remaining (0.75 x 200)g.of water in. Put the piston back on.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 60,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 90,
+        "instruction": "Press down slowly, stop at the hiss.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 50
+      },
+      {
+        "time_seconds": 30,
+        "target_water_g": 200
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "medium",
+      "body": "medium",
+      "bitterness": "medium"
+    }
+  },
+  {
+    "recipe_id": "james-hoffmann-french-press-recipe",
+    "title": "James Hoffmann French Press recipe",
+    "author": "James Hoffmann",
+    "method": "french_press",
+    "coffee_g": 30,
+    "water_ml": 500,
+    "water_temp_c": 95,
+    "grind_size": "medium-coarse",
+    "brew_time_seconds": 600,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Grind the coffee and put it into French Press. Place on scale and zero it out.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Add 500g. of water",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 15,
+        "instruction": "Let the coffee sit.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 255,
+        "instruction": "Use a tablespoon to stir the crust on top of the brew. Remove the foam and floating particles.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 285,
+        "instruction": "Let the coffee rest for additional 5 minutes.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 585,
+        "instruction": "Put the plunger in, but don't press it all the way down, leave it on top of the brew. Pour gently.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 500
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "low",
+      "sweetness": "medium",
+      "body": "heavy",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "james-hoffmann-ultimate-clever-dripper-recipe",
+    "title": "James Hoffmann Ultimate Clever Dripper recipe",
+    "author": "James Hoffmann",
+    "method": "clever_dripper",
+    "coffee_g": 15,
+    "water_ml": 250,
+    "water_temp_c": 95,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 210,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Insert the paper filter into Clever Dripper and rinse it with water. Grind the coffee, but don't put into Clever Dripper yet. Place on scale and zero it out. Get a spoon.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Add 250g. of water to the Clever Dripper",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Put the coffee in the water and stir it a little with a spoon.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 20,
+        "instruction": "Let the coffee steep for 2 minutes.",
+        "duration_seconds": 120
+      },
+      {
+        "time_seconds": 140,
+        "instruction": "Stir with a spoon or shake the brewer a little to break the crust.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 150,
+        "instruction": "Place the Clever Dripper on a server and wait for the complete drawdown.",
+        "duration_seconds": 60
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 250
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "low",
+      "sweetness": "medium",
+      "body": "heavy",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "clever-dripper-recipe-by-coffee-and-water",
+    "title": "Clever Dripper recipe by Coffee and Water",
+    "author": "Coffee and Water",
+    "method": "clever_dripper",
+    "coffee_g": 28,
+    "water_ml": 420,
+    "water_temp_c": 95,
+    "grind_size": "medium-coarse",
+    "brew_time_seconds": 320,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Place the paper filter into the Clever dripper, rinse it with hot water. Grind the coffee and put the grounds in the brewer.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Add 420g of water to the brewer.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Let the coffee steep.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 60,
+        "instruction": "Break the crust on the top of the brew with spoon, stirring 3 times.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 70,
+        "instruction": "Let the coffee steep.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 150,
+        "instruction": "Place your clever Dripper on the carafe and let the coffee drain.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 420
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "low",
+      "sweetness": "medium",
+      "body": "heavy",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "james-hoffmann-s-iced-aeropress",
+    "title": "James Hoffmann's Iced AeroPress",
+    "author": "James Hoffmann",
+    "method": "aeropress",
+    "coffee_g": 22,
+    "water_ml": 400,
+    "water_temp_c": 100,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 325,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Put (0.4 x 400)g. of ice in the server. Set brewer in standard position on a server. Don't rinse or preheat the brewer (it doesn't make any difference). Pour in coffee grounds.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pour (0.6 x 400)g. of water aiming to wet all the coffee during pouring.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Place the plunger on top of the brewer, about 1cm in.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 15,
+        "instruction": "Wait 4 minutes.",
+        "duration_seconds": 240
+      },
+      {
+        "time_seconds": 255,
+        "instruction": "Holding the brewer and the plunger, gently swirl the brewer.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 265,
+        "instruction": "Wait 30 seconds.",
+        "duration_seconds": 30
+      },
+      {
+        "time_seconds": 295,
+        "instruction": "Press gently all the way.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 325,
+        "instruction": "Swirl to melt all ice. Serve over fresh ice cubes.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 240
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "medium",
+      "body": "light",
+      "bitterness": "medium"
+    }
+  },
+  {
+    "recipe_id": "chemex-recipe-by-epicurious",
+    "title": "Chemex recipe by Epicurious",
+    "author": "Epicurious",
+    "method": "chemex",
+    "coffee_g": 42,
+    "water_ml": 700,
+    "water_temp_c": 95,
+    "grind_size": "medium",
+    "brew_time_seconds": 300,
+    "bloom_water_g": 84,
+    "bloom_duration_seconds": 15,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Grind the coffee, heat water, fold the paper filter and insert it into Chemex, rinse the Filter and Carafe, add coffee grounds.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pre-wet with about 84g of water. Pour just enough water over the grounds to cover and saturate them.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 15,
+        "instruction": "Let the coffee bloom.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 45,
+        "instruction": "Add up to (0.33 x 700)g. water, pouring in a slow, circular motion.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 60,
+        "instruction": "Wait.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 100,
+        "instruction": "Now add more water, until the scale reads (0.64 x 700)g.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 120,
+        "instruction": "Wait 2 minutes.",
+        "duration_seconds": 120
+      },
+      {
+        "time_seconds": 240,
+        "instruction": "Add water until you reach700g. and wait for the complete drawdown.",
+        "duration_seconds": 60
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 84
+      },
+      {
+        "time_seconds": 45,
+        "target_water_g": 315
+      },
+      {
+        "time_seconds": 100,
+        "target_water_g": 763
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "tim-wendelboe-aeropress-recipe",
+    "title": "Tim Wendelboe Aeropress recipe",
+    "author": "Tim Wendelboe",
+    "method": "aeropress",
+    "coffee_g": 14,
+    "water_ml": 200,
+    "water_temp_c": 100,
+    "grind_size": "fine",
+    "brew_time_seconds": 110,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Rinse the paper filter with running tap water for a few seconds and pour in coffee grounds",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pour 200g of water over the coffee.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Stir 3 times.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 20,
+        "instruction": "Place the plunger on the Aeropress in order to prevent the water from draining through the filter and let the coffee steep.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 80,
+        "instruction": "Take the plunger off and stir 3 times back to front.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 90,
+        "instruction": "Place the plunger on top of the Aeropress and press the contents into a large cup or pitcher by using your body weight.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 200
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "medium",
+      "body": "medium",
+      "bitterness": "medium"
+    }
+  },
+  {
+    "recipe_id": "alan-adler-aeropress-recipe",
+    "title": "Alan Adler Aeropress recipe",
+    "author": "Alan Adler",
+    "method": "aeropress",
+    "coffee_g": 16,
+    "water_ml": 95,
+    "water_temp_c": 80,
+    "grind_size": "fine",
+    "brew_time_seconds": 60,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Add ground coffee to the brew chamber. Give chamber a shake to level the bed of coffee.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pour 95g of water to the chamber.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Stir using the paddle.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 20,
+        "instruction": "Insert plunger and press gently.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 95
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "medium",
+      "body": "medium",
+      "bitterness": "medium"
+    }
+  },
+  {
+    "recipe_id": "alexander-mills-iced-aeropress-recipe",
+    "title": "Alexander Mills Iced Aeropress recipe",
+    "author": "Alexander Mills",
+    "method": "aeropress",
+    "coffee_g": 20,
+    "water_ml": 150,
+    "water_temp_c": 99,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 200,
+    "bloom_water_g": 45,
+    "bloom_duration_seconds": 5,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Pre-rinse two paper filters in the cap to wash the papery taste out of them and preheat the brewer. Discard water and set cap aside. Fill your server with ice in amount equal to water amount. Pour in coffee grounds to Aeropress.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "With the Aeropress inverted, pour (0.3 x 150)g of boiled water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 5,
+        "instruction": "Stir thoroughly.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Let the coffee bloom.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 30,
+        "instruction": "Pour the remaining (0.7 x 150)g. of water rather quickly in concentric circles.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 40,
+        "instruction": "Give the slurry one deep stir and then cap your AeroPress.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 140,
+        "instruction": "Flip your AeroPress on top of your server and press steadily for 30s over ice. Stop your press when the AeroPress hisses.",
+        "duration_seconds": 30
+      },
+      {
+        "time_seconds": 170,
+        "instruction": "Give your iced coffee a good swirl in your server to exchange those final molecules of heat for some cooler ones and then serve in a chilled glass.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 45
+      },
+      {
+        "time_seconds": 30,
+        "target_water_g": 150
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "medium",
+      "body": "light",
+      "bitterness": "medium"
+    }
+  },
+  {
+    "recipe_id": "mark-prince-aeropress-recipe",
+    "title": "Mark Prince Aeropress recipe",
+    "author": "Mark Prince",
+    "method": "aeropress",
+    "coffee_g": 21,
+    "water_ml": 225,
+    "water_temp_c": 97,
+    "grind_size": "medium",
+    "brew_time_seconds": 90,
+    "bloom_water_g": 101.25,
+    "bloom_duration_seconds": 10,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Arrange all your equipment and coffee together. Boil the water. Assemble the AeroPress. Take the plunger and insert it into the AeroPress piston just shy of 1cm into the piston, making sure it is perfectly lined up. Measure and grind your coffee. Place Aeropress on scale, pour in grounds and zero out.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pour (0.45 x 225)g of boiled water into the inverted plunger.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Allow a slight bloom to form.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 15,
+        "instruction": "Give a few stirs to the slurry.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 25,
+        "instruction": "Continue pouring hot water until you reach 225g. of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 40,
+        "instruction": "Do two more stirs of the slurry, being careful not to overflow the top.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 50,
+        "instruction": "Add another 40-50g of water if possible, filling the brew chamber to as close to the rim as you can.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 55,
+        "instruction": "Attach the filter and filter holder to the AeroPress.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 65,
+        "instruction": "Place mug or server on top of the inverted AeroPress.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 70,
+        "instruction": "Flip the AeroPress and server.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 80,
+        "instruction": "Plunge down on the AeroPress, to extract the brewed coffee.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 101.2
+      },
+      {
+        "time_seconds": 25,
+        "target_water_g": 225
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "medium",
+      "body": "medium",
+      "bitterness": "medium"
+    }
+  },
+  {
+    "recipe_id": "james-hoffmann-aeropress-recipe",
+    "title": "James Hoffmann Aeropress recipe",
+    "author": "James Hoffmann",
+    "method": "aeropress",
+    "coffee_g": 11,
+    "water_ml": 200,
+    "water_temp_c": 95,
+    "grind_size": "medium-fine",
+    "brew_time_seconds": 205,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Set brewer in standard position on a server. Don't rinse or preheat the brewer (it doesn't make any difference). Pour in coffee grounds",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pour 200g of water aiming to wet all the coffee during pouring.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Place the plunger on top of the brewer, about 1cm in.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 15,
+        "instruction": "Wait 2 minutes.",
+        "duration_seconds": 120
+      },
+      {
+        "time_seconds": 135,
+        "instruction": "Holding the brewer and the plunger, gently swirl the brewer.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 145,
+        "instruction": "Wait 30 seconds.",
+        "duration_seconds": 30
+      },
+      {
+        "time_seconds": 175,
+        "instruction": "Press gently all the way.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 200
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "medium",
+      "body": "medium",
+      "bitterness": "medium"
+    }
+  },
+  {
+    "recipe_id": "chemex-recipe-by-caffeine-fiend",
+    "title": "Chemex recipe by Caffeine Fiend",
+    "author": "Caffeine Fiend",
+    "method": "chemex",
+    "coffee_g": 32,
+    "water_ml": 480,
+    "water_temp_c": 95,
+    "grind_size": "medium-coarse",
+    "brew_time_seconds": 300,
+    "bloom_water_g": 64,
+    "bloom_duration_seconds": 15,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Grind the coffee, heat water, fold the paper filter and insert it into Chemex, rinse the Filter and Carafe, add coffee grounds.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pre-wet with 64g of water. Pour slowly in a spiral pattern, starting from the center and working your way outwards.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 15,
+        "instruction": "Let the coffee bloom.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 60,
+        "instruction": "Pour in concentric circles until your water level reaches the top of the Chemex.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 80,
+        "instruction": "Wait for the coffee grounds to return back down to about their original level",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 110,
+        "instruction": "Repeat the same process for additional full immersion pours until you reach 480g of water. Wait for the complete drawdown.",
+        "duration_seconds": 190
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 64
+      },
+      {
+        "time_seconds": 110,
+        "target_water_g": 480
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "scott-rao-chemex-recipe",
+    "title": "Scott Rao Chemex recipe",
+    "author": "Scott Rao",
+    "method": "chemex",
+    "coffee_g": 30,
+    "water_ml": 510,
+    "water_temp_c": 97,
+    "grind_size": "medium",
+    "brew_time_seconds": 150,
+    "bloom_water_g": 45,
+    "bloom_duration_seconds": 10,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Grind the coffee, heat water, fold the paper filter and insert it into Chemex, rinse the Filter and Carafe, add coffee grounds.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pre-wet with about 45g of water.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Gently dig in the coffee bed with a small spoon.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 35,
+        "instruction": "Wait, allowing the coffee to bloom.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 40,
+        "instruction": "Pour until 510g. of water in circular patterns.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 70,
+        "instruction": "Give the outer edge of the slurry a very slow, light stir.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 80,
+        "instruction": "Hold the outside of the Chemex and move it a few circles.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 90,
+        "instruction": "Wait for the complete drawdown.",
+        "duration_seconds": 60
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 45
+      },
+      {
+        "time_seconds": 40,
+        "target_water_g": 510
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "high",
+      "body": "light",
+      "bitterness": "low"
+    }
+  },
+  {
+    "recipe_id": "wendelien-van-bunnik-aeropress-recipe",
+    "title": "Wendelien van Bunnik Aeropress recipe",
+    "author": "Wendelien van Bunnik",
+    "method": "aeropress",
+    "coffee_g": 16,
+    "water_ml": 230,
+    "water_temp_c": 95,
+    "grind_size": "coarse",
+    "brew_time_seconds": 90,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Place two paper filters in the cap and rinse with hot water. Push any air bubbles out using the paddle. Discard the rinse water. Add ground coffee to the brew chamber. Give it a shake to even out the grounds.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Pour 230g of water over the grounds.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Stir gently 5 times.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 20,
+        "instruction": "Fasten the filter cap and let sit.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 60,
+        "instruction": "Flip the AeroPress and press into a cup. Stop when you hear a hissing sound.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 230
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "medium",
+      "body": "medium",
+      "bitterness": "medium"
+    }
+  },
+  {
+    "recipe_id": "james-hoffmann-iced-clever-dripper-recipe",
+    "title": "James Hoffmann Iced Clever Dripper recipe",
+    "author": "James Hoffmann",
+    "method": "clever_dripper",
+    "coffee_g": 37.5,
+    "water_ml": 500,
+    "water_temp_c": 95,
+    "grind_size": "fine",
+    "brew_time_seconds": 395,
+    "bloom_water_g": null,
+    "bloom_duration_seconds": null,
+    "steps": [
+      {
+        "time_seconds": 0,
+        "instruction": "Insert the paper filter into Clever Dripper and rinse it with water. Grind the coffee, but don't put into Clever Dripper yet. Place on scale and zero it out. Get a spoon. You'll need (0.34 x 500)g of ice, but keep it in the freezer for now.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 0,
+        "instruction": "Add (0.66 x 500)g. of water to the Clever Dripper",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 10,
+        "instruction": "Put the coffee in the water and stir it with a spoon, making sure that all the coffee is wet.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 20,
+        "instruction": "Let the coffee steep. When the steep time is almost over, place (0.34 x 500)g of ice into the server.",
+        "duration_seconds": null
+      },
+      {
+        "time_seconds": 320,
+        "instruction": "Place the Clever Dripper on a server and wait for the complete drawdown.",
+        "duration_seconds": 75
+      },
+      {
+        "time_seconds": 380,
+        "instruction": "Swirl the server or stir with a spoon to dilute the remaining ice. Optional: add a few drops of saline to reduce bitterness.",
+        "duration_seconds": null
+      }
+    ],
+    "pours": [
+      {
+        "time_seconds": 0,
+        "target_water_g": 330
+      }
+    ],
+    "expected_flavour": {
+      "acidity": "medium",
+      "sweetness": "medium",
+      "body": "light",
+      "bitterness": "low"
+    }
+  }
+]
