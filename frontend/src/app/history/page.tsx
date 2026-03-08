@@ -48,7 +48,7 @@ export default function HistoryPage() {
   }));
   const ratings = chartData.map((item) => item.rating).filter((value): value is number => value !== null);
   const trend = trendPattern(ratings);
-  const chartStroke = trend === "Improving" ? "#4b7f52" : trend === "Worsening" ? "#8b3a3a" : "#6f4e37";
+  const chartStroke = trend === "Improving" ? "#7fb069" : trend === "Worsening" ? "#ef4444" : "#f49d25";
 
   const recentFirst = useMemo(() => [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [entries]);
 
@@ -67,15 +67,15 @@ export default function HistoryPage() {
         <div className="h-44">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <XAxis dataKey="index" tick={{ fontSize: 11, fill: "#6f4e37" }} />
-              <YAxis domain={[1, 10]} tick={{ fontSize: 11, fill: "#6f4e37" }} />
+              <XAxis dataKey="index" tick={{ fontSize: 11, fill: "#cbbba9" }} />
+              <YAxis domain={[1, 10]} tick={{ fontSize: 11, fill: "#cbbba9" }} />
               <Tooltip />
               <Line
                 type="monotone"
                 dataKey="rating"
                 stroke={chartStroke}
                 strokeWidth={2.5}
-                dot={{ r: 3, fill: "#6f4e37" }}
+                dot={{ r: 3, fill: "#f49d25" }}
                 connectNulls
               />
             </LineChart>

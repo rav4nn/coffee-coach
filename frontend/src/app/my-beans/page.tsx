@@ -2,15 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Bean, CalendarDays, Plus, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import Link from "next/link";
 
 import { SearchableCombobox } from "@/components/SearchableCombobox";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Switch } from "@/components/ui/switch";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { getCatalogBeansByRoaster, getCatalogRoasters } from "@/lib/api";
 import { useBeansStore } from "@/lib/beansStore";
 import type { CatalogBean } from "@/lib/types";
@@ -25,10 +22,7 @@ const addBeanSchema = z.object({
 type AddBeanFormValues = z.infer<typeof addBeanSchema>;
 
 function formatRoastDate(date: string | null) {
-  if (!date) {
-    return "Unknown";
-  }
-
+  if (!date) return "Unknown roast date";
   return new Date(date).toLocaleDateString("en-IN", {
     year: "numeric",
     month: "short",
@@ -36,21 +30,20 @@ function formatRoastDate(date: string | null) {
   });
 }
 
+type FilterTab = "all" | "whole" | "ground";
+
 export default function MyBeansPage() {
   const { userBeans, fetchBeans, addBean, deleteBean, isLoading } = useBeansStore();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [roasters, setRoasters] = useState<string[]>([]);
   const [catalogBeans, setCatalogBeans] = useState<CatalogBean[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterTab, setFilterTab] = useState<FilterTab>("all");
 
   const form = useForm<AddBeanFormValues>({
     resolver: zodResolver(addBeanSchema),
-    defaultValues: {
-      roaster: "",
-      coffeeId: "",
-      roastDate: "",
-      isPreGround: false,
-    },
+    defaultValues: { roaster: "", coffeeId: "", roastDate: "", isPreGround: false },
   });
 
   const selectedRoaster = form.watch("roaster");
@@ -58,25 +51,19 @@ export default function MyBeansPage() {
   const isPreGround = form.watch("isPreGround");
 
   const roasterOptions = useMemo(
-    () => roasters.map((roaster) => ({ label: roaster, value: roaster })),
+    () => roasters.map((r) => ({ label: r, value: r })),
     [roasters],
   );
   const beanOptions = useMemo(
-    () =>
-      catalogBeans.map((bean) => ({
-        label: bean.name,
-        value: bean.coffee_id,
-      })),
+    () => catalogBeans.map((b) => ({ label: b.name, value: b.coffee_id })),
     [catalogBeans],
   );
 
-  useEffect(() => {
-    fetchBeans();
-  }, [fetchBeans]);
+  useEffect(() => { fetchBeans(); }, [fetchBeans]);
 
   useEffect(() => {
     getCatalogRoasters()
-      .then((data) => setRoasters(data))
+      .then(setRoasters)
       .catch(() => setRoasters([]));
   }, []);
 
@@ -86,22 +73,16 @@ export default function MyBeansPage() {
       form.setValue("coffeeId", "");
       return;
     }
-
     setCatalogLoading(true);
     getCatalogBeansByRoaster(selectedRoaster)
-      .then((data) => {
-        setCatalogBeans(data);
-      })
+      .then(setCatalogBeans)
       .catch(() => setCatalogBeans([]))
       .finally(() => setCatalogLoading(false));
   }, [selectedRoaster, form]);
 
   async function onSubmit(values: AddBeanFormValues) {
-    const selectedBean = catalogBeans.find((bean) => bean.coffee_id === values.coffeeId);
-    if (!selectedBean) {
-      return;
-    }
-
+    const selectedBean = catalogBeans.find((b) => b.coffee_id === values.coffeeId);
+    if (!selectedBean) return;
     await addBean({
       coffee_id: values.coffeeId,
       roast_date: values.roastDate?.trim() ? values.roastDate : null,
@@ -109,154 +90,282 @@ export default function MyBeansPage() {
       name: selectedBean.name,
       roaster: selectedBean.roaster,
     });
-
-    form.reset({
-      roaster: "",
-      coffeeId: "",
-      roastDate: "",
-      isPreGround: false,
-    });
+    form.reset({ roaster: "", coffeeId: "", roastDate: "", isPreGround: false });
     setCatalogBeans([]);
     setSheetOpen(false);
   }
 
+  const filteredBeans = useMemo(() => {
+    return userBeans.filter((bean) => {
+      const matchesSearch =
+        !search ||
+        bean.beanName.toLowerCase().includes(search.toLowerCase()) ||
+        bean.roaster.toLowerCase().includes(search.toLowerCase());
+      const matchesFilter =
+        filterTab === "all" ||
+        (filterTab === "ground" && bean.isPreGround) ||
+        (filterTab === "whole" && !bean.isPreGround);
+      return matchesSearch && matchesFilter;
+    });
+  }, [userBeans, search, filterTab]);
+
   return (
-    <section className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-mocha/70">My Beans</p>
-          <h1 className="font-serif text-4xl font-bold leading-tight text-espresso">Manage your coffees</h1>
-          <p className="mt-1 text-sm text-mocha/80">
-            Add beans from the Indian catalog and reuse them in your brew flow.
-          </p>
+    <main className="flex flex-col min-h-full pb-28">
+      {/* Search */}
+      <div className="px-4 py-3">
+        <div className="flex items-center gap-3 h-12 rounded-xl bg-primary/10 px-4">
+          <span className="material-symbols-outlined text-primary/60">search</span>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search your coffee collection"
+            className="flex-1 bg-transparent text-slate-100 placeholder:text-primary/40 text-sm outline-none"
+          />
         </div>
+      </div>
 
-        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-          <SheetTrigger asChild>
-            <Button size="icon" className="h-11 w-11 rounded-full shadow-card" aria-label="Add beans">
-              <Plus className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>Add Beans</SheetTitle>
-              <SheetDescription>Choose a roaster, pick a bean, and optionally add roast details.</SheetDescription>
-            </SheetHeader>
+      {/* Filter tabs */}
+      <div className="flex gap-3 px-4 py-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        {(["all", "whole", "ground"] as FilterTab[]).map((tab) => {
+          const labels: Record<FilterTab, string> = { all: "All Beans", whole: "Whole Bean", ground: "Ground" };
+          const active = filterTab === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setFilterTab(tab)}
+              className={`flex h-9 shrink-0 items-center justify-center gap-1 rounded-full px-4 text-sm font-semibold transition-colors ${
+                active
+                  ? "bg-primary text-background-dark"
+                  : "bg-primary/10 text-primary/80 border border-primary/20"
+              }`}
+            >
+              {labels[tab]}
+              {tab !== "all" && (
+                <span className="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      {/* Bean list */}
+      <div className="flex-1 px-4 py-3 flex flex-col gap-4">
+        {isLoading && (
+          <p className="text-sm text-slate-500 text-center py-8">Loading your beans…</p>
+        )}
+
+        {!isLoading && userBeans.length === 0 && (
+          <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+            <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-4xl text-primary/60">coffee</span>
+            </div>
+            <h2 className="text-lg font-bold text-slate-100">No beans yet</h2>
+            <p className="text-sm text-slate-500 max-w-xs">
+              Add your first bag so the brew flow can start with bean-first selection.
+            </p>
+            <button
+              onClick={() => setSheetOpen(true)}
+              className="mt-2 bg-primary text-background-dark font-semibold text-sm px-6 py-3 rounded-xl hover:scale-[1.02] transition-transform"
+            >
+              Add Your First Beans
+            </button>
+          </div>
+        )}
+
+        {!isLoading && userBeans.length > 0 && filteredBeans.length === 0 && (
+          <p className="text-sm text-slate-500 text-center py-8">No beans match your search.</p>
+        )}
+
+        {/* Bean cards
+            Style reference (commented-out mock shapes):
+            { id: "1", roaster: "Blue Tokai", beanName: "Attikan Estate", roastDate: "2023-10-20", isPreGround: false }
+            { id: "2", roaster: "Third Wave", beanName: "El Diablo Blend", roastDate: "2023-11-12", isPreGround: true }
+        */}
+        {filteredBeans.map((bean) => (
+          <article
+            key={bean.id}
+            className="flex flex-col gap-3 rounded-xl bg-primary/5 border border-primary/10 p-4"
+          >
+            <div className="flex gap-4">
+              {/* Image placeholder — swap with real image when available */}
+              <div className="w-24 h-24 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-4xl text-primary/50">coffee</span>
+              </div>
+              <div className="flex flex-col justify-between py-1 flex-1 min-w-0">
+                <div>
+                  <div className="flex justify-between items-start gap-2">
+                    <p className="text-primary text-xs font-bold uppercase tracking-wider truncate">
+                      {bean.roaster}
+                    </p>
+                    <span
+                      className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                        bean.isPreGround
+                          ? "bg-primary/10 text-primary/60"
+                          : "bg-primary/20 text-primary"
+                      }`}
+                    >
+                      {bean.isPreGround ? "GROUND" : "WHOLE"}
+                    </span>
+                  </div>
+                  <p className="text-slate-100 text-lg font-bold leading-tight mt-0.5 truncate">
+                    {bean.beanName}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-primary/40">
+                  <span className="material-symbols-outlined text-sm">calendar_today</span>
+                  <p className="text-xs font-medium">Roasted: {formatRoastDate(bean.roastDate)}</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-2 border-t border-primary/10">
+              <button
+                onClick={() => deleteBean(bean.id)}
+                className="flex-1 h-9 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center justify-center gap-2 hover:bg-primary/20 transition-colors"
+                aria-label={`Delete ${bean.beanName}`}
+              >
+                <span className="material-symbols-outlined text-sm">delete</span>
+                Remove
+              </button>
+              <Link
+                href="/log-brew"
+                className="flex-1 h-9 rounded-lg bg-primary text-background-dark text-sm font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+              >
+                <span className="material-symbols-outlined text-sm">coffee</span>
+                Brew Now
+              </Link>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {/* Floating Add Button + Sheet */}
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetTrigger asChild>
+          <button
+            className="fixed bottom-24 right-6 flex size-14 items-center justify-center rounded-full bg-primary text-background-dark shadow-xl hover:scale-105 transition-transform active:scale-95 z-20"
+            aria-label="Add beans"
+          >
+            <span className="material-symbols-outlined text-3xl">add</span>
+          </button>
+        </SheetTrigger>
+
+        <SheetContent
+          side="bottom"
+          className="bg-[#2a1d11] border-t border-primary/20 text-slate-100 rounded-t-3xl px-0 pt-0 pb-8 max-h-[90dvh] overflow-y-auto"
+        >
+          {/* Drag handle */}
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1 rounded-full bg-slate-600" />
+          </div>
+
+          {/* Accessible title (sr-only) — visible title is the h2 below */}
+          <SheetTitle className="sr-only">Add New Bean</SheetTitle>
+
+          {/* Sheet header */}
+          <div className="flex items-center justify-between px-6 py-4">
+            <h2 className="text-xl font-bold text-slate-100">Add New Bean</h2>
+            <button
+              onClick={() => setSheetOpen(false)}
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-slate-400 hover:text-slate-100 transition-colors"
+              aria-label="Close"
+            >
+              <span className="material-symbols-outlined text-lg">close</span>
+            </button>
+          </div>
+
+          <form onSubmit={form.handleSubmit(onSubmit)} className="px-6 flex flex-col gap-5">
+            {/* Roaster */}
+            <div className="flex flex-col gap-2">
+              <p className="text-primary text-xs font-bold uppercase tracking-wider">Select Roaster</p>
               <SearchableCombobox
-                label="Roaster"
+                label=""
                 placeholder="Select a roaster"
-                searchPlaceholder="Search roasters..."
+                searchPlaceholder="Search roasters…"
                 value={selectedRoaster}
-                onChange={(value) => {
-                  form.setValue("roaster", value, { shouldValidate: true });
-                }}
+                onChange={(value) => form.setValue("roaster", value, { shouldValidate: true })}
                 options={roasterOptions}
               />
-              {form.formState.errors.roaster ? (
-                <p className="text-xs text-red-700">{form.formState.errors.roaster.message}</p>
-              ) : null}
+              {form.formState.errors.roaster && (
+                <p className="text-xs text-red-400">{form.formState.errors.roaster.message}</p>
+              )}
+            </div>
 
+            {/* Bean variety */}
+            <div className="flex flex-col gap-2">
+              <p className="text-primary text-xs font-bold uppercase tracking-wider">Select Bean Variety</p>
               <SearchableCombobox
-                label="Bean Name"
+                label=""
                 placeholder={selectedRoaster ? "Select a bean" : "Pick roaster first"}
-                searchPlaceholder="Search beans..."
+                searchPlaceholder="Search beans…"
                 value={selectedCoffeeId}
-                onChange={(value) => {
-                  form.setValue("coffeeId", value, { shouldValidate: true });
-                }}
+                onChange={(value) => form.setValue("coffeeId", value, { shouldValidate: true })}
                 options={beanOptions}
                 disabled={!selectedRoaster || catalogLoading}
               />
-              {form.formState.errors.coffeeId ? (
-                <p className="text-xs text-red-700">{form.formState.errors.coffeeId.message}</p>
-              ) : null}
+              {form.formState.errors.coffeeId && (
+                <p className="text-xs text-red-400">{form.formState.errors.coffeeId.message}</p>
+              )}
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="roast-date">Roast Date (Optional)</Label>
-                <div className="relative">
-                  <CalendarDays className="pointer-events-none absolute left-3 top-2.5 h-5 w-5 text-mocha/70" />
-                  <input
-                    id="roast-date"
-                    type="date"
-                    {...form.register("roastDate")}
-                    className="h-10 w-full rounded-xl border border-mocha/20 bg-steam pl-10 pr-3 text-sm text-espresso outline-none focus:ring-2 focus:ring-mocha/40"
-                  />
-                </div>
-                <p className="text-xs text-mocha/70">
-                  Adding the roast date helps us dial in freshness for better taste.
+            {/* Roast date + Format row */}
+            <div className="flex gap-4">
+              {/* Roast date */}
+              <div className="flex flex-col gap-2 flex-1">
+                <p className="text-primary text-xs font-bold uppercase tracking-wider">Roast Date</p>
+                <input
+                  id="roast-date"
+                  type="date"
+                  {...form.register("roastDate")}
+                  className="h-12 w-full rounded-xl border border-primary/20 bg-primary/5 px-3 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary/40 [color-scheme:dark]"
+                />
+                <p className="text-[10px] text-slate-500 leading-tight">
+                  Helps dial in freshness advice.
                 </p>
               </div>
 
-              <div className="flex items-center justify-between rounded-xl border border-mocha/10 bg-cream px-3 py-2">
-                <div>
-                  <p className="text-sm font-medium text-espresso">Pre-ground</p>
-                  <p className="text-xs text-mocha/70">Leave off for whole bean.</p>
+              {/* Format segmented control */}
+              <div className="flex flex-col gap-2">
+                <p className="text-primary text-xs font-bold uppercase tracking-wider">Format</p>
+                <div className="flex h-12 rounded-xl border border-primary/20 bg-primary/5 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => form.setValue("isPreGround", false, { shouldValidate: true })}
+                    className={`flex-1 px-4 text-sm font-bold transition-colors ${
+                      !isPreGround
+                        ? "bg-primary/20 text-primary"
+                        : "text-slate-500 hover:text-slate-300"
+                    }`}
+                  >
+                    WHOLE
+                  </button>
+                  <div className="w-px bg-primary/20" />
+                  <button
+                    type="button"
+                    onClick={() => form.setValue("isPreGround", true, { shouldValidate: true })}
+                    className={`flex-1 px-4 text-sm font-bold transition-colors ${
+                      isPreGround
+                        ? "bg-primary text-background-dark"
+                        : "text-slate-500 hover:text-slate-300"
+                    }`}
+                  >
+                    GROUND
+                  </button>
                 </div>
-                <Switch
-                  checked={isPreGround}
-                  onCheckedChange={(checked) => form.setValue("isPreGround", checked, { shouldValidate: true })}
-                />
               </div>
+            </div>
 
-              <Button className="mt-2 w-full" type="submit" disabled={form.formState.isSubmitting}>
-                Save Bean
-              </Button>
-            </form>
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      {isLoading ? <p className="text-sm text-mocha/80">Loading your beans...</p> : null}
-
-      {!userBeans.length && !isLoading ? (
-        <div className="rounded-[2rem] border border-mocha/10 bg-steam p-6 text-center shadow-card">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-latte/70">
-            <Bean className="h-7 w-7 text-mocha" />
-          </div>
-          <h2 className="font-serif text-2xl font-bold text-espresso">You haven&apos;t added any beans yet</h2>
-          <p className="mx-auto mt-2 max-w-xs text-sm text-mocha/75">
-            Add your first bag so the brew flow can start with bean-first selection.
-          </p>
-          <Button className="mt-5" onClick={() => setSheetOpen(true)}>
-            Add Your First Beans
-          </Button>
-        </div>
-      ) : null}
-
-      {userBeans.length ? (
-        <div className="space-y-3">
-          {userBeans.map((bean) => (
-            <article
-              key={bean.id}
-              className="rounded-3xl border border-mocha/10 bg-steam p-4 shadow-card"
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={form.formState.isSubmitting}
+              className="w-full h-14 rounded-xl bg-primary text-background-dark text-base font-bold hover:scale-[1.01] transition-transform disabled:opacity-50 disabled:cursor-not-allowed mt-2"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-mocha/70">{bean.roaster}</p>
-                  <h3 className="font-serif text-xl font-semibold text-espresso">{bean.beanName}</h3>
-                  <p className="mt-1 text-sm text-mocha/80">Roast Date: {formatRoastDate(bean.roastDate)}</p>
-                  {bean.isPreGround ? (
-                    <span className="mt-2 inline-flex rounded-full bg-mocha px-2.5 py-1 text-xs font-medium text-cream">
-                      Pre-ground
-                    </span>
-                  ) : null}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-mocha/80"
-                  aria-label={`Delete ${bean.beanName}`}
-                  onClick={() => deleteBean(bean.id)}
-                >
-                  <Trash2 className="h-5 w-5" />
-                </Button>
-              </div>
-            </article>
-          ))}
-        </div>
-      ) : null}
-    </section>
+              {form.formState.isSubmitting ? "Saving…" : "Save to My Beans"}
+            </button>
+          </form>
+        </SheetContent>
+      </Sheet>
+    </main>
   );
 }

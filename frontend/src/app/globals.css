@@ -2,15 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap");
+
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 body {
-  @apply min-h-screen bg-cream text-charcoal font-sans;
-  background-image:
-    radial-gradient(circle at top, rgba(111, 78, 55, 0.08), transparent 28%),
-    linear-gradient(180deg, #fffaf3 0%, #f6f0e7 45%, #efe6d8 100%);
+  @apply min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 flex flex-col;
+  font-family: 'Work Sans', sans-serif;
 }
 
 a {
@@ -50,4 +50,12 @@ button {
 
 .animate-pulse-soft {
   animation: pulse-soft 1.2s ease-in-out infinite;
+}
+
+.phone-fab {
+  right: max(1.5rem, calc(50% - 15rem + 1.5rem));
+}
+
+.latte-gradient {
+  background: linear-gradient(180deg, rgba(244, 157, 37, 0.1) 0%, rgba(253, 248, 243, 0) 100%);
 }

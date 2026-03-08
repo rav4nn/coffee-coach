@@ -1,23 +1,34 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        cream: "#f6f0e7",
-        latte: "#e8dccb",
-        mocha: "#6f4e37",
-        espresso: "#3a2a21",
-        steam: "#fffaf3",
-        charcoal: "#2d2926",
+        cream: "#1b130b",
+        latte: "#2a1d11",
+        mocha: "#f49d25",
+        espresso: "#f6efe4",
+        steam: "#2f210f",
+        charcoal: "#cbbba9",
+        primary: "#f49d25",
+        "background-light": "#fdf8f3",
+        "background-dark": "#221a10",
       },
       fontFamily: {
-        serif: ["Georgia", "Cambria", "Times New Roman", "serif"],
-        sans: ["ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Work Sans", "sans-serif"],
+        serif: ["Work Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["Work Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
+      borderRadius: {
+        DEFAULT: "0.25rem",
+        lg: "0.5rem",
+        xl: "0.75rem",
+        full: "9999px",
       },
       boxShadow: {
-        card: "0 12px 30px rgba(58, 42, 33, 0.08)",
+        card: "0 14px 34px rgba(0, 0, 0, 0.35)",
       },
       maxWidth: {
         phone: "30rem",
