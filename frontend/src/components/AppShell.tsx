@@ -1,14 +1,16 @@
 import type { ReactNode } from "react";
 
 import { AppHeader } from "@/components/AppHeader";
-import { Navbar } from "@/components/Navbar";
+import { BottomNav } from "@/components/BottomNav";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen bg-background-dark flex flex-col">
       <AppHeader />
-      <main className="mx-auto w-full max-w-phone px-4 py-6">{children}</main>
-      <Navbar />
+      <div className="flex-1 w-full mx-auto max-w-phone">
+        {children}
+      </div>
+      <BottomNav />
     </div>
   );
 }

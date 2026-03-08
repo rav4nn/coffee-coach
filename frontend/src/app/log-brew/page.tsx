@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ChevronDown, Droplets, FlaskConical, GlassWater, Hexagon, Snowflake, Triangle } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import {
   getBrewMethodsApi,
   getUserBeansApi,
@@ -33,46 +31,42 @@ const SUPPORTED_METHODS: MethodCardId[] = [
   "cold_brew",
   "south_indian_filter",
 ];
-const POUR_OVER_DEVICE_ALLOWLIST = new Set(["v60", "chemex", "kalita_wave", "clever_dripper"]);
 
-const ICON_MAP: Record<MethodCardId, ComponentType<{ className?: string }>> = {
-  pour_over: ({ className }) => <Triangle className={className} />,
-  aeropress: ({ className }) => <FlaskConical className={className} />,
-  french_press: ({ className }) => <GlassWater className={className} />,
-  moka_pot: ({ className }) => <Hexagon className={className} />,
-  cold_brew: ({ className }) => <Snowflake className={className} />,
-  south_indian_filter: ({ className }) => <Droplets className={className} />,
+const POUR_OVER_DEVICE_ALLOWLIST = new Set([
+  "v60",
+  "chemex",
+  "kalita_wave",
+  "clever_dripper",
+  "hario_switch",
+  "wilfa_pour_over",
+  "origami_dripper",
+]);
+
+const METHOD_ICON: Record<MethodCardId, string> = {
+  pour_over: "water_drop",
+  aeropress: "compress",
+  french_press: "coffee_maker",
+  moka_pot: "soup_kitchen",
+  cold_brew: "ac_unit",
+  south_indian_filter: "filter_alt",
 };
 
-function displayMethodName(method: MethodCardId) {
-  switch (method) {
-    case "pour_over":
-      return "Pour Over";
-    case "aeropress":
-      return "AeroPress";
-    case "french_press":
-      return "French Press";
-    case "moka_pot":
-      return "Moka Pot";
-    case "cold_brew":
-      return "Cold Brew";
-    case "south_indian_filter":
-      return "South Indian Filter";
-    default:
-      return method;
-  }
-}
+const METHOD_LABEL: Record<MethodCardId, string> = {
+  pour_over: "Pour Over",
+  aeropress: "AeroPress",
+  french_press: "French Press",
+  moka_pot: "Moka Pot",
+  cold_brew: "Cold Brew",
+  south_indian_filter: "SI Filter",
+};
 
 function formatRoastDate(value: string | null) {
-  if (!value) {
-    return "";
-  }
-
-  return `Roast Date: ${new Date(value).toLocaleDateString("en-IN", {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString("en-IN", {
     year: "numeric",
     month: "short",
     day: "numeric",
-  })}`;
+  });
 }
 
 export default function LogBrewPage() {
@@ -100,19 +94,18 @@ export default function LogBrewPage() {
 
     async function load() {
       try {
-        const [beansResponseRaw, methodsResponse, pourOverResponse, preferencesResponse] = await Promise.all([
-          getUserBeansApi(),
-          getBrewMethodsApi(),
-          getBrewMethodsApi("pour_over"),
-          getUserPreferencesApi().catch(() => ({
-            last_used_bean_id: storedLastBean,
-            last_used_brew_method: storedLastMethod,
-          })),
-        ]);
+        const [beansResponseRaw, methodsResponse, pourOverResponse, preferencesResponse] =
+          await Promise.all([
+            getUserBeansApi(),
+            getBrewMethodsApi(),
+            getBrewMethodsApi("pour_over"),
+            getUserPreferencesApi().catch(() => ({
+              last_used_bean_id: storedLastBean,
+              last_used_brew_method: storedLastMethod,
+            })),
+          ]);
 
-        if (!mounted) {
-          return;
-        }
+        if (!mounted) return;
 
         const beansResponse =
           beansResponseRaw.length > 0
@@ -128,9 +121,14 @@ export default function LogBrewPage() {
 
         setBeans(beansResponse);
         setMethods(methodsResponse);
-        setPourOverDevices(pourOverResponse.filter((item) => POUR_OVER_DEVICE_ALLOWLIST.has(item.method_id)));
+        setPourOverDevices(
+          pourOverResponse.filter((item) => POUR_OVER_DEVICE_ALLOWLIST.has(item.method_id)),
+        );
 
-        if (preferencesResponse.last_used_bean_id || preferencesResponse.last_used_brew_method) {
+        if (
+          preferencesResponse.last_used_bean_id ||
+          preferencesResponse.last_used_brew_method
+        ) {
           setLocalLastUsed(
             preferencesResponse.last_used_bean_id ?? null,
             preferencesResponse.last_used_brew_method ?? null,
@@ -140,7 +138,9 @@ export default function LogBrewPage() {
         if (beansResponse.length === 1) {
           setSelectedBeanId(beansResponse[0].id);
         } else if (beansResponse.length > 1) {
-          const hasLastBean = beansResponse.some((bean) => bean.id === preferencesResponse.last_used_bean_id);
+          const hasLastBean = beansResponse.some(
+            (bean) => bean.id === preferencesResponse.last_used_bean_id,
+          );
           if (hasLastBean && preferencesResponse.last_used_bean_id) {
             setSelectedBeanId(preferencesResponse.last_used_bean_id);
           }
@@ -153,16 +153,12 @@ export default function LogBrewPage() {
           setSelectedMethodId(preferencesResponse.last_used_brew_method as MethodCardId);
         }
       } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
+        if (mounted) setIsLoading(false);
       }
     }
 
     load();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [persistedBeans, setLocalLastUsed, storedLastBean, storedLastMethod]);
 
   const visibleMethodCards = useMemo(() => {
@@ -175,9 +171,7 @@ export default function LogBrewPage() {
     const hasPourOverFamily = methods.some((method) => method.parent_method === "pour_over");
 
     const cards: Array<{ method_id: MethodCardId; display_name: string }> = [];
-    if (hasPourOverFamily) {
-      cards.push({ method_id: "pour_over", display_name: "Pour Over" });
-    }
+    if (hasPourOverFamily) cards.push({ method_id: "pour_over", display_name: "Pour Over" });
     standalone.forEach((method) => {
       cards.push({
         method_id: method.method_id as MethodCardId,
@@ -190,13 +184,12 @@ export default function LogBrewPage() {
   const selectedBean = beans.find((bean) => bean.id === selectedBeanId);
   const isPourOver = selectedMethodId === "pour_over";
   const canContinue =
-    Boolean(selectedBeanId) && Boolean(selectedMethodId) && (!isPourOver || Boolean(selectedPourOverDeviceId));
+    Boolean(selectedBeanId) &&
+    Boolean(selectedMethodId) &&
+    (!isPourOver || Boolean(selectedPourOverDeviceId));
 
   function handleNext() {
-    if (!canContinue) {
-      return;
-    }
-
+    if (!canContinue) return;
     const finalMethod = isPourOver ? selectedPourOverDeviceId : selectedMethodId;
     setStepOneSelection({
       beanId: selectedBeanId,
@@ -208,37 +201,61 @@ export default function LogBrewPage() {
   }
 
   return (
-    <section className="relative space-y-5">
-      <div className="rounded-2xl border border-mocha/10 bg-steam px-4 py-3 shadow-card">
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-mocha/75">Step 1 of 2</p>
-        <div className="mt-2 flex gap-1">
-          <span className="h-1.5 w-7 rounded-full bg-mocha" />
-          <span className="h-1.5 w-7 rounded-full bg-mocha/20" />
+    <main className="relative px-6 pb-28 overflow-y-auto">
+      {/* Ambient glow blobs */}
+      <div className="fixed top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+
+      {/* Step indicator */}
+      <div className="pt-6 pb-2">
+        <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+          Step 1 of 2
+        </span>
+        <div className="flex gap-1.5 mt-2">
+          <div className="h-1.5 w-12 rounded-full bg-primary" />
+          <div className="h-1.5 w-12 rounded-full bg-primary/20" />
         </div>
       </div>
 
-      <div>
-        <h1 className="font-serif text-4xl font-bold text-espresso">Log a New Brew</h1>
-        <p className="mt-1 text-sm text-mocha/80">Select your bean and brewing method to start the session.</p>
-      </div>
+      {/* Title */}
+      <h1 className="text-3xl font-bold text-slate-100 mt-4 mb-8">Log a New Brew</h1>
 
-      <div className="space-y-3 rounded-3xl border border-mocha/10 bg-steam p-4 shadow-card">
-        <p className="text-sm font-semibold text-espresso">Bean Selection</p>
+      {/* Bean Selection */}
+      <section className="mb-8">
+        <p className="text-sm font-medium text-slate-400 mb-3">Bean Selection</p>
         <div className="relative">
           <button
             type="button"
-            onClick={() => setBeanDropdownOpen((value) => !value)}
-            className="flex h-12 w-full items-center justify-between rounded-xl border border-mocha/20 bg-cream px-3 text-left"
+            onClick={() => setBeanDropdownOpen((v) => !v)}
+            className="flex items-center justify-between w-full p-4 rounded-xl bg-primary/5 border border-primary/20 cursor-pointer"
           >
-            <span className="text-sm text-espresso">
-              {selectedBean ? `${selectedBean.roaster} - ${selectedBean.name}` : "Select a saved bean"}
-            </span>
-            <ChevronDown className="h-4 w-4 text-mocha/80" />
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary">eco</span>
+              <div className="text-left">
+                {selectedBean ? (
+                  <>
+                    <p className="font-semibold text-slate-100">
+                      {selectedBean.roaster} — {selectedBean.name}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {selectedBean.is_pre_ground ? "Ground" : "Whole Bean"}
+                      {selectedBean.roast_date
+                        ? ` • Roasted ${formatRoastDate(selectedBean.roast_date)}`
+                        : ""}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-slate-400 text-sm">Select a saved bean</p>
+                )}
+              </div>
+            </div>
+            <span className="material-symbols-outlined text-slate-400">expand_more</span>
           </button>
-          {beanDropdownOpen ? (
-            <div className="absolute z-20 mt-2 w-full rounded-xl border border-mocha/15 bg-steam p-2 shadow-xl">
+
+          {beanDropdownOpen && (
+            <div className="absolute z-20 mt-2 w-full rounded-xl border border-primary/20 bg-[#2a1d11] shadow-xl overflow-hidden">
               {beans.length ? (
-                <div className="max-h-60 space-y-1 overflow-y-auto">
+                <div className="max-h-60 overflow-y-auto divide-y divide-primary/10">
                   {beans.map((bean) => (
                     <button
                       key={bean.id}
@@ -247,32 +264,36 @@ export default function LogBrewPage() {
                         setSelectedBeanId(bean.id);
                         setBeanDropdownOpen(false);
                       }}
-                      className={`w-full rounded-lg px-3 py-2 text-left ${
-                        selectedBeanId === bean.id ? "bg-latte/70" : "hover:bg-latte/40"
+                      className={`w-full px-4 py-3 text-left transition-colors ${
+                        selectedBeanId === bean.id
+                          ? "bg-primary/20"
+                          : "hover:bg-primary/10"
                       }`}
                     >
-                      <p className="text-sm font-medium text-espresso">
-                        {bean.roaster} - {bean.name}
+                      <p className="text-sm font-semibold text-slate-100">
+                        {bean.roaster} — {bean.name}
                       </p>
-                      {bean.roast_date ? (
-                        <p className="text-xs text-mocha/65">{formatRoastDate(bean.roast_date)}</p>
-                      ) : null}
+                      {bean.roast_date && (
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Roasted {formatRoastDate(bean.roast_date)}
+                        </p>
+                      )}
                     </button>
                   ))}
                 </div>
               ) : (
-                <p className="px-2 py-2 text-sm text-mocha/70">No beans found.</p>
+                <p className="px-4 py-3 text-sm text-slate-500">No beans saved.</p>
               )}
             </div>
-          ) : null}
+          )}
         </div>
-      </div>
+      </section>
 
-      <div className="space-y-3 rounded-3xl border border-mocha/10 bg-steam p-4 shadow-card">
-        <p className="text-sm font-semibold text-espresso">Brew Method</p>
-        <div className="grid grid-cols-3 gap-2">
+      {/* Brew Method Grid */}
+      <section className="mb-8">
+        <p className="text-sm font-medium text-slate-400 mb-4">Brew Method</p>
+        <div className="grid grid-cols-3 gap-3">
           {visibleMethodCards.map((method) => {
-            const Icon = ICON_MAP[method.method_id];
             const active = selectedMethodId === method.method_id;
             return (
               <button
@@ -280,64 +301,87 @@ export default function LogBrewPage() {
                 type="button"
                 onClick={() => {
                   setSelectedMethodId(method.method_id);
-                  if (method.method_id !== "pour_over") {
-                    setSelectedPourOverDeviceId("");
-                  }
+                  if (method.method_id !== "pour_over") setSelectedPourOverDeviceId("");
                 }}
-                className={`flex min-h-[92px] flex-col items-center justify-center rounded-lg border px-2 py-3 text-center ${
-                  active ? "border-mocha bg-latte/70" : "border-mocha/15 bg-stone-100"
+                className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
+                  active
+                    ? "bg-primary border-primary text-background-dark"
+                    : "bg-primary/5 border-white/5 text-slate-300 hover:border-primary/30"
                 }`}
               >
-                <Icon className="h-8 w-8 text-charcoal" />
-                <span className="mt-2 text-xs font-medium text-espresso">{displayMethodName(method.method_id)}</span>
+                <span className="material-symbols-outlined text-3xl mb-2">
+                  {METHOD_ICON[method.method_id]}
+                </span>
+                <span className="text-[10px] font-bold uppercase text-center leading-tight">
+                  {METHOD_LABEL[method.method_id]}
+                </span>
               </button>
             );
           })}
         </div>
+      </section>
 
-        <div
-          className={`overflow-hidden transition-all duration-300 ease-out ${
-            isPourOver ? "max-h-24 opacity-100" : "max-h-0 opacity-0"
-          }`}
-        >
-          <div className="pt-2">
-            <p className="mb-2 text-xs font-medium uppercase tracking-[0.15em] text-mocha/70">Choose Device</p>
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {pourOverDevices.map((device) => (
-                <button
-                  key={device.method_id}
-                  type="button"
-                  onClick={() => setSelectedPourOverDeviceId(device.method_id)}
-                  className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium ${
-                    selectedPourOverDeviceId === device.method_id
-                      ? "border-mocha bg-latte/70 text-espresso"
-                      : "border-mocha/20 bg-cream text-mocha"
-                  }`}
-                >
-                  {device.display_name}
-                </button>
-              ))}
+      {/* Pour Over Device Selection (conditional) */}
+      <section
+        className={`mb-8 transition-all duration-300 ease-out overflow-hidden ${
+          isPourOver ? "max-h-32 opacity-100" : "max-h-0 opacity-0 mb-0"
+        }`}
+      >
+        <p className="text-sm font-medium text-slate-400 mb-3">Select Device</p>
+        <div className="flex flex-wrap gap-2">
+          {pourOverDevices.map((device) => {
+            const active = selectedPourOverDeviceId === device.method_id;
+            return (
+              <button
+                key={device.method_id}
+                type="button"
+                onClick={() => setSelectedPourOverDeviceId(device.method_id)}
+                className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                  active
+                    ? "bg-primary/20 border-primary text-primary"
+                    : "bg-white/5 border-white/10 text-slate-400 hover:border-primary/30"
+                }`}
+              >
+                {device.display_name}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Next Step button */}
+      <button
+        type="button"
+        onClick={handleNext}
+        disabled={!canContinue || isLoading}
+        className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.01] transition-transform"
+      >
+        Next Step
+        <span className="material-symbols-outlined">arrow_forward</span>
+      </button>
+
+      {/* No beans overlay */}
+      {!hasBeans && !isLoading && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-background-dark/80 backdrop-blur-sm p-6">
+          <div className="w-full max-w-sm rounded-2xl border border-primary/20 bg-[#2a1d11] p-6 text-center shadow-2xl">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
+              <span className="material-symbols-outlined text-3xl text-primary/60">coffee</span>
             </div>
+            <h2 className="text-xl font-bold text-slate-100 mb-2">
+              Add your beans first
+            </h2>
+            <p className="text-sm text-slate-400 mb-5">
+              You need at least one saved bean before logging a brew session.
+            </p>
+            <Link
+              href="/my-beans"
+              className="block w-full bg-primary text-background-dark font-bold py-3 rounded-xl text-center hover:scale-[1.01] transition-transform"
+            >
+              Go to My Beans
+            </Link>
           </div>
         </div>
-      </div>
-
-      <Button className="h-12 w-full text-base" disabled={!canContinue || isLoading} onClick={handleNext}>
-        Next
-        <ArrowRight className="ml-2 h-4 w-4" />
-      </Button>
-
-      {!hasBeans && !isLoading ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-charcoal/45 p-4">
-          <div className="w-full max-w-sm rounded-3xl border border-mocha/10 bg-steam p-6 text-center shadow-2xl">
-            <h2 className="font-serif text-2xl font-bold text-espresso">Add your beans first to start logging brews</h2>
-            <p className="mt-2 text-sm text-mocha/75">You need at least one saved bean before logging a brew session.</p>
-            <Button asChild className="mt-5 w-full">
-              <Link href="/my-beans">Go to My Beans</Link>
-            </Button>
-          </div>
-        </div>
-      ) : null}
-    </section>
+      )}
+    </main>
   );
 }
