@@ -39,6 +39,9 @@ wheels/
 .installed.cfg
 *.egg
 
+# Allow frontend src/lib (overrides the Python lib/ rule above)
+!frontend/src/lib/
+
 # Next.js build output
 frontend/.next/
 frontend/tsconfig.tsbuildinfo
