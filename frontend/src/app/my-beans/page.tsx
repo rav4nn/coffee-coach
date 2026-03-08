@@ -251,7 +251,6 @@ export default function MyBeansPage() {
         </SheetTrigger>
 
         <SheetContent
-          side="bottom"
           className="bg-[#2a1d11] border-t border-primary/20 text-slate-100 rounded-t-3xl px-0 pt-0 pb-8 max-h-[90dvh] overflow-y-auto"
         >
           {/* Drag handle */}
