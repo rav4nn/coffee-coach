@@ -201,7 +201,7 @@ export default function LogBrewPage() {
   }
 
   return (
-    <main className="relative px-6 pb-28 overflow-y-auto">
+    <main className="relative px-6 pb-36 overflow-y-auto">
       {/* Ambient glow blobs */}
       <div className="fixed top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
@@ -321,7 +321,7 @@ export default function LogBrewPage() {
       {/* Pour Over Device Selection (conditional) */}
       <section
         className={`mb-8 transition-all duration-300 ease-out overflow-hidden ${
-          isPourOver ? "max-h-32 opacity-100" : "max-h-0 opacity-0 mb-0"
+          isPourOver ? "max-h-64 opacity-100" : "max-h-0 opacity-0 mb-0"
         }`}
       >
         <p className="text-sm font-medium text-slate-400 mb-3">Select Device</p>
