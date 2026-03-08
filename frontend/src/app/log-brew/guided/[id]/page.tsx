@@ -175,6 +175,8 @@ export default function GuidedRecipeDetailPage() {
   }
 
   function handleAdvance() {
+    if (autoTimeoutRef.current) clearTimeout(autoTimeoutRef.current);
+    setAutoAdvancing(false);
     const activeStep = mergedSteps[currentIndex];
     if (!activeStep) return;
     const actualDuration = Math.max(0, Math.floor((Date.now() - stepStartAt) / 1000));
@@ -438,17 +440,30 @@ export default function GuidedRecipeDetailPage() {
 
       {/* ── Bottom action button ── */}
       <div className={`fixed z-40 left-0 right-0 transition-all duration-300 ease-in-out ${
-        isBrewing ? "bottom-6 flex justify-center" : "bottom-20 px-4"
+        isBrewing ? "bottom-6 px-4 flex flex-col items-center gap-2" : "bottom-20 px-4"
       }`}>
         {isBrewing ? (
-          <button
-            type="button"
-            onClick={() => setShowCancelConfirm(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-600 bg-background-dark/90 backdrop-blur-md text-sm font-medium text-slate-400 hover:text-slate-200 hover:border-slate-400 transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm">close</span>
-            Cancel Brew
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={handleAdvance}
+              disabled={currentStep?.duration_seconds != null && countdownRemaining !== null && countdownRemaining > 0}
+              className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 active:scale-[0.98] transition-all"
+            >
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                {currentIndex >= mergedSteps.length - 1 ? "check_circle" : "arrow_forward"}
+              </span>
+              {currentIndex >= mergedSteps.length - 1 ? "Finish Brew" : "Next Step"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowCancelConfirm(true)}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              <span className="material-symbols-outlined text-sm">close</span>
+              Cancel Brew
+            </button>
+          </>
         ) : (
           <button
             type="button"
