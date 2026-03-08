@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { useBrewSessionStore } from "@/lib/brewSessionStore";
+
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/log-brew", label: "Log Brew", icon: "add_circle" },
@@ -12,9 +14,10 @@ const NAV_ITEMS = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const isBrewingActive = useBrewSessionStore((state) => state.isBrewingActive);
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-phone border-t border-primary/10 bg-background-dark/95 backdrop-blur-md px-4 pb-6 pt-3 z-50">
+    <nav className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-phone border-t border-primary/10 bg-background-dark/95 backdrop-blur-md px-4 pb-6 pt-3 z-50 transition-transform duration-300 ease-in-out ${isBrewingActive ? "translate-y-full" : "translate-y-0"}`}>
       <div className="flex justify-between items-center">
         {NAV_ITEMS.map((item) => {
           const active =
