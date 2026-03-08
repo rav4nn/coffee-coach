@@ -3,10 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ListOrdered, PencilLine } from "lucide-react";
 
 import recipes from "@/data/recipes.json";
-import { Button } from "@/components/ui/button";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 
 type Choice = "guided" | "freestyle";
@@ -41,6 +39,12 @@ function prettyMethodName(methodKey: string | null) {
       return "Kalita Wave";
     case "clever_dripper":
       return "Clever Dripper";
+    case "hario_switch":
+      return "Hario Switch";
+    case "wilfa_pour_over":
+      return "Wilfa Pour Over";
+    case "origami_dripper":
+      return "Origami Dripper";
     case "aeropress":
       return "AeroPress";
     case "french_press":
@@ -49,6 +53,8 @@ function prettyMethodName(methodKey: string | null) {
       return "Moka Pot";
     case "cold_brew":
       return "Cold Brew";
+    case "south_indian_filter":
+      return "Filter Kaapi";
     default:
       return methodKey.replace(/_/g, " ");
   }
@@ -82,74 +88,103 @@ export default function LogBrewStepTwoPage() {
   }
 
   return (
-    <section className="space-y-5">
-      <div className="rounded-2xl border border-mocha/10 bg-steam px-4 py-3 shadow-card">
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-mocha/75">Step 2 of 2</p>
-        <div className="mt-2 flex gap-1">
-          <span className="h-1.5 w-7 rounded-full bg-mocha/40" />
-          <span className="h-1.5 w-7 rounded-full bg-mocha" />
+    <main className="relative flex flex-col min-h-full px-6 pb-28 overflow-y-auto">
+      {/* Ambient glow blobs */}
+      <div className="fixed top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+
+      {/* Step indicator */}
+      <div className="pt-8 pb-4 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors"
+          aria-label="Go back"
+        >
+          <span className="material-symbols-outlined text-slate-100">arrow_back</span>
+        </button>
+        <div className="flex gap-1">
+          <div className="h-1.5 w-12 rounded-full bg-primary" />
+          <div className="h-1.5 w-12 rounded-full bg-primary" />
         </div>
+        {/* Spacer to balance the back button */}
+        <div className="size-10" />
       </div>
 
-      <div>
-        <h1 className="font-serif text-4xl font-bold text-espresso">Choose Your Logging Style</h1>
-        <p className="mt-1 text-sm text-mocha/80">Pick how you want to continue this brew session.</p>
-      </div>
+      {/* Title */}
+      <h1 className="text-3xl font-bold text-slate-100 mt-4 mb-2">Choose Your Logging Style</h1>
+      <p className="text-sm text-slate-400 mb-8">Pick how you want to continue this brew session.</p>
 
-      {!selectedMethodId ? (
-        <div className="rounded-3xl border border-mocha/10 bg-steam p-4 shadow-card">
-          <p className="text-sm text-mocha/80">Step 1 selection is missing. Choose bean and method first.</p>
-          <Button asChild className="mt-3">
-            <Link href="/log-brew">Back to Step 1</Link>
-          </Button>
+      {/* Missing step 1 guard */}
+      {!selectedMethodId && (
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 mb-6">
+          <p className="text-sm text-slate-400 mb-3">Step 1 selection is missing. Choose bean and method first.</p>
+          <Link
+            href="/log-brew"
+            className="inline-flex items-center gap-2 text-sm font-bold text-primary"
+          >
+            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            Back to Step 1
+          </Link>
         </div>
-      ) : null}
+      )}
 
-      <div className="space-y-3">
+      {/* Option cards */}
+      <div className="flex flex-col gap-4 flex-1">
+        {/* Follow a Recipe */}
         <button
           type="button"
           onClick={() => setChoice("guided")}
-          className={`w-full rounded-2xl border p-4 text-left shadow-card transition-colors ${
-            choice === "guided" ? "border-mocha bg-latte/60" : "border-mocha/15 bg-stone-100"
+          className={`w-full flex flex-col p-5 rounded-xl border-2 text-left transition-all ${
+            choice === "guided"
+              ? "border-primary bg-primary/10"
+              : "border-transparent bg-primary/5 hover:border-primary/30"
           }`}
         >
-          <div className="flex items-start gap-3">
-            <div className="rounded-xl bg-cream p-2.5">
-              <ListOrdered className="h-8 w-8 text-charcoal" />
+          <div className="flex items-start justify-between w-full mb-3">
+            <div className="p-3 bg-primary/20 rounded-lg">
+              <span className="material-symbols-outlined text-primary text-3xl">receipt_long</span>
             </div>
-            <div className="min-w-0">
-              <h2 className="font-serif text-2xl font-semibold text-espresso">Follow a Recipe</h2>
-              <p className="text-sm text-mocha/80">We&apos;ll guide you step by step</p>
-              <span className="mt-2 inline-flex rounded-full border border-mocha/20 bg-cream px-2.5 py-1 text-xs text-mocha">
-                {recipeCount} recipes for {prettyMethodName(recipeMethodKey)}
+            {recipeMethodKey && (
+              <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-widest border border-primary/20">
+                {recipeCount} Recipes for {prettyMethodName(recipeMethodKey)}
               </span>
-            </div>
+            )}
           </div>
+          <h3 className="text-xl font-bold text-slate-100 mb-1">Follow a Recipe</h3>
+          <p className="text-sm text-slate-400">We&apos;ll guide you step by step through every pour and wait time.</p>
         </button>
 
+        {/* Use My Own Recipe */}
         <button
           type="button"
           onClick={() => setChoice("freestyle")}
-          className={`w-full rounded-2xl border p-4 text-left shadow-card transition-colors ${
-            choice === "freestyle" ? "border-mocha bg-latte/50" : "border-mocha/10 bg-stone-50"
+          className={`w-full flex flex-col p-5 rounded-xl border-2 text-left transition-all ${
+            choice === "freestyle"
+              ? "border-primary bg-primary/10"
+              : "border-transparent bg-primary/5 hover:border-primary/30"
           }`}
         >
-          <div className="flex items-start gap-3">
-            <div className="rounded-xl bg-cream p-2.5">
-              <PencilLine className="h-8 w-8 text-charcoal" />
-            </div>
-            <div>
-              <h2 className="font-serif text-2xl font-semibold text-espresso">Use My Own Recipe</h2>
-              <p className="text-sm text-mocha/75">Just log what you brew</p>
+          <div className="flex items-start justify-between w-full mb-3">
+            <div className="p-3 bg-primary/20 rounded-lg">
+              <span className="material-symbols-outlined text-primary text-3xl">edit_note</span>
             </div>
           </div>
+          <h3 className="text-xl font-bold text-slate-100 mb-1">Use My Own Recipe</h3>
+          <p className="text-sm text-slate-400">Feeling confident? Just log what you brew as you go.</p>
         </button>
       </div>
 
-      <Button className="h-12 w-full text-base" disabled={!choice || !selectedMethodId} onClick={handleNext}>
+      {/* Next button */}
+      <button
+        type="button"
+        onClick={handleNext}
+        disabled={!choice || !selectedMethodId}
+        className="w-full mt-8 bg-primary text-background-dark font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.01] transition-transform"
+      >
         Next
-        <ArrowRight className="ml-2 h-4 w-4" />
-      </Button>
-    </section>
+        <span className="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </main>
   );
 }

@@ -57,7 +57,7 @@ const METHOD_LABEL: Record<MethodCardId, string> = {
   french_press: "French Press",
   moka_pot: "Moka Pot",
   cold_brew: "Cold Brew",
-  south_indian_filter: "SI Filter",
+  south_indian_filter: "Filter Kaapi",
 };
 
 function formatRoastDate(value: string | null) {
@@ -207,11 +207,8 @@ export default function LogBrewPage() {
       <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
       {/* Step indicator */}
-      <div className="pt-6 pb-2">
-        <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-          Step 1 of 2
-        </span>
-        <div className="flex gap-1.5 mt-2">
+      <div className="pt-8 pb-4 flex justify-center">
+        <div className="flex gap-1">
           <div className="h-1.5 w-12 rounded-full bg-primary" />
           <div className="h-1.5 w-12 rounded-full bg-primary/20" />
         </div>
