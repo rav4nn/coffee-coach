@@ -1,7 +1,6 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import Image from "next/image";
@@ -28,8 +27,7 @@ const BREW_METHODS: { id: MethodCardId; label: string; icon: string }[] = [
 const AVATARS = ["avatar_1", "avatar_2", "avatar_3", "avatar_4", "avatar_5"];
 
 export default function OnboardingPage() {
-  const { data: session, update } = useSession();
-  const router = useRouter();
+  const { data: session } = useSession();
 
   const [name, setName] = useState(session?.user?.name ?? "");
   const [age, setAge] = useState("");
@@ -60,8 +58,7 @@ export default function OnboardingPage() {
     setError(null);
     try {
       await patchUserProfileApi({ name: name.trim(), age: ageNum, avatar, primary_equipment: equipment });
-      await update();
-      router.push("/");
+      window.location.href = "/";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setSaving(false);
