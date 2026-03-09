@@ -60,6 +60,7 @@ export default function GuidedRecipeDetailPage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sessionStartedAt = useRef<string | null>(null);
   const currentStepRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLElement>(null);
 
   // Load recipe
   useEffect(() => {
@@ -133,6 +134,15 @@ export default function GuidedRecipeDetailPage() {
   // handleAdvance is defined below — safe to omit from deps since it uses refs/stable values
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoAdvancing, countdownRemaining, currentStep?.duration_seconds, phase]);
+
+  // Scroll to top when brewing starts (after layout settles)
+  useEffect(() => {
+    if (phase === "brewing") {
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 100);
+    }
+  }, [phase]);
 
   // Reset step timer and scroll current step into view when index changes
   useEffect(() => {
@@ -299,7 +309,7 @@ export default function GuidedRecipeDetailPage() {
       </header>
 
       {/* ── Scrollable content ── */}
-      <main className="flex-1 overflow-y-auto pb-36">
+      <main ref={scrollContainerRef} className="flex-1 overflow-y-auto pb-36">
         <div className="p-4">
 
           {/* === COLLAPSIBLE: Image placeholder + Brew params === */}

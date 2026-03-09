@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { SessionProvider } from "next-auth/react";
 
 import "@/app/globals.css";
 import { AppShell } from "@/components/AppShell";
+import { AuthTokenSync } from "@/components/AuthTokenSync";
 
 export const metadata: Metadata = {
   title: "Coffee Coach",
@@ -17,7 +19,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <AppShell>{children}</AppShell>
+        <SessionProvider>
+          <AuthTokenSync />
+          <AppShell>{children}</AppShell>
+        </SessionProvider>
       </body>
     </html>
   );

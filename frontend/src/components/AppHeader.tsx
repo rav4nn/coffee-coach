@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import { useBrewSessionStore } from "@/lib/brewSessionStore";
 import { ProfileDrawer } from "@/components/ProfileDrawer";
 
-// Username is static for now — will be replaced by auth/profile data later.
-const USERNAME = "Brewmaster Jack";
-
-function getInitials(name: string): string {
+function getInitials(name: string | null | undefined): string {
+  if (!name) return "?";
   return name
     .split(" ")
     .map((n) => n[0])
@@ -20,6 +21,12 @@ function getInitials(name: string): string {
 export function AppHeader() {
   const isBrewingActive = useBrewSessionStore((state) => state.isBrewingActive);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const pathname = usePathname();
+  const { data: session } = useSession();
+
+  if (pathname.startsWith("/log-brew")) return null;
+
+  const user = session?.user;
 
   return (
     <>
@@ -35,10 +42,20 @@ export function AppHeader() {
           <h1 className="text-xl font-bold tracking-tight text-slate-100">Coffee Coach</h1>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/20 flex items-center justify-center flex-shrink-0 hover:border-primary/60 hover:bg-primary/30 transition-colors"
+            className="w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/20 flex items-center justify-center flex-shrink-0 hover:border-primary/60 hover:bg-primary/30 transition-colors overflow-hidden"
             aria-label="Open profile"
           >
-            <span className="text-sm font-bold text-primary">{getInitials(USERNAME)}</span>
+            {user?.image ? (
+              <Image
+                src={user.image}
+                alt={user.name ?? "Profile"}
+                width={40}
+                height={40}
+                className="w-full h-full object-cover rounded-full"
+              />
+            ) : (
+              <span className="text-sm font-bold text-primary">{getInitials(user?.name)}</span>
+            )}
           </button>
         </div>
       </header>

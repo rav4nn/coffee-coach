@@ -3,6 +3,8 @@
 **/.claude/
 **/.clineignore
 **/testing/
+frontend/stitch/
+coffee-coach-rebuild-prompts-v2.md
 
 # IDE and editor files
 .vscode/

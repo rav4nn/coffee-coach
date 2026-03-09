@@ -36,7 +36,9 @@ export const usePreferencesStore = create<PreferencesStore>()(
         }),
     }),
     {
-      name: "coffee-coach-preferences-store",
+      name: typeof window !== "undefined"
+        ? `coffee-coach-prefs-${window.__CC_USER_ID__ ?? "anon"}`
+        : "coffee-coach-prefs-anon",
     },
   ),
 );

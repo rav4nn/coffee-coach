@@ -1,12 +1,18 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
-const USER_ID = process.env.NEXT_PUBLIC_USER_ID ?? "coffee-coach-user";
+
+// In-memory token set by AuthTokenSync after sign-in. Never stored in localStorage.
+let _accessToken: string | null = null;
+
+export function setAccessToken(token: string | null) {
+  _accessToken = token;
+}
 
 export async function apiFetch(path: string, init?: RequestInit) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      "X-User-Id": USER_ID,
+      ...(_accessToken ? { Authorization: `Bearer ${_accessToken}` } : {}),
       ...(init?.headers ?? {}),
     },
     cache: "no-store",
@@ -83,7 +89,7 @@ function requestInit(init?: RequestInit): RequestInit {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      "X-User-Id": USER_ID,
+      ...(_accessToken ? { Authorization: `Bearer ${_accessToken}` } : {}),
       ...(init?.headers ?? {}),
     },
     cache: "no-store",

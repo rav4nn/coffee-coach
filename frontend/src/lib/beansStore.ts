@@ -90,7 +90,9 @@ export const useBeansStore = create<BeansStore>()(
       },
     }),
     {
-      name: "coffee-coach-beans-store",
+      name: typeof window !== "undefined"
+        ? `coffee-coach-beans-${window.__CC_USER_ID__ ?? "anon"}`
+        : "coffee-coach-beans-anon",
       partialize: (state) => ({ userBeans: state.userBeans }),
     },
   ),
