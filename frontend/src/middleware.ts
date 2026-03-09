@@ -2,11 +2,11 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
 export default auth((req) => {
-  const profileComplete = req.auth?.user?.profile_complete ?? false;
+  const profileComplete = req.auth?.user?.profile_complete;
   const path = req.nextUrl.pathname;
 
   // Authenticated users who haven't completed onboarding → send to /onboarding
-  if (req.auth && !profileComplete && !path.startsWith("/onboarding")) {
+  if (req.auth && profileComplete === false && !path.startsWith("/onboarding")) {
     return NextResponse.redirect(new URL("/onboarding", req.url));
   }
 });

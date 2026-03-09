@@ -33,7 +33,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             token.avatar = user.avatar ?? null;
           }
         } catch {
-          if (token.profile_complete === undefined) token.profile_complete = false;
+          // If backend is unreachable, preserve existing token value rather than defaulting to false
+          // (which would force all users into onboarding on every sign-in)
         }
       }
 
