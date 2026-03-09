@@ -255,7 +255,8 @@ export async function patchUserProfileApi(payload: UserProfileUpdatePayload) {
     }),
   );
   if (!response.ok) {
-    throw new Error("Failed to save profile");
+    const text = await response.text().catch(() => "");
+    throw new Error(`Failed to save profile (${response.status}): ${text}`);
   }
 }
 
