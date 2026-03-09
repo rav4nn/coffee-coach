@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { getAccessToken } from "@/lib/getAccessToken";
+
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
-export async function GET(request: NextRequest) {
-  const auth = request.headers.get("Authorization");
+export async function GET() {
+  const token = await getAccessToken();
   const res = await fetch(`${BACKEND_URL}/api/users/me`, {
     headers: {
-      ...(auth ? { Authorization: auth } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     cache: "no-store",
   });
@@ -15,13 +17,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const auth = request.headers.get("Authorization");
+  const token = await getAccessToken();
   const body = await request.json();
   const res = await fetch(`${BACKEND_URL}/api/users/me`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      ...(auth ? { Authorization: auth } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(body),
   });
