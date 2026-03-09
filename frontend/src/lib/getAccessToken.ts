@@ -19,6 +19,7 @@ export async function getAccessToken(): Promise<string | null> {
       picture: session.user.image ?? undefined,
     },
     secret: process.env.AUTH_SECRET!,
+    salt: "",
   });
 
   return token;
