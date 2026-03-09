@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 export type FreestyleBrewEntry = {
   id: string;
@@ -19,35 +18,88 @@ export type FreestyleBrewEntry = {
 
 type BrewHistoryStore = {
   entries: FreestyleBrewEntry[];
-  addEntry: (entry: Omit<FreestyleBrewEntry, "id" | "createdAt">) => void;
-  updateEntry: (id: string, patch: Partial<FreestyleBrewEntry>) => void;
+  loading: boolean;
+  fetchEntries: () => Promise<void>;
+  addEntry: (entry: Omit<FreestyleBrewEntry, "id" | "createdAt">) => Promise<void>;
+  updateEntry: (id: string, patch: Partial<FreestyleBrewEntry>) => Promise<void>;
 };
 
-export const useBrewHistoryStore = create<BrewHistoryStore>()(
-  persist(
-    (set) => ({
-      entries: [],
-      addEntry: (entry) =>
-        set((state) => ({
-          entries: [
-            {
-              rating: null,
-              coachingFeedback: null,
-              isFavourite: false,
-              ...entry,
-              id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-              createdAt: new Date().toISOString(),
-            },
-            ...state.entries,
-          ],
-        })),
-      updateEntry: (id, patch) =>
-        set((state) => ({
-          entries: state.entries.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry)),
-        })),
-    }),
-    {
-      name: "coffee-coach-brew-history",
-    },
-  ),
-);
+function toEntry(raw: Record<string, unknown>): FreestyleBrewEntry {
+  return {
+    id: String(raw.id),
+    createdAt: String(raw.created_at),
+    beanId: (raw.bean_id as string | null) ?? null,
+    methodId: (raw.method_id as string | null) ?? null,
+    rating: (raw.rating as number | null) ?? null,
+    coachingFeedback: (raw.coaching_feedback as string | null) ?? null,
+    isFavourite: (raw.is_favourite as boolean) ?? false,
+    coffeeGrams: (raw.coffee_grams as number) ?? 0,
+    waterMl: (raw.water_ml as number) ?? 0,
+    waterTempC: (raw.water_temp_c as number | null) ?? null,
+    grindSize: (raw.grind_size as FreestyleBrewEntry["grindSize"]) ?? "Medium",
+    brewTime: (raw.brew_time as string) ?? "00:00",
+    notes: (raw.notes as string | null) ?? null,
+  };
+}
+
+export const useBrewHistoryStore = create<BrewHistoryStore>()((set) => ({
+  entries: [],
+  loading: false,
+
+  fetchEntries: async () => {
+    set({ loading: true });
+    try {
+      const res = await fetch("/api/brews", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      const entries = (data as Record<string, unknown>[])
+        .filter((r) => !r.recipe_id) // only freestyle entries
+        .map(toEntry);
+      set({ entries });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  addEntry: async (entry) => {
+    const res = await fetch("/api/brews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        brew_type: "freestyle",
+        bean_id: entry.beanId,
+        method_id: entry.methodId,
+        coffee_grams: entry.coffeeGrams,
+        water_ml: entry.waterMl,
+        water_temp_c: entry.waterTempC,
+        grind_size: entry.grindSize,
+        brew_time: entry.brewTime,
+        notes: entry.notes,
+      }),
+    });
+    if (!res.ok) throw new Error("Failed to save brew");
+    const raw = await res.json();
+    const newEntry = toEntry(raw as Record<string, unknown>);
+    set((state) => ({ entries: [newEntry, ...state.entries] }));
+  },
+
+  updateEntry: async (id, patch) => {
+    const apiPatch: Record<string, unknown> = {};
+    if (patch.rating !== undefined) apiPatch.rating = patch.rating;
+    if (patch.coachingFeedback !== undefined) apiPatch.coaching_feedback = patch.coachingFeedback;
+    if (patch.isFavourite !== undefined) apiPatch.is_favourite = patch.isFavourite;
+
+    if (Object.keys(apiPatch).length > 0) {
+      const res = await fetch(`/api/brews/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(apiPatch),
+      });
+      if (!res.ok) throw new Error("Failed to update brew");
+    }
+
+    set((state) => ({
+      entries: state.entries.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+    }));
+  },
+}));

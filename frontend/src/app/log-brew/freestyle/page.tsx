@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -55,20 +55,30 @@ export default function FreestyleLogPage() {
     },
   });
 
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const errors = form.formState.errors;
 
-  function onSubmit(values: FreestyleForm) {
-    addEntry({
-      beanId: selectedBeanId,
-      methodId: effectiveMethodId,
-      coffeeGrams: values.coffeeGrams,
-      waterMl: values.waterMl,
-      waterTempC: isColdBrew ? null : (values.waterTempC ?? null),
-      grindSize: values.grindSize,
-      brewTime: values.brewTime,
-      notes: values.notes?.trim() ? values.notes.trim() : null,
-    });
-    router.push("/log-brew/freestyle/success");
+  async function onSubmit(values: FreestyleForm) {
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await addEntry({
+        beanId: selectedBeanId,
+        methodId: effectiveMethodId,
+        coffeeGrams: values.coffeeGrams,
+        waterMl: values.waterMl,
+        waterTempC: isColdBrew ? null : (values.waterTempC ?? null),
+        grindSize: values.grindSize,
+        brewTime: values.brewTime,
+        notes: values.notes?.trim() ? values.notes.trim() : null,
+      });
+      router.push("/log-brew/freestyle/success");
+    } catch {
+      setSubmitError("Failed to save brew. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -133,8 +143,10 @@ export default function FreestyleLogPage() {
           />
         </div>
 
-        <Button type="submit" className="h-12 w-full text-base">
-          Log Brew
+        {submitError ? <p className="text-xs text-red-700">{submitError}</p> : null}
+
+        <Button type="submit" disabled={submitting} className="h-12 w-full text-base">
+          {submitting ? "Saving…" : "Log Brew"}
         </Button>
       </form>
     </section>

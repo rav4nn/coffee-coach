@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { useBeansStore } from "@/lib/beansStore";
@@ -39,7 +39,13 @@ function trendPattern(ratings: number[]) {
 export default function HistoryPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const entries = useBrewHistoryStore((state) => state.entries);
+  const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
+  const loading = useBrewHistoryStore((state) => state.loading);
   const beans = useBeansStore((state) => state.userBeans);
+
+  useEffect(() => {
+    void fetchEntries();
+  }, [fetchEntries]);
 
   const sorted = [...entries].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const chartData = sorted.map((entry, index) => ({
@@ -84,7 +90,11 @@ export default function HistoryPage() {
       </div>
 
       <div className="space-y-2">
-        {recentFirst.length === 0 ? (
+        {loading && recentFirst.length === 0 ? (
+          <div className="rounded-2xl border border-mocha/10 bg-steam p-4 text-sm text-mocha/80 shadow-card">
+            Loading brews…
+          </div>
+        ) : recentFirst.length === 0 ? (
           <div className="rounded-2xl border border-mocha/10 bg-steam p-4 text-sm text-mocha/80 shadow-card">
             No brews logged yet.
           </div>
