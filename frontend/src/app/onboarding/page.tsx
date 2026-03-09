@@ -143,7 +143,7 @@ export default function OnboardingPage() {
           <span className="text-slate-100 text-sm font-semibold uppercase tracking-wider ml-1">Age</span>
           <div className="relative">
             <input
-              className="w-full rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50 border border-primary/20 bg-primary/5 h-14 placeholder:text-primary/30 px-4 text-base transition-all"
+              className="w-full rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50 border border-primary/20 bg-primary/5 h-14 placeholder:text-primary/30 px-4 text-base transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               placeholder="Enter your age"
               type="number"
               min={1}
@@ -154,19 +154,6 @@ export default function OnboardingPage() {
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/60 text-sm">YEARS</span>
           </div>
         </label>
-
-        {/* Continue button — appears once name and age are filled */}
-        {canContinue && (
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={saving}
-            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-60 text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
-          >
-            <span>{saving ? "Saving…" : "Continue to Dashboard"}</span>
-            {!saving && <span className="material-symbols-outlined">chevron_right</span>}
-          </button>
-        )}
 
         {/* Primary equipment */}
         <div className="space-y-4">
