@@ -62,8 +62,8 @@ export default function OnboardingPage() {
       await patchUserProfileApi({ name: name.trim(), age: ageNum, avatar, primary_equipment: equipment });
       await update();
       router.push("/");
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setSaving(false);
     }
   };
