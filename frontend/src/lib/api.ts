@@ -239,6 +239,26 @@ export async function postCoachingApi(payload: {
   return (await response.json()) as CoachingResponseApi;
 }
 
+export type UserProfileUpdatePayload = {
+  name: string;
+  age: number;
+  avatar: string;
+  primary_equipment: string[];
+};
+
+export async function patchUserProfileApi(payload: UserProfileUpdatePayload) {
+  const response = await fetch(
+    "/api/users/me",
+    requestInit({
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  );
+  if (!response.ok) {
+    throw new Error("Failed to save profile");
+  }
+}
+
 export async function postFavouriteBrewApi(payload: { brew_id: string }) {
   const response = await fetch(
     "/api/brews/favourite",

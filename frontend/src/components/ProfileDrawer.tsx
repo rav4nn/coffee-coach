@@ -1,11 +1,13 @@
 "use client";
 
-// Username is static for now — will be replaced by auth/profile data later.
-const USERNAME = "Brewmaster Jack";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+
 const WEEKLY_BREWS = 4;
 const WEEKLY_GOAL = 7;
 
-function getInitials(name: string): string {
+function getInitials(name: string | null | undefined): string {
+  if (!name) return "?";
   return name
     .split(" ")
     .map((n) => n[0])
@@ -20,6 +22,9 @@ interface ProfileDrawerProps {
 }
 
 export function ProfileDrawer({ open, onClose }: ProfileDrawerProps) {
+  const { data: session } = useSession();
+  const user = session?.user;
+  const displayName = user?.name ?? "Brewer";
   const progress = Math.round((WEEKLY_BREWS / WEEKLY_GOAL) * 100);
 
   return (
@@ -48,11 +53,17 @@ export function ProfileDrawer({ open, onClose }: ProfileDrawerProps) {
           </button>
 
           {/* Avatar */}
-          <div className="w-24 h-24 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center mb-4">
-            <span className="text-3xl font-bold text-primary">{getInitials(USERNAME)}</span>
+          <div className="w-24 h-24 rounded-full border-2 border-primary overflow-hidden mb-4 flex items-center justify-center bg-primary/20">
+            {user?.avatar ? (
+              <Image src={`/avatars/${user.avatar}.png`} alt={displayName} width={96} height={96} className="w-full h-full object-cover" />
+            ) : user?.image ? (
+              <Image src={user.image} alt={displayName} width={96} height={96} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-3xl font-bold text-primary">{getInitials(displayName)}</span>
+            )}
           </div>
 
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-100">{USERNAME}</h2>
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-100">{displayName}</h2>
           <p className="text-sm text-primary font-medium uppercase tracking-widest mt-1">
             Master Brewer
           </p>
