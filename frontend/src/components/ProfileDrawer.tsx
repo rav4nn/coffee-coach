@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 
 const WEEKLY_BREWS = 4;
@@ -113,7 +114,10 @@ export function ProfileDrawer({ open, onClose }: ProfileDrawerProps) {
 
         {/* Bottom actions */}
         <div className="p-8 border-t border-primary/10">
-          <button className="flex items-center justify-center gap-2 w-full py-4 border border-primary/30 rounded-xl text-primary font-bold tracking-widest text-sm uppercase hover:bg-primary/10 transition-colors">
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="flex items-center justify-center gap-2 w-full py-4 border border-primary/30 rounded-xl text-primary font-bold tracking-widest text-sm uppercase hover:bg-primary/10 transition-colors"
+          >
             <span className="material-symbols-outlined">logout</span>
             Sign Out
           </button>
