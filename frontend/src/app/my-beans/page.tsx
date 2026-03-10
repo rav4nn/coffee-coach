@@ -15,7 +15,10 @@ import type { CatalogBean } from "@/lib/types";
 const addBeanSchema = z.object({
   roaster: z.string().min(1, "Roaster is required"),
   coffeeId: z.string().min(1, "Bean name is required"),
-  roastDate: z.string().optional(),
+  roastDate: z.string().optional().refine(
+    (v) => !v || v <= new Date().toISOString().split("T")[0],
+    { message: "Roast date cannot be in the future" },
+  ),
   isPreGround: z.boolean().default(false),
 });
 
@@ -319,6 +322,7 @@ export default function MyBeansPage() {
                 <input
                   id="roast-date"
                   type="date"
+                  max={new Date().toISOString().split("T")[0]}
                   {...form.register("roastDate")}
                   className="h-12 w-full rounded-xl border border-primary/20 bg-primary/5 px-3 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary/40 [color-scheme:dark]"
                 />

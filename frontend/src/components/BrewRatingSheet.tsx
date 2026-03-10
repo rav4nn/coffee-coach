@@ -55,6 +55,9 @@ export function BrewRatingSheet({
     setIsLoading(false);
   }, [brewId, initialRating, initialFeedback]);
 
+  // Lock the sheet once coaching has been received (free tier: one coaching per brew)
+  const isLocked = !!initialFeedback;
+
   const mode = coachingMode(rating);
   const isOscillating = response?.trend === "oscillating";
 
@@ -124,8 +127,9 @@ export function BrewRatingSheet({
               min={1}
               max={10}
               value={rating}
-              onChange={(e) => handleRatingChange(Number(e.target.value))}
-              className="w-full accent-primary"
+              onChange={(e) => !isLocked && handleRatingChange(Number(e.target.value))}
+              disabled={isLocked}
+              className="w-full accent-primary disabled:opacity-60"
             />
             <div className="flex justify-between mt-1">
               <span className="text-xs text-slate-500">Poor</span>
@@ -133,8 +137,20 @@ export function BrewRatingSheet({
             </div>
           </div>
 
-          {/* Coaching pickers */}
-          {mode === "diagnosis" && (
+          {/* Locked: show read-only feedback, no pickers */}
+          {isLocked && response?.fix && (
+            <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4">
+              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Coach Says</p>
+              <p className="text-sm text-slate-100 leading-relaxed">{response.fix}</p>
+              {response.freshness_caveat && (
+                <p className="mt-2 text-xs text-slate-400">Freshness note: {response.freshness_caveat}</p>
+              )}
+              <p className="mt-3 text-xs text-slate-500">Upgrade to Premium Coach to get personalised coaching on every brew.</p>
+            </div>
+          )}
+
+          {/* Coaching pickers — only shown when not locked */}
+          {!isLocked && mode === "diagnosis" && (
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">What went wrong?</p>
               <SymptomPicker
@@ -147,7 +163,7 @@ export function BrewRatingSheet({
             </div>
           )}
 
-          {mode === "improvement" && (
+          {!isLocked && mode === "improvement" && (
             <div className="space-y-3">
               <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Diagnose or improve?</p>
               <div className="flex gap-2">
@@ -192,7 +208,7 @@ export function BrewRatingSheet({
             </div>
           )}
 
-          {mode === "refinement" && (
+          {!isLocked && mode === "refinement" && (
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Refine your brew</p>
               {isOscillating ? (
@@ -205,7 +221,7 @@ export function BrewRatingSheet({
             </div>
           )}
 
-          {mode === "lock-in" && (
+          {!isLocked && mode === "lock-in" && (
             <div className="rounded-2xl bg-primary/10 border border-primary/30 p-4 text-center">
               <span className="material-symbols-outlined text-primary text-3xl">star</span>
               <p className="font-bold text-slate-100 mt-1">Excellent brew!</p>
@@ -213,8 +229,8 @@ export function BrewRatingSheet({
             </div>
           )}
 
-          {/* Coaching response */}
-          {(response?.fix || isLoading) && (
+          {/* Coaching response (unlocked only — locked case rendered above) */}
+          {!isLocked && (response?.fix || isLoading) && (
             <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4">
               <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Coach Says</p>
               {isLoading ? (

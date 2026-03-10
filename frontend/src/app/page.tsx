@@ -38,17 +38,6 @@ function formatTime(dateStr: string) {
   });
 }
 
-function trendPattern(ratings: number[]) {
-  if (ratings.length < 4) return "Building trend data";
-  const diffs = ratings.slice(1).map((v, i) => v - ratings[i]);
-  const positives = diffs.filter((d) => d > 0).length;
-  const negatives = diffs.filter((d) => d < 0).length;
-  const directionChanges = diffs.slice(1).filter((d, i) => d * diffs[i] < 0).length;
-  if (directionChanges >= 2) return "Oscillating";
-  if (positives > negatives + 1) return "Improving";
-  if (negatives > positives + 1) return "Worsening";
-  return "Plateau";
-}
 
 export default function Home() {
   const { data: session } = useSession();
@@ -75,18 +64,6 @@ export default function Home() {
 
   const recentTwo = recentFirst.slice(0, 2);
 
-  const sortedByDate = [...entries].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const ratings = sortedByDate
-    .map((e) => e.rating)
-    .filter((r): r is number => typeof r === "number");
-  const trend = trendPattern(ratings);
-
-  const latestCoaching = recentFirst.find((e) => e.coachingFeedback)?.coachingFeedback;
-  const tip =
-    latestCoaching ??
-    (trend !== "Building trend data"
-      ? `Your recent brews are ${trend.toLowerCase()}. Keep tracking to unlock personalised coaching.`
-      : "Log a few brews to start getting personalised coaching tips.");
 
   const editEntry = editBrewId ? entries.find((e) => e.id === editBrewId) ?? null : null;
   const ratingEntry = ratingBrewId ? entries.find((e) => e.id === ratingBrewId) : null;
@@ -215,7 +192,7 @@ export default function Home() {
         )}
       </section>
 
-      <CoachTip tip={tip} />
+      <CoachTip />
 
       <BrewEditSheet
         entry={editEntry}
