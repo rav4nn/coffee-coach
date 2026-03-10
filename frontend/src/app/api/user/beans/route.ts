@@ -3,8 +3,13 @@ import { getAccessToken } from "@/lib/getAccessToken";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
-export async function GET() {
-  const token = await getAccessToken();
+function resolveToken(request: NextRequest, fallback: string | null): string | null {
+  const h = request.headers.get("Authorization");
+  return h?.startsWith("Bearer ") ? h.slice(7) : fallback;
+}
+
+export async function GET(request: NextRequest) {
+  const token = resolveToken(request, await getAccessToken());
   const res = await fetch(`${BACKEND_URL}/api/user/beans`, {
     headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     cache: "no-store",
@@ -14,8 +19,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const token = await getAccessToken();
   const body = await request.json();
+  const token = resolveToken(request, await getAccessToken());
   const res = await fetch(`${BACKEND_URL}/api/user/beans`, {
     method: "POST",
     headers: {

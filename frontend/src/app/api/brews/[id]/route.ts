@@ -5,8 +5,9 @@ const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const token = await getAccessToken();
   const body = await request.json();
+  const h = request.headers.get("Authorization");
+  const token = h?.startsWith("Bearer ") ? h.slice(7) : await getAccessToken();
   const res = await fetch(`${BACKEND_URL}/api/brews/${id}`, {
     method: "PATCH",
     headers: {
