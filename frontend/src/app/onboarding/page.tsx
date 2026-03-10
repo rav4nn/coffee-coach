@@ -58,7 +58,7 @@ export default function OnboardingPage() {
     setError(null);
     try {
       await patchUserProfileApi({ name: name.trim(), age: ageNum, avatar, primary_equipment: equipment });
-      await update();
+      await update({ profile_complete: true });
       window.location.href = "/";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");

@@ -13,11 +13,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/login",
   },
   callbacks: {
-    async jwt({ token, profile, trigger }) {
+    async jwt({ token, profile, trigger, session }) {
       // On first sign-in, embed Google sub and profile into the JWT
       if (profile) {
         token.sub = profile.sub ?? token.sub;
         token.picture = (profile as { picture?: string }).picture ?? token.picture;
+      }
+
+      // If the client passes profile_complete directly (e.g. after onboarding), trust it immediately
+      // without a backend round-trip — avoids cold-start races
+      if (trigger === "update" && (session as Record<string, unknown>)?.profile_complete === true) {
+        token.profile_complete = true;
+        return token;
       }
 
       // Sync profile_complete from backend on sign-in or explicit session update
