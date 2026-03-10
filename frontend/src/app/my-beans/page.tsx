@@ -83,16 +83,20 @@ export default function MyBeansPage() {
   async function onSubmit(values: AddBeanFormValues) {
     const selectedBean = catalogBeans.find((b) => b.coffee_id === values.coffeeId);
     if (!selectedBean) return;
-    await addBean({
-      coffee_id: values.coffeeId,
-      roast_date: values.roastDate?.trim() ? values.roastDate : null,
-      is_pre_ground: values.isPreGround,
-      name: selectedBean.name,
-      roaster: selectedBean.roaster,
-    });
-    form.reset({ roaster: "", coffeeId: "", roastDate: "", isPreGround: false });
-    setCatalogBeans([]);
-    setSheetOpen(false);
+    try {
+      await addBean({
+        coffee_id: values.coffeeId,
+        roast_date: values.roastDate?.trim() ? values.roastDate : null,
+        is_pre_ground: values.isPreGround,
+        name: selectedBean.name,
+        roaster: selectedBean.roaster,
+      });
+      form.reset({ roaster: "", coffeeId: "", roastDate: "", isPreGround: false });
+      setCatalogBeans([]);
+      setSheetOpen(false);
+    } catch {
+      form.setError("root", { message: "Failed to save bean. Please try again." });
+    }
   }
 
   const filteredBeans = useMemo(() => {
@@ -362,6 +366,9 @@ export default function MyBeansPage() {
             >
               {form.formState.isSubmitting ? "Saving…" : "Save to My Beans"}
             </button>
+            {form.formState.errors.root && (
+              <p className="text-xs text-red-400 text-center">{form.formState.errors.root.message}</p>
+            )}
           </form>
         </SheetContent>
       </Sheet>
