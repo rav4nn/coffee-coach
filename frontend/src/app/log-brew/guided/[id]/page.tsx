@@ -6,9 +6,11 @@ import { useParams, useRouter } from "next/navigation";
 
 import { getRecipeByIdApi, postBrewApi, type GuidedRecipe } from "@/lib/api";
 import { useBrewSessionStore } from "@/lib/brewSessionStore";
+import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
+import { BrewRatingSheet } from "@/components/BrewRatingSheet";
 
-type Phase = "preview" | "brewing" | "complete";
+type Phase = "preview" | "brewing" | "confirm" | "complete";
 
 type MergedStep = {
   time_seconds: number;
@@ -17,10 +19,27 @@ type MergedStep = {
   target_water_g: number | null;
 };
 
+const GRIND_SIZES = [
+  "Extra Fine",
+  "Fine",
+  "Medium-Fine",
+  "Medium",
+  "Medium-Coarse",
+  "Coarse",
+] as const;
+
 function formatTimer(totalSeconds: number) {
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+function parseTimeToSeconds(mmss: string): number {
+  const parts = mmss.split(":");
+  if (parts.length !== 2) return 0;
+  const mins = parseInt(parts[0] ?? "0", 10);
+  const secs = parseInt(parts[1] ?? "0", 10);
+  return (isNaN(mins) ? 0 : mins) * 60 + (isNaN(secs) ? 0 : secs);
 }
 
 function methodIcon(method: string): string {
@@ -45,6 +64,7 @@ export default function GuidedRecipeDetailPage() {
   const session = useBrewSessionStore((state) => state.session);
   const selectedBeanId = useLogBrewStore((state) => state.selectedBeanId);
   const selectedMethodId = useLogBrewStore((state) => state.selectedMethodId);
+  const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
 
   const [recipe, setRecipe] = useState<GuidedRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,6 +75,21 @@ export default function GuidedRecipeDetailPage() {
   const [stepStartAt, setStepStartAt] = useState<number>(Date.now());
   const [autoAdvancing, setAutoAdvancing] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
+  // Confirm phase state
+  const [confirmCoffeeG, setConfirmCoffeeG] = useState("");
+  const [confirmWaterMl, setConfirmWaterMl] = useState("");
+  const [confirmWaterTempC, setConfirmWaterTempC] = useState("");
+  const [confirmGrindSize, setConfirmGrindSize] = useState<typeof GRIND_SIZES[number]>("Medium");
+  const [confirmBrewTime, setConfirmBrewTime] = useState("00:00");
+  const [confirmNotes, setConfirmNotes] = useState("");
+  const [confirmStepTimes, setConfirmStepTimes] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Complete phase state
+  const [completedBrewId, setCompletedBrewId] = useState<string | null>(null);
+  const [showRatingSheet, setShowRatingSheet] = useState(false);
 
   const autoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -191,19 +226,67 @@ export default function GuidedRecipeDetailPage() {
     if (!activeStep) return;
     const actualDuration = Math.max(0, Math.floor((Date.now() - stepStartAt) / 1000));
     completeStep(currentIndex, { actual_duration_seconds: actualDuration });
+
     if (currentIndex >= mergedSteps.length - 1) {
       finalizeSession(elapsedSeconds);
-      void postBrewApi({
-        recipe_id: session?.recipe_id ?? params.id,
-        total_brew_time_seconds: elapsedSeconds,
-        completed_at: new Date().toISOString(),
-        steps: session?.steps ?? [],
-      });
       setBrewingActive(false);
-      setPhase("complete");
+
+      // Pre-fill confirm state
+      const updatedSession = useBrewSessionStore.getState().session;
+      const stepTimes = (updatedSession?.steps ?? []).map((step) =>
+        formatTimer(step.actual_duration_seconds ?? step.expected_duration_seconds ?? 0)
+      );
+      setConfirmStepTimes(stepTimes);
+      if (recipe) {
+        setConfirmCoffeeG(String(recipe.coffee_g));
+        setConfirmWaterMl(String(recipe.water_ml));
+        setConfirmWaterTempC(String(recipe.water_temp_c ?? ""));
+        const grind = GRIND_SIZES.find((g) => g.toLowerCase() === recipe.grind_size?.toLowerCase()) ?? "Medium";
+        setConfirmGrindSize(grind);
+      }
+      setConfirmBrewTime(formatTimer(elapsedSeconds));
+      setConfirmNotes("");
+      setSaveError(null);
+      setPhase("confirm");
       return;
     }
     setCurrentIndex((i) => i + 1);
+  }
+
+  async function handleConfirmSave() {
+    if (!recipe) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const finalSession = useBrewSessionStore.getState().session;
+      const result = await postBrewApi({
+        recipe_id: recipe.recipe_id,
+        bean_id: selectedBeanId ?? null,
+        brew_type: "guided",
+        coffee_grams: parseFloat(confirmCoffeeG) || recipe.coffee_g,
+        water_ml: parseFloat(confirmWaterMl) || recipe.water_ml,
+        water_temp_c: confirmWaterTempC ? parseFloat(confirmWaterTempC) : (recipe.water_temp_c ?? null),
+        grind_size: confirmGrindSize,
+        brew_time: confirmBrewTime,
+        notes: confirmNotes.trim() || null,
+        total_brew_time_seconds: parseTimeToSeconds(confirmBrewTime),
+        completed_at: new Date().toISOString(),
+        steps: (finalSession?.steps ?? []).map((step, i) => ({
+          ...step,
+          actual_duration_seconds: parseTimeToSeconds(confirmStepTimes[i] ?? "00:00") || step.actual_duration_seconds,
+        })),
+      });
+
+      const brewId = String((result as Record<string, unknown>).id ?? "");
+      await fetchEntries();
+      clearSession();
+      setCompletedBrewId(brewId || null);
+      setPhase("complete");
+    } catch {
+      setSaveError("Failed to save brew. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleCancelConfirmed() {
@@ -246,21 +329,191 @@ export default function GuidedRecipeDetailPage() {
 
   if (phase === "complete") {
     return (
-      <main className="flex-1 flex flex-col items-center justify-center px-6 gap-4 text-center">
-        <div className="w-20 h-20 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center mb-2">
-          <span className="material-symbols-outlined text-5xl text-primary">check_circle</span>
+      <>
+        <main className="flex-1 flex flex-col items-center justify-center px-6 gap-4 text-center">
+          <div className="w-20 h-20 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center mb-2">
+            <span className="material-symbols-outlined text-5xl text-primary">check_circle</span>
+          </div>
+          <h1 className="text-3xl font-bold text-slate-100">Brew Complete!</h1>
+          <p className="font-mono text-xl text-primary">{confirmBrewTime}</p>
+          <p className="text-sm text-slate-400">Great work. Enjoy your cup.</p>
+
+          {completedBrewId && (
+            <button
+              type="button"
+              onClick={() => setShowRatingSheet(true)}
+              className="w-full max-w-xs bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 mt-4 hover:brightness-110 transition-all"
+            >
+              <span className="material-symbols-outlined">psychology</span>
+              How was that brew?
+            </button>
+          )}
+
+          <Link
+            href="/"
+            className="w-full max-w-xs border border-primary/30 text-primary font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary/10 transition-all"
+          >
+            Done
+            <span className="material-symbols-outlined">home</span>
+          </Link>
+        </main>
+
+        {completedBrewId && (
+          <BrewRatingSheet
+            brewId={completedBrewId}
+            open={showRatingSheet}
+            onOpenChange={setShowRatingSheet}
+          />
+        )}
+      </>
+    );
+  }
+
+  // ─── Confirm screen ────────────────────────────────────────────────────────
+
+  if (phase === "confirm") {
+    const isColdBrew = recipe.method === "cold_brew";
+    return (
+      <>
+        <main className="flex-1 overflow-y-auto pb-36">
+          {/* Minimal header */}
+          <header className="sticky top-0 z-40 bg-background-dark/90 backdrop-blur-md border-b border-primary/10 px-4 py-4">
+            <h2 className="text-base font-bold text-slate-100 text-center">Confirm Your Brew</h2>
+          </header>
+
+          <div className="p-4 space-y-6">
+            {/* Steps section */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-primary mb-3">
+                Step Timings — edit if you deviated
+              </p>
+              <div className="space-y-3">
+                {mergedSteps.map((step, i) => (
+                  <div key={i} className="rounded-xl border border-white/10 bg-white/5 p-3 flex items-center gap-3">
+                    <div className="size-7 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+                      {i + 1}
+                    </div>
+                    <p className="flex-1 text-sm text-slate-300 leading-snug">{step.instruction}</p>
+                    {step.duration_seconds !== null ? (
+                      <input
+                        type="text"
+                        value={confirmStepTimes[i] ?? "00:00"}
+                        onChange={(e) => {
+                          const next = [...confirmStepTimes];
+                          next[i] = e.target.value;
+                          setConfirmStepTimes(next);
+                        }}
+                        placeholder="mm:ss"
+                        className="w-16 h-8 rounded-lg bg-white/5 border border-white/10 px-2 text-xs text-slate-100 text-center outline-none focus:border-primary/50 shrink-0"
+                      />
+                    ) : (
+                      <span className="text-xs text-slate-500 shrink-0">—</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Overall brew parameters */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-primary mb-3">Brew Parameters</p>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Coffee (g)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={confirmCoffeeG}
+                      onChange={(e) => setConfirmCoffeeG(e.target.value)}
+                      className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Water (ml)</label>
+                    <input
+                      type="number"
+                      step="1"
+                      value={confirmWaterMl}
+                      onChange={(e) => setConfirmWaterMl(e.target.value)}
+                      className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
+                    />
+                  </div>
+                </div>
+
+                {!isColdBrew && (
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Water Temperature (°C)</label>
+                    <input
+                      type="number"
+                      step="1"
+                      value={confirmWaterTempC}
+                      onChange={(e) => setConfirmWaterTempC(e.target.value)}
+                      className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Grind Size</label>
+                  <select
+                    value={confirmGrindSize}
+                    onChange={(e) => setConfirmGrindSize(e.target.value as typeof GRIND_SIZES[number])}
+                    className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
+                  >
+                    {GRIND_SIZES.map((s) => (
+                      <option key={s} value={s} className="bg-[#1a0f00]">{s}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Total Brew Time (mm:ss)</label>
+                  <input
+                    type="text"
+                    value={confirmBrewTime}
+                    onChange={(e) => setConfirmBrewTime(e.target.value)}
+                    placeholder="03:00"
+                    className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Notes</label>
+                  <textarea
+                    rows={3}
+                    value={confirmNotes}
+                    onChange={(e) => setConfirmNotes(e.target.value)}
+                    placeholder="Any observations about this brew..."
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-primary/50 resize-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {saveError && <p className="text-xs text-red-400">{saveError}</p>}
+          </div>
+        </main>
+
+        {/* Sticky save button */}
+        <div className="fixed bottom-6 left-0 right-0 px-4 z-40">
+          <button
+            type="button"
+            onClick={handleConfirmSave}
+            disabled={saving}
+            className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 hover:brightness-110 active:scale-[0.98] transition-all"
+          >
+            {saving ? (
+              "Saving…"
+            ) : (
+              <>
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>save</span>
+                Save Brew
+              </>
+            )}
+          </button>
         </div>
-        <h1 className="text-3xl font-bold text-slate-100">Brew Complete!</h1>
-        <p className="font-mono text-xl text-primary">{formatTimer(elapsedSeconds)}</p>
-        <p className="text-sm text-slate-400">Great work. Enjoy your cup.</p>
-        <Link
-          href="/"
-          className="w-full max-w-xs bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 mt-4 hover:brightness-110 transition-all"
-        >
-          Done
-          <span className="material-symbols-outlined">home</span>
-        </Link>
-      </main>
+      </>
     );
   }
 

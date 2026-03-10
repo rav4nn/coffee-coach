@@ -76,9 +76,6 @@ export default function Home() {
       <section className="px-4 py-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-bold text-slate-100">Recent Brews</h3>
-          <Link href="/history" className="text-primary text-sm font-semibold hover:opacity-80 transition-opacity">
-            View All
-          </Link>
         </div>
 
         {recentTwo.length === 0 ? (

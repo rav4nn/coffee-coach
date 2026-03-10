@@ -55,7 +55,6 @@ export const useBrewHistoryStore = create<BrewHistoryStore>()((set) => ({
       if (!res.ok) return;
       const data = await res.json();
       const entries = (data as Record<string, unknown>[])
-        .filter((r) => !r.recipe_id) // only freestyle entries
         .map(toEntry);
       set({ entries });
     } finally {
