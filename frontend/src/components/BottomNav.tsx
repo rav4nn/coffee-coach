@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/log-brew", label: "Log Brew", icon: "add_circle" },
   { href: "/my-beans", label: "My Beans", icon: "nutrition" },
-  { href: "/history", label: "History", icon: "history" },
+  { href: "/history", label: "Journal", icon: "menu_book" },
 ];
 
 export function BottomNav() {

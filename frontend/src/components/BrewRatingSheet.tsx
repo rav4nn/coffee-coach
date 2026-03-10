@@ -19,12 +19,15 @@ function coachingMode(rating: number) {
   return "lock-in";
 }
 
+const TASTING_CHIPS = ["Sweet", "Sour", "Bitter", "Bright", "Flat", "Roasty", "Floral", "Fruity", "Nutty", "Chocolatey"];
+
 interface BrewRatingSheetProps {
   brewId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialRating?: number | null;
   initialFeedback?: string | null;
+  initialTastingNotes?: string[] | null;
 }
 
 export function BrewRatingSheet({
@@ -33,6 +36,7 @@ export function BrewRatingSheet({
   onOpenChange,
   initialRating,
   initialFeedback,
+  initialTastingNotes,
 }: BrewRatingSheetProps) {
   const updateEntry = useBrewHistoryStore((state) => state.updateEntry);
 
@@ -40,6 +44,7 @@ export function BrewRatingSheet({
   const [improvementMode, setImprovementMode] = useState<ImprovementMode>("goal");
   const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [tastingNotes, setTastingNotes] = useState<string[]>(initialTastingNotes ?? []);
   const [response, setResponse] = useState<CoachingResponseApi | null>(
     initialFeedback ? { fix: initialFeedback } : null,
   );
@@ -51,9 +56,10 @@ export function BrewRatingSheet({
     setImprovementMode("goal");
     setSelectedSymptom(null);
     setSelectedGoals([]);
+    setTastingNotes(initialTastingNotes ?? []);
     setResponse(initialFeedback ? { fix: initialFeedback } : null);
     setIsLoading(false);
-  }, [brewId, initialRating, initialFeedback]);
+  }, [brewId, initialRating, initialFeedback, initialTastingNotes]);
 
   // Lock the sheet once coaching has been received (free tier: one coaching per brew)
   const isLocked = !!initialFeedback;
@@ -74,7 +80,7 @@ export function BrewRatingSheet({
     try {
       const data = await postCoachingApi({ brew_id: brewId, ...payload });
       setResponse(data);
-      void updateEntry(brewId, { rating, coachingFeedback: data.fix });
+      void updateEntry(brewId, { rating, coachingFeedback: data.fix, tastingNotes });
     } finally {
       setIsLoading(false);
     }
@@ -83,13 +89,23 @@ export function BrewRatingSheet({
   function toggleGoal(goal: string) {
     setSelectedGoals((current) => {
       const exists = current.includes(goal);
-      const next = exists ? current.filter((g) => g !== goal) : current.length < 2 ? [...current, goal] : current;
-      if (mode === "refinement" || (mode === "improvement" && improvementMode === "goal")) {
-        void requestCoaching({ goals: next });
-      }
-      return next;
+      return exists ? current.filter((g) => g !== goal) : current.length < 2 ? [...current, goal] : current;
     });
   }
+
+  function handleGetCoaching() {
+    if (mode === "diagnosis" || (mode === "improvement" && improvementMode === "symptom")) {
+      if (selectedSymptom) void requestCoaching({ symptom: selectedSymptom });
+    } else {
+      if (selectedGoals.length > 0) void requestCoaching({ goals: selectedGoals });
+    }
+  }
+
+  const canGetCoaching =
+    !isLocked &&
+    mode !== "lock-in" &&
+    !response?.fix &&
+    (selectedSymptom !== null || selectedGoals.length > 0);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -137,6 +153,47 @@ export function BrewRatingSheet({
             </div>
           </div>
 
+          {/* Tasting chips */}
+          {!isLocked && (
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">How did it taste?</p>
+              <div className="flex flex-wrap gap-2">
+                {TASTING_CHIPS.map((chip) => {
+                  const selected = tastingNotes.includes(chip);
+                  return (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => setTastingNotes((current) =>
+                        current.includes(chip) ? current.filter((c) => c !== chip) : [...current, chip]
+                      )}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                        selected
+                          ? "bg-primary text-background-dark border-primary"
+                          : "bg-primary/10 text-primary/80 border-primary/20"
+                      }`}
+                    >
+                      {chip}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {isLocked && (initialTastingNotes?.length ?? 0) > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Tasting Notes</p>
+              <div className="flex flex-wrap gap-2">
+                {initialTastingNotes!.map((chip) => (
+                  <span key={chip} className="px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary/60 border border-primary/15">
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Locked: show read-only feedback, no pickers */}
           {isLocked && response?.fix && (
             <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4">
@@ -155,10 +212,7 @@ export function BrewRatingSheet({
               <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">What went wrong?</p>
               <SymptomPicker
                 selected={selectedSymptom}
-                onSelect={(symptom) => {
-                  setSelectedSymptom(symptom);
-                  void requestCoaching({ symptom });
-                }}
+                onSelect={(symptom) => setSelectedSymptom(symptom)}
               />
             </div>
           )}
@@ -193,10 +247,7 @@ export function BrewRatingSheet({
               {improvementMode === "symptom" ? (
                 <SymptomPicker
                   selected={selectedSymptom}
-                  onSelect={(symptom) => {
-                    setSelectedSymptom(symptom);
-                    void requestCoaching({ symptom });
-                  }}
+                  onSelect={(symptom) => setSelectedSymptom(symptom)}
                 />
               ) : isOscillating ? (
                 <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4 text-sm text-slate-300">
@@ -229,7 +280,7 @@ export function BrewRatingSheet({
             </div>
           )}
 
-          {/* Coaching response (unlocked only — locked case rendered above) */}
+          {/* Coaching response — only shown after Get Coaching is clicked */}
           {!isLocked && (response?.fix || isLoading) && (
             <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4">
               <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Coach Says</p>
@@ -246,13 +297,26 @@ export function BrewRatingSheet({
             </div>
           )}
 
-          {/* Done button */}
-          <button
-            onClick={() => onOpenChange(false)}
-            className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base"
-          >
-            {response?.fix ? "Done" : "Skip for Now"}
-          </button>
+          {/* Get Coaching button — shown once a selection is made, before response */}
+          {canGetCoaching && (
+            <button
+              onClick={handleGetCoaching}
+              disabled={isLoading}
+              className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base disabled:opacity-50"
+            >
+              Get Coaching
+            </button>
+          )}
+
+          {/* Done / Skip button */}
+          {!canGetCoaching && (
+            <button
+              onClick={() => onOpenChange(false)}
+              className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base"
+            >
+              {response?.fix ? "Done" : "Skip for Now"}
+            </button>
+          )}
         </div>
       </SheetContent>
     </Sheet>

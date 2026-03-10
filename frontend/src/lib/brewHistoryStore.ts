@@ -14,6 +14,7 @@ export type FreestyleBrewEntry = {
   grindSize: "Extra Fine" | "Fine" | "Medium-Fine" | "Medium" | "Medium-Coarse" | "Coarse";
   brewTime: string;
   notes: string | null;
+  tastingNotes: string[] | null;
 };
 
 type BrewHistoryStore = {
@@ -39,6 +40,7 @@ function toEntry(raw: Record<string, unknown>): FreestyleBrewEntry {
     grindSize: (raw.grind_size as FreestyleBrewEntry["grindSize"]) ?? "Medium",
     brewTime: (raw.brew_time as string) ?? "00:00",
     notes: (raw.notes as string | null) ?? null,
+    tastingNotes: (raw.tasting_notes as string[] | null) ?? null,
   };
 }
 
@@ -75,6 +77,7 @@ export const useBrewHistoryStore = create<BrewHistoryStore>()((set) => ({
         grind_size: entry.grindSize,
         brew_time: entry.brewTime,
         notes: entry.notes,
+        tasting_notes: entry.tastingNotes ?? null,
       }),
     });
     if (!res.ok) throw new Error("Failed to save brew");
@@ -94,6 +97,7 @@ export const useBrewHistoryStore = create<BrewHistoryStore>()((set) => ({
     if (patch.grindSize !== undefined) apiPatch.grind_size = patch.grindSize;
     if (patch.brewTime !== undefined) apiPatch.brew_time = patch.brewTime;
     if (patch.notes !== undefined) apiPatch.notes = patch.notes;
+    if (patch.tastingNotes !== undefined) apiPatch.tasting_notes = patch.tastingNotes;
 
     if (Object.keys(apiPatch).length > 0) {
       const res = await fetch(`/api/brews/${id}`, {
