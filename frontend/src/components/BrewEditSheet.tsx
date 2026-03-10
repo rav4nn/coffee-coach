@@ -72,7 +72,6 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        side="bottom"
         className="rounded-t-3xl bg-[#1a0f00] border-t border-primary/20 overflow-y-auto max-h-[85dvh] px-5 pb-8"
       >
         <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-5 mt-2" />
