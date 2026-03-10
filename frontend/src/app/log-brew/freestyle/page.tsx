@@ -55,6 +55,7 @@ export default function FreestyleLogPage() {
     },
   });
 
+  const [tastingNotes, setTastingNotes] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const errors = form.formState.errors;
@@ -72,7 +73,7 @@ export default function FreestyleLogPage() {
         grindSize: values.grindSize,
         brewTime: values.brewTime,
         notes: values.notes?.trim() ? values.notes.trim() : null,
-        tastingNotes: null,
+        tastingNotes: tastingNotes.length > 0 ? tastingNotes : null,
       });
       const newId = useBrewHistoryStore.getState().entries[0]?.id ?? "";
       router.push(`/log-brew/freestyle/success?brew_id=${newId}`);
@@ -132,6 +133,36 @@ export default function FreestyleLogPage() {
           <Label htmlFor="brew-time">Brew Time (mm:ss)</Label>
           <Input id="brew-time" placeholder="03:00" {...form.register("brewTime")} />
           {errors.brewTime ? <p className="text-xs text-red-700">{errors.brewTime.message}</p> : null}
+        </div>
+
+        {/* Tasting notes */}
+        <div className="space-y-2">
+          <Label>How did it taste? (Optional)</Label>
+          <div className="flex flex-wrap gap-2">
+            {(["Sweet", "Sour", "Bitter", "Bright", "Flat", "Roasty", "Floral", "Fruity", "Nutty", "Chocolatey"] as const).map((chip) => {
+              const selected = tastingNotes.includes(chip);
+              return (
+                <button
+                  key={chip}
+                  type="button"
+                  onClick={() =>
+                    setTastingNotes((current) =>
+                      current.includes(chip)
+                        ? current.filter((c) => c !== chip)
+                        : [...current, chip]
+                    )
+                  }
+                  className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                    selected
+                      ? "bg-mocha text-cream border-mocha"
+                      : "bg-steam text-mocha border-mocha/20"
+                  }`}
+                >
+                  {chip}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="space-y-2">

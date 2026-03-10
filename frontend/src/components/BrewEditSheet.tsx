@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/sheet";
 import { useBrewHistoryStore, type FreestyleBrewEntry } from "@/lib/brewHistoryStore";
 
+const TASTING_CHIPS = ["Sweet", "Sour", "Bitter", "Bright", "Flat", "Roasty", "Floral", "Fruity", "Nutty", "Chocolatey"] as const;
+
 const GRIND_SIZES = [
   "Extra Fine",
   "Fine",
@@ -32,6 +34,7 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
   const [grindSize, setGrindSize] = useState<FreestyleBrewEntry["grindSize"]>("Medium");
   const [brewTime, setBrewTime] = useState("00:00");
   const [notes, setNotes] = useState("");
+  const [tastingNotes, setTastingNotes] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +48,7 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
     setGrindSize(entry.grindSize ?? "Medium");
     setBrewTime(entry.brewTime ?? "00:00");
     setNotes(entry.notes ?? "");
+    setTastingNotes(entry.tastingNotes ?? []);
     setError(null);
   }, [entry?.id]);
 
@@ -60,6 +64,7 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
         grindSize,
         brewTime,
         notes: notes.trim() || null,
+        tastingNotes: tastingNotes.length > 0 ? tastingNotes : null,
       });
       onOpenChange(false);
     } catch {
@@ -155,6 +160,38 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
               placeholder="03:00"
               className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
             />
+          </div>
+
+          {/* Tasting notes */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+              How did it taste?
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {TASTING_CHIPS.map((chip) => {
+                const selected = tastingNotes.includes(chip);
+                return (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() =>
+                      setTastingNotes((current) =>
+                        current.includes(chip)
+                          ? current.filter((c) => c !== chip)
+                          : [...current, chip]
+                      )
+                    }
+                    className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                      selected
+                        ? "bg-primary text-background-dark border-primary"
+                        : "bg-primary/10 text-primary/80 border-primary/20"
+                    }`}
+                  >
+                    {chip}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Notes */}

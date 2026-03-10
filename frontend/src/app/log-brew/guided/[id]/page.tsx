@@ -375,7 +375,7 @@ export default function GuidedRecipeDetailPage() {
     const isColdBrew = recipe.method === "cold_brew";
     return (
       <>
-        <main className="flex-1 overflow-y-auto pb-36">
+        <main className="flex-1 overflow-y-auto pb-44">
           {/* Minimal header */}
           <header className="sticky top-0 z-40 bg-background-dark/90 backdrop-blur-md border-b border-primary/10 px-4 py-4">
             <h2 className="text-base font-bold text-slate-100 text-center">Confirm Your Brew</h2>
@@ -496,7 +496,7 @@ export default function GuidedRecipeDetailPage() {
         </main>
 
         {/* Sticky save button */}
-        <div className="fixed bottom-6 left-0 right-0 px-4 z-40">
+        <div className="fixed bottom-20 left-0 right-0 px-4 z-40">
           <button
             type="button"
             onClick={handleConfirmSave}

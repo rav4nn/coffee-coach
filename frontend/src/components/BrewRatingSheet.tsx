@@ -7,19 +7,8 @@ import { GoalPicker } from "@/components/GoalPicker";
 import { RatingSlider } from "@/components/RatingSlider";
 import { SymptomPicker } from "@/components/SymptomPicker";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { postCoachingApi, type CoachingResponseApi } from "@/lib/api";
+import { postCoachingApi, postFavouriteBrewApi, type CoachingResponseApi } from "@/lib/api";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
-
-type ImprovementMode = "symptom" | "goal";
-
-function coachingMode(rating: number) {
-  if (rating <= 4) return "diagnosis";
-  if (rating <= 6) return "improvement";
-  if (rating <= 8) return "refinement";
-  return "lock-in";
-}
-
-const TASTING_CHIPS = ["Sweet", "Sour", "Bitter", "Bright", "Flat", "Roasty", "Floral", "Fruity", "Nutty", "Chocolatey"];
 
 interface BrewRatingSheetProps {
   brewId: string;
@@ -41,30 +30,29 @@ export function BrewRatingSheet({
   const updateEntry = useBrewHistoryStore((state) => state.updateEntry);
 
   const [rating, setRating] = useState<number>(initialRating ?? 6);
-  const [improvementMode, setImprovementMode] = useState<ImprovementMode>("goal");
   const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
-  const [tastingNotes, setTastingNotes] = useState<string[]>(initialTastingNotes ?? []);
   const [response, setResponse] = useState<CoachingResponseApi | null>(
     initialFeedback ? { fix: initialFeedback } : null,
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [isSavingFavourite, setIsSavingFavourite] = useState(false);
+  const [isFavouriteSaved, setIsFavouriteSaved] = useState(false);
 
   // Reset state when the brew changes
   useEffect(() => {
     setRating(initialRating ?? 6);
-    setImprovementMode("goal");
     setSelectedSymptom(null);
     setSelectedGoals([]);
-    setTastingNotes(initialTastingNotes ?? []);
     setResponse(initialFeedback ? { fix: initialFeedback } : null);
     setIsLoading(false);
+    setIsSavingFavourite(false);
+    setIsFavouriteSaved(false);
   }, [brewId, initialRating, initialFeedback, initialTastingNotes]);
 
   // Lock the sheet once coaching has been received (free tier: one coaching per brew)
   const isLocked = !!initialFeedback;
-
-  const mode = coachingMode(rating);
+  const isPerfect = rating === 10;
   const isOscillating = response?.trend === "oscillating";
 
   function handleRatingChange(value: number) {
@@ -80,7 +68,7 @@ export function BrewRatingSheet({
     try {
       const data = await postCoachingApi({ brew_id: brewId, ...payload });
       setResponse(data);
-      void updateEntry(brewId, { rating, coachingFeedback: data.fix, tastingNotes });
+      void updateEntry(brewId, { rating, coachingFeedback: data.fix });
     } finally {
       setIsLoading(false);
     }
@@ -94,30 +82,46 @@ export function BrewRatingSheet({
   }
 
   function handleGetCoaching() {
-    if (mode === "diagnosis" || (mode === "improvement" && improvementMode === "symptom")) {
-      if (selectedSymptom) void requestCoaching({ symptom: selectedSymptom });
-    } else {
-      if (selectedGoals.length > 0) void requestCoaching({ goals: selectedGoals });
+    // Symptom takes priority over goals
+    if (selectedSymptom) {
+      void requestCoaching({ symptom: selectedSymptom });
+    } else if (selectedGoals.length > 0) {
+      void requestCoaching({ goals: selectedGoals });
+    }
+  }
+
+  async function handleSaveFavourite() {
+    if (!brewId) return;
+    setIsSavingFavourite(true);
+    try {
+      await Promise.all([
+        postFavouriteBrewApi({ brew_id: brewId }),
+        updateEntry(brewId, { rating: 10, isFavourite: true }),
+      ]);
+      setIsFavouriteSaved(true);
+    } finally {
+      setIsSavingFavourite(false);
     }
   }
 
   const canGetCoaching =
     !isLocked &&
-    mode !== "lock-in" &&
+    !isPerfect &&
     !response?.fix &&
     (selectedSymptom !== null || selectedGoals.length > 0);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="overflow-y-auto max-h-[85dvh] bg-[#1a0f00] border-t border-primary/20 text-slate-100 rounded-t-3xl px-0 pt-0 pb-10">
+      <SheetContent className="h-[85dvh] overflow-hidden bg-[#1a0f00] border-t border-primary/20 text-slate-100 rounded-t-3xl px-0 pt-0 pb-0 flex flex-col">
         {/* Drag handle */}
-        <div className="flex justify-center pt-3 pb-1">
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
           <div className="w-10 h-1 rounded-full bg-slate-600" />
         </div>
 
         <SheetTitle className="sr-only">Rate Your Brew</SheetTitle>
 
-        <div className="px-6 pt-4 pb-2 flex items-center justify-between">
+        {/* Fixed header */}
+        <div className="px-6 pt-4 pb-2 flex items-center justify-between shrink-0">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-primary/70">Coaching</p>
             <h2 className="text-2xl font-bold text-slate-100 mt-0.5">How was that brew?</h2>
@@ -131,12 +135,16 @@ export function BrewRatingSheet({
           </button>
         </div>
 
-        <div className="px-6 space-y-4 mt-2">
-          {/* Rating */}
+        {/* Scrollable body — fixed height so sheet never resizes */}
+        <div className="flex-1 overflow-y-auto px-6 space-y-4 mt-2 pb-6">
+
+          {/* Rating slider */}
           <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold text-slate-100">Rate This Brew</p>
-              <span className="text-primary font-bold text-lg">{rating}<span className="text-xs text-slate-400">/10</span></span>
+              <span className="text-primary font-bold text-lg">
+                {rating}<span className="text-xs text-slate-400">/10</span>
+              </span>
             </div>
             <input
               type="range"
@@ -153,48 +161,31 @@ export function BrewRatingSheet({
             </div>
           </div>
 
-          {/* Tasting chips */}
-          {!isLocked && (
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">How did it taste?</p>
-              <div className="flex flex-wrap gap-2">
-                {TASTING_CHIPS.map((chip) => {
-                  const selected = tastingNotes.includes(chip);
-                  return (
-                    <button
-                      key={chip}
-                      type="button"
-                      onClick={() => setTastingNotes((current) =>
-                        current.includes(chip) ? current.filter((c) => c !== chip) : [...current, chip]
-                      )}
-                      className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
-                        selected
-                          ? "bg-primary text-background-dark border-primary"
-                          : "bg-primary/10 text-primary/80 border-primary/20"
-                      }`}
-                    >
-                      {chip}
-                    </button>
-                  );
-                })}
-              </div>
+          {/* ── 10/10 perfect brew ── */}
+          {!isLocked && isPerfect && (
+            <div className="rounded-2xl bg-primary/10 border border-primary/30 p-5 text-center space-y-3">
+              <span className="material-symbols-outlined text-primary text-4xl">star</span>
+              <p className="font-bold text-slate-100 text-lg">Excellent brew!</p>
+              <p className="text-sm text-slate-400">You've nailed this one. Save it so you can repeat it.</p>
+              {isFavouriteSaved ? (
+                <div className="flex items-center justify-center gap-2 text-primary font-semibold">
+                  <span className="material-symbols-outlined text-sm">favorite</span>
+                  Saved as Favourite
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSaveFavourite}
+                  disabled={isSavingFavourite}
+                  className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-sm disabled:opacity-50"
+                >
+                  {isSavingFavourite ? "Saving…" : "Save this Recipe"}
+                </button>
+              )}
             </div>
           )}
 
-          {isLocked && (initialTastingNotes?.length ?? 0) > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Tasting Notes</p>
-              <div className="flex flex-wrap gap-2">
-                {initialTastingNotes!.map((chip) => (
-                  <span key={chip} className="px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary/60 border border-primary/15">
-                    {chip}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Locked: show read-only feedback, no pickers */}
+          {/* ── Locked: read-only feedback ── */}
           {isLocked && response?.fix && (
             <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4">
               <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Coach Says</p>
@@ -206,81 +197,43 @@ export function BrewRatingSheet({
             </div>
           )}
 
-          {/* Coaching pickers — only shown when not locked */}
-          {!isLocked && mode === "diagnosis" && (
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">What went wrong?</p>
-              <SymptomPicker
-                selected={selectedSymptom}
-                onSelect={(symptom) => setSelectedSymptom(symptom)}
-              />
-            </div>
-          )}
-
-          {!isLocked && mode === "improvement" && (
-            <div className="space-y-3">
-              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Diagnose or improve?</p>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setImprovementMode("symptom")}
-                  className={`flex-1 h-9 rounded-xl text-sm font-semibold border transition-colors ${
-                    improvementMode === "symptom"
-                      ? "bg-primary text-background-dark border-primary"
-                      : "bg-primary/10 text-primary/80 border-primary/20"
-                  }`}
-                >
-                  Fix a symptom
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setImprovementMode("goal")}
-                  className={`flex-1 h-9 rounded-xl text-sm font-semibold border transition-colors ${
-                    improvementMode === "goal"
-                      ? "bg-primary text-background-dark border-primary"
-                      : "bg-primary/10 text-primary/80 border-primary/20"
-                  }`}
-                >
-                  Set a goal
-                </button>
-              </div>
-              {improvementMode === "symptom" ? (
-                <SymptomPicker
-                  selected={selectedSymptom}
-                  onSelect={(symptom) => setSelectedSymptom(symptom)}
-                />
-              ) : isOscillating ? (
+          {/* ── 1-9 coaching pickers — both always visible ── */}
+          {!isLocked && !isPerfect && !response?.fix && (
+            <>
+              {isOscillating ? (
                 <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4 text-sm text-slate-300">
                   Keep brew inputs consistent for 2–3 brews before making new changes.
                 </div>
               ) : (
-                <GoalPicker selected={selectedGoals} maxSelections={2} onToggle={toggleGoal} />
+                <>
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Fix a Symptom</p>
+                    <SymptomPicker
+                      selected={selectedSymptom}
+                      onSelect={(s) => {
+                        setSelectedSymptom((prev) => (prev === s ? null : s));
+                        setSelectedGoals([]);
+                      }}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Set a Goal</p>
+                    <GoalPicker
+                      selected={selectedGoals}
+                      maxSelections={2}
+                      onToggle={(g) => {
+                        toggleGoal(g);
+                        setSelectedSymptom(null);
+                      }}
+                    />
+                  </div>
+                </>
               )}
-            </div>
+            </>
           )}
 
-          {!isLocked && mode === "refinement" && (
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Refine your brew</p>
-              {isOscillating ? (
-                <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4 text-sm text-slate-300">
-                  Trend is oscillating. Repeat the same recipe for consistency before tweaking.
-                </div>
-              ) : (
-                <GoalPicker selected={selectedGoals} maxSelections={2} onToggle={toggleGoal} />
-              )}
-            </div>
-          )}
-
-          {!isLocked && mode === "lock-in" && (
-            <div className="rounded-2xl bg-primary/10 border border-primary/30 p-4 text-center">
-              <span className="material-symbols-outlined text-primary text-3xl">star</span>
-              <p className="font-bold text-slate-100 mt-1">Excellent brew!</p>
-              <p className="text-xs text-slate-400 mt-1">Head to the Coaching tab to lock this in as a favourite.</p>
-            </div>
-          )}
-
-          {/* Coaching response — only shown after Get Coaching is clicked */}
+          {/* Coaching response */}
           {!isLocked && (response?.fix || isLoading) && (
             <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4">
               <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Coach Says</p>
@@ -297,7 +250,7 @@ export function BrewRatingSheet({
             </div>
           )}
 
-          {/* Get Coaching button — shown once a selection is made, before response */}
+          {/* Get Coaching button */}
           {canGetCoaching && (
             <button
               onClick={handleGetCoaching}
@@ -309,12 +262,22 @@ export function BrewRatingSheet({
           )}
 
           {/* Done / Skip button */}
-          {!canGetCoaching && (
+          {(!canGetCoaching || response?.fix) && !isPerfect && (
             <button
               onClick={() => onOpenChange(false)}
               className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base"
             >
               {response?.fix ? "Done" : "Skip for Now"}
+            </button>
+          )}
+
+          {/* Done after saving favourite */}
+          {isPerfect && !isLocked && (
+            <button
+              onClick={() => onOpenChange(false)}
+              className={`w-full h-12 rounded-xl font-bold text-base ${isFavouriteSaved ? "bg-primary text-background-dark" : "border border-primary/30 text-primary"}`}
+            >
+              {isFavouriteSaved ? "Done" : "Skip for Now"}
             </button>
           )}
         </div>

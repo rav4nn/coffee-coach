@@ -6,6 +6,13 @@ import { useRouter } from "next/navigation";
 
 import { getRecipesApi, type GuidedRecipe } from "@/lib/api";
 import { useLogBrewStore } from "@/lib/logBrewStore";
+import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
+import { useBeansStore } from "@/lib/beansStore";
+
+function methodLabel(methodId: string | null | undefined) {
+  if (!methodId) return "Brew";
+  return methodId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 function formatTime(totalSeconds: number) {
   const mins = Math.floor(totalSeconds / 60);
@@ -17,10 +24,19 @@ export default function GuidedRecipesPage() {
   const router = useRouter();
   const selectedMethodId = useLogBrewStore((state) => state.selectedMethodId);
   const selectedPourOverDeviceId = useLogBrewStore((state) => state.selectedPourOverDeviceId);
+  const entries = useBrewHistoryStore((state) => state.entries);
+  const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
+  const beans = useBeansStore((state) => state.userBeans);
+  const fetchBeans = useBeansStore((state) => state.fetchBeans);
   const [recipes, setRecipes] = useState<GuidedRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
+
+  useEffect(() => {
+    void fetchEntries();
+    void fetchBeans();
+  }, [fetchEntries, fetchBeans]);
 
   useEffect(() => {
     let mounted = true;
@@ -53,6 +69,11 @@ export default function GuidedRecipesPage() {
   const sorted = useMemo(
     () => [...recipes].sort((a, b) => (a.steps?.length ?? 999) - (b.steps?.length ?? 999)),
     [recipes],
+  );
+
+  const favouriteBrews = useMemo(
+    () => entries.filter((e) => e.isFavourite),
+    [entries],
   );
 
   if (hasError) {
@@ -98,6 +119,44 @@ export default function GuidedRecipesPage() {
       {/* Recipe list */}
       <main className="flex-1 overflow-y-auto pb-32">
         <div className="px-4 py-6 space-y-4">
+
+          {/* ── Favourite brews ── */}
+          {favouriteBrews.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-sm">favorite</span>
+                <p className="text-xs font-bold uppercase tracking-wider text-primary">Your Favourites</p>
+              </div>
+              {favouriteBrews.map((entry) => {
+                const beanName = beans.find((b) => b.id === entry.beanId)?.beanName ?? "Unknown Bean";
+                return (
+                  <button
+                    key={entry.id}
+                    type="button"
+                    onClick={() => router.push(`/log-brew/guided/${entry.id}`)}
+                    className="w-full rounded-xl border border-primary/30 bg-primary/5 p-4 text-left hover:border-primary/60 transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-100 truncate">
+                          Your {methodLabel(entry.methodId)} · {beanName}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {entry.coffeeGrams}g · {entry.waterMl}ml
+                          {entry.waterTempC ? ` · ${entry.waterTempC}°C` : ""}
+                        </p>
+                      </div>
+                      <span className="material-symbols-outlined text-primary shrink-0">chevron_right</span>
+                    </div>
+                  </button>
+                );
+              })}
+              <div className="border-t border-primary/10 pt-2">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-500">All Recipes</p>
+              </div>
+            </div>
+          )}
+
           {isLoading && (
             <p className="text-sm text-slate-400 text-center py-8">Loading recipes…</p>
           )}
