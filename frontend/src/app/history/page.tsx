@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { BrewEditSheet } from "@/components/BrewEditSheet";
 import { BrewRatingSheet } from "@/components/BrewRatingSheet";
 import { useBeansStore } from "@/lib/beansStore";
 import { useBrewHistoryStore, type FreestyleBrewEntry } from "@/lib/brewHistoryStore";
@@ -49,6 +50,7 @@ function ratio(coffeeGrams: number, waterMl: number) {
 export default function HistoryPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [ratingBrewId, setRatingBrewId] = useState<string | null>(null);
+  const [editBrewId, setEditBrewId] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<FilterTab>("all");
   const [search, setSearch] = useState("");
 
@@ -185,7 +187,7 @@ export default function HistoryPage() {
                             {typeof entry.rating === "number" && (
                               <span className="flex items-center gap-0.5 text-xs text-primary font-semibold">
                                 <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>star</span>
-                                {entry.rating}
+                                {entry.rating}/10
                               </span>
                             )}
                             {entry.notes && (
@@ -236,7 +238,7 @@ export default function HistoryPage() {
 
                           <div className="flex gap-2 pt-1">
                             <button
-                              onClick={() => setRatingBrewId(entry.id)}
+                              onClick={() => setEditBrewId(entry.id)}
                               className="flex-1 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-semibold flex items-center justify-center gap-1.5"
                             >
                               <span className="material-symbols-outlined text-sm">edit</span>
@@ -260,6 +262,12 @@ export default function HistoryPage() {
           ))}
         </div>
       )}
+
+      <BrewEditSheet
+        entry={editBrewId ? entries.find((e) => e.id === editBrewId) ?? null : null}
+        open={editBrewId !== null}
+        onOpenChange={(o) => { if (!o) setEditBrewId(null); }}
+      />
 
       <BrewRatingSheet
         brewId={ratingBrewId ?? ""}

@@ -88,6 +88,12 @@ export const useBrewHistoryStore = create<BrewHistoryStore>()((set) => ({
     if (patch.rating !== undefined) apiPatch.rating = patch.rating;
     if (patch.coachingFeedback !== undefined) apiPatch.coaching_feedback = patch.coachingFeedback;
     if (patch.isFavourite !== undefined) apiPatch.is_favourite = patch.isFavourite;
+    if (patch.coffeeGrams !== undefined) apiPatch.coffee_grams = patch.coffeeGrams;
+    if (patch.waterMl !== undefined) apiPatch.water_ml = patch.waterMl;
+    if (patch.waterTempC !== undefined) apiPatch.water_temp_c = patch.waterTempC;
+    if (patch.grindSize !== undefined) apiPatch.grind_size = patch.grindSize;
+    if (patch.brewTime !== undefined) apiPatch.brew_time = patch.brewTime;
+    if (patch.notes !== undefined) apiPatch.notes = patch.notes;
 
     if (Object.keys(apiPatch).length > 0) {
       const res = await fetch(`/api/brews/${id}`, {
