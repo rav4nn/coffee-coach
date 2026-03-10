@@ -1,22 +1,22 @@
-import { getUserBeans, setUserBeans } from "../store";
+import { NextResponse } from "next/server";
+import { getAccessToken } from "@/lib/getAccessToken";
 
-function getUserId(request: Request) {
-  return request.headers.get("X-User-Id") ?? "coffee-coach-user";
-}
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
 type Params = {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 };
 
-export async function DELETE(request: Request, { params }: Params) {
-  const userId = getUserId(request);
+export async function DELETE(_request: Request, { params }: Params) {
+  const token = await getAccessToken();
   const { id } = await params;
-  const existing = getUserBeans(userId);
-  setUserBeans(
-    userId,
-    existing.filter((bean) => bean.id !== id),
-  );
-  return new Response(null, { status: 204 });
+  const res = await fetch(`${BACKEND_URL}/api/user/beans/${id}`, {
+    method: "DELETE",
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  });
+  if (res.status === 204) {
+    return new NextResponse(null, { status: 204 });
+  }
+  const data = await res.json();
+  return NextResponse.json(data, { status: res.status });
 }

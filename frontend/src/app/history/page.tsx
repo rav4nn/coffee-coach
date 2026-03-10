@@ -1,144 +1,275 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+import { BrewRatingSheet } from "@/components/BrewRatingSheet";
 import { useBeansStore } from "@/lib/beansStore";
-import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
+import { useBrewHistoryStore, type FreestyleBrewEntry } from "@/lib/brewHistoryStore";
+
+type FilterTab = "all" | "favourites" | "recent";
 
 function methodLabel(methodId: string | null | undefined) {
-  if (!methodId) {
-    return "Unknown Method";
-  }
-  return methodId
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  if (!methodId) return "Unknown Method";
+  return methodId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function trendPattern(ratings: number[]) {
-  if (ratings.length < 4) {
-    return "Building trend data";
-  }
-  const diffs = ratings.slice(1).map((value, index) => value - ratings[index]);
-  const positives = diffs.filter((diff) => diff > 0).length;
-  const negatives = diffs.filter((diff) => diff < 0).length;
-  const directionChanges = diffs.slice(1).filter((diff, index) => diff * diffs[index] < 0).length;
+function methodIcon(methodId: string | null | undefined) {
+  if (!methodId) return "coffee";
+  if (methodId.includes("cold_brew")) return "water_drop";
+  if (methodId.includes("aeropress")) return "import_export";
+  if (methodId.includes("french_press")) return "local_cafe";
+  return "coffee";
+}
 
-  if (directionChanges >= 2) {
-    return "Oscillating";
-  }
-  if (positives > negatives + 1) {
-    return "Improving";
-  }
-  if (negatives > positives + 1) {
-    return "Worsening";
-  }
-  return "Plateau";
+function formatTime(dateStr: string) {
+  return new Date(dateStr).toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+function getDateGroup(dateStr: string) {
+  const date = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (date.toDateString() === today.toDateString()) return "TODAY";
+  if (date.toDateString() === yesterday.toDateString()) return "YESTERDAY";
+  return date
+    .toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+    .toUpperCase();
+}
+
+function ratio(coffeeGrams: number, waterMl: number) {
+  if (!coffeeGrams) return "";
+  return `1:${Math.round(waterMl / coffeeGrams)} Ratio`;
 }
 
 export default function HistoryPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [ratingBrewId, setRatingBrewId] = useState<string | null>(null);
+  const [filterTab, setFilterTab] = useState<FilterTab>("all");
+  const [search, setSearch] = useState("");
+
   const entries = useBrewHistoryStore((state) => state.entries);
   const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
   const loading = useBrewHistoryStore((state) => state.loading);
   const beans = useBeansStore((state) => state.userBeans);
+  const fetchBeans = useBeansStore((state) => state.fetchBeans);
 
   useEffect(() => {
     void fetchEntries();
-  }, [fetchEntries]);
+    void fetchBeans();
+  }, [fetchEntries, fetchBeans]);
 
-  const sorted = [...entries].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const chartData = sorted.map((entry, index) => ({
-    index: index + 1,
-    rating: typeof entry.rating === "number" ? entry.rating : null,
-  }));
-  const ratings = chartData.map((item) => item.rating).filter((value): value is number => value !== null);
-  const trend = trendPattern(ratings);
-  const chartStroke = trend === "Improving" ? "#7fb069" : trend === "Worsening" ? "#ef4444" : "#f49d25";
+  const recentFirst = useMemo(
+    () => [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    [entries],
+  );
 
-  const recentFirst = useMemo(() => [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [entries]);
+  const sevenDaysAgo = useMemo(
+    () => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    [],
+  );
+
+  const filtered = useMemo(() => {
+    return recentFirst.filter((entry) => {
+      if (filterTab === "favourites" && !entry.isFavourite) return false;
+      if (filterTab === "recent" && entry.createdAt < sevenDaysAgo) return false;
+      if (search) {
+        const beanName = beans.find((b) => b.id === entry.beanId)?.beanName ?? "";
+        const method = methodLabel(entry.methodId);
+        const q = search.toLowerCase();
+        if (!beanName.toLowerCase().includes(q) && !method.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }, [recentFirst, filterTab, search, beans, sevenDaysAgo]);
+
+  const groups = useMemo(() => {
+    const map = new Map<string, FreestyleBrewEntry[]>();
+    for (const entry of filtered) {
+      const key = getDateGroup(entry.createdAt);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(entry);
+    }
+    return Array.from(map.entries());
+  }, [filtered]);
+
+  const ratingEntry = ratingBrewId ? entries.find((e) => e.id === ratingBrewId) : null;
 
   return (
-    <section className="space-y-4">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-mocha/70">History</p>
-        <h1 className="font-serif text-4xl font-bold text-espresso">Brew History</h1>
+    <section className="pb-28">
+      <div className="px-4 pt-2 pb-3">
+        <h1 className="text-2xl font-bold text-slate-100">Brew History</h1>
       </div>
 
-      <div className="rounded-3xl border border-mocha/10 bg-steam p-4 shadow-card">
-        <div className="mb-2 flex items-center justify-between">
-          <p className="text-sm font-semibold text-espresso">Rating Trend</p>
-          <p className="text-xs text-mocha/70">{trend}</p>
+      <div className="flex gap-1 px-4 border-b border-white/10 mb-3">
+        {(["all", "favourites", "recent"] as FilterTab[]).map((tab) => {
+          const labels: Record<FilterTab, string> = {
+            all: "All",
+            favourites: "Favorites",
+            recent: "Recent",
+          };
+          const active = filterTab === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setFilterTab(tab)}
+              className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${
+                active
+                  ? "border-primary text-primary"
+                  : "border-transparent text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              {labels[tab]}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="px-4 mb-4">
+        <div className="flex items-center gap-3 h-11 rounded-xl bg-primary/10 px-4">
+          <span className="material-symbols-outlined text-primary/50 text-xl">search</span>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search past brews..."
+            className="flex-1 bg-transparent text-slate-100 placeholder:text-slate-500 text-sm outline-none"
+          />
         </div>
-        <div className="h-44">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <XAxis dataKey="index" tick={{ fontSize: 11, fill: "#cbbba9" }} />
-              <YAxis domain={[1, 10]} tick={{ fontSize: 11, fill: "#cbbba9" }} />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="rating"
-                stroke={chartStroke}
-                strokeWidth={2.5}
-                dot={{ r: 3, fill: "#f49d25" }}
-                connectNulls
-              />
-            </LineChart>
-          </ResponsiveContainer>
+      </div>
+
+      {loading && filtered.length === 0 ? (
+        <p className="px-4 text-sm text-slate-500 py-8 text-center">Loading brews…</p>
+      ) : filtered.length === 0 ? (
+        <div className="px-4 py-12 text-center">
+          <span className="material-symbols-outlined text-4xl text-slate-600">coffee</span>
+          <p className="mt-2 text-sm text-slate-500">No brews found.</p>
         </div>
-      </div>
+      ) : (
+        <div className="px-4 space-y-5">
+          {groups.map(([dateLabel, groupEntries]) => (
+            <div key={dateLabel}>
+              <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">{dateLabel}</p>
+              <div className="space-y-2">
+                {groupEntries.map((entry) => {
+                  const beanName = beans.find((b) => b.id === entry.beanId)?.beanName ?? "Unknown Bean";
+                  const isOpen = expandedId === entry.id;
+                  const icon = methodIcon(entry.methodId);
 
-      <div className="space-y-2">
-        {loading && recentFirst.length === 0 ? (
-          <div className="rounded-2xl border border-mocha/10 bg-steam p-4 text-sm text-mocha/80 shadow-card">
-            Loading brews…
-          </div>
-        ) : recentFirst.length === 0 ? (
-          <div className="rounded-2xl border border-mocha/10 bg-steam p-4 text-sm text-mocha/80 shadow-card">
-            No brews logged yet.
-          </div>
-        ) : (
-          recentFirst.map((entry) => {
-            const beanName = beans.find((bean) => bean.id === entry.beanId)?.beanName ?? "Unknown Bean";
-            const isOpen = expandedId === entry.id;
+                  return (
+                    <article
+                      key={entry.id}
+                      className="rounded-2xl border border-primary/20 bg-primary/5 overflow-hidden"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setExpandedId(isOpen ? null : entry.id)}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-left"
+                      >
+                        <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-primary text-xl">{icon}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline justify-between gap-1">
+                            <p className="text-sm font-bold text-slate-100 truncate">{beanName}</p>
+                            <p className="text-xs text-slate-400 shrink-0">{formatTime(entry.createdAt)}</p>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {methodLabel(entry.methodId)} · {ratio(entry.coffeeGrams, entry.waterMl)}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {typeof entry.rating === "number" && (
+                              <span className="flex items-center gap-0.5 text-xs text-primary font-semibold">
+                                <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>star</span>
+                                {entry.rating}
+                              </span>
+                            )}
+                            {entry.notes && (
+                              <p className="text-xs text-slate-500 italic truncate">{entry.notes}</p>
+                            )}
+                            {entry.isFavourite && (
+                              <span className="material-symbols-outlined text-primary" style={{ fontSize: "13px" }}>favorite</span>
+                            )}
+                          </div>
+                        </div>
+                        <span className="material-symbols-outlined text-slate-500 text-lg shrink-0">
+                          {isOpen ? "expand_less" : "chevron_right"}
+                        </span>
+                      </button>
 
-            return (
-              <article key={entry.id} className="rounded-2xl border border-mocha/10 bg-steam shadow-card">
-                <button
-                  type="button"
-                  onClick={() => setExpandedId((current) => (current === entry.id ? null : entry.id))}
-                  className="w-full px-4 py-3 text-left"
-                >
-                  <p className="text-base font-semibold text-espresso">{methodLabel(entry.methodId)}</p>
-                  <p className="text-sm text-mocha/85">{beanName}</p>
-                  <p className="mt-1 text-xs text-mocha/70">
-                    {new Date(entry.createdAt).toLocaleDateString("en-IN")} · Rating:{" "}
-                    {typeof entry.rating === "number" ? `${entry.rating}/10` : "--/10"}
-                  </p>
-                  <p className="mt-1 text-xs text-mocha/75">
-                    Coaching: {entry.coachingFeedback ?? "No coaching suggestion yet"}
-                  </p>
-                </button>
+                      {isOpen && (
+                        <div className="border-t border-primary/15 px-4 py-4 space-y-4">
+                          <div className="grid grid-cols-3 gap-2 text-center">
+                            <div className="bg-primary/10 rounded-xl py-2 px-1">
+                              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Extraction</p>
+                              <p className="text-sm font-bold text-slate-100 mt-0.5">{entry.brewTime}</p>
+                            </div>
+                            <div className="bg-primary/10 rounded-xl py-2 px-1">
+                              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Grind</p>
+                              <p className="text-sm font-bold text-slate-100 mt-0.5">{entry.grindSize}</p>
+                            </div>
+                            <div className="bg-primary/10 rounded-xl py-2 px-1">
+                              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Temp</p>
+                              <p className="text-sm font-bold text-slate-100 mt-0.5">
+                                {entry.waterTempC ? entry.waterTempC + "°C" : "—"}
+                              </p>
+                            </div>
+                          </div>
 
-                {isOpen ? (
-                  <div className="border-t border-mocha/10 px-4 py-3 text-sm text-espresso">
-                    <p className="font-semibold">Brew details</p>
-                    <p className="mt-1 text-mocha/80">
-                      {entry.coffeeGrams}g coffee · {entry.waterMl}ml water · {entry.grindSize} grind
-                    </p>
-                    <p className="mt-1 text-mocha/80">Brew time: {entry.brewTime}</p>
-                    <p className="mt-2 font-semibold">Coaching response</p>
-                    <p className="mt-1 text-mocha/80">
-                      {entry.coachingFeedback ?? "No coaching response captured for this brew."}
-                    </p>
-                  </div>
-                ) : null}
-              </article>
-            );
-          })
-        )}
-      </div>
+                          {entry.notes && (
+                            <div>
+                              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Notes</p>
+                              <p className="text-sm text-slate-300 leading-relaxed">{entry.notes}</p>
+                            </div>
+                          )}
+
+                          {entry.coachingFeedback && (
+                            <div className="rounded-xl bg-primary/10 border border-primary/20 p-3">
+                              <p className="text-[10px] uppercase tracking-wider text-primary/70 font-semibold mb-1">Coach Says</p>
+                              <p className="text-sm text-slate-300">{entry.coachingFeedback}</p>
+                            </div>
+                          )}
+
+                          <div className="flex gap-2 pt-1">
+                            <button
+                              onClick={() => setRatingBrewId(entry.id)}
+                              className="flex-1 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-semibold flex items-center justify-center gap-1.5"
+                            >
+                              <span className="material-symbols-outlined text-sm">edit</span>
+                              Edit Brew
+                            </button>
+                            <button
+                              onClick={() => setRatingBrewId(entry.id)}
+                              className="flex-1 h-10 rounded-xl bg-primary text-background-dark text-sm font-semibold flex items-center justify-center gap-1.5"
+                            >
+                              <span className="material-symbols-outlined text-sm">psychology</span>
+                              Ask Coach
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <BrewRatingSheet
+        brewId={ratingBrewId ?? ""}
+        open={ratingBrewId !== null}
+        onOpenChange={(o) => {
+          if (!o) setRatingBrewId(null);
+        }}
+        initialRating={ratingEntry?.rating}
+        initialFeedback={ratingEntry?.coachingFeedback}
+      />
     </section>
   );
 }

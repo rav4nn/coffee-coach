@@ -121,8 +121,8 @@ export async function getUserBeansApi() {
     throw new Error("Failed to fetch user beans");
   }
 
-  const data = (await response.json()) as { beans: ApiUserBean[] };
-  return data.beans;
+  const data = (await response.json()) as ApiUserBean[];
+  return data;
 }
 
 export async function postUserBeanApi(payload: CreateUserBeanPayload) {

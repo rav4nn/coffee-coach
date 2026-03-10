@@ -73,7 +73,8 @@ export default function FreestyleLogPage() {
         brewTime: values.brewTime,
         notes: values.notes?.trim() ? values.notes.trim() : null,
       });
-      router.push("/log-brew/freestyle/success");
+      const newId = useBrewHistoryStore.getState().entries[0]?.id ?? "";
+      router.push(`/log-brew/freestyle/success?brew_id=${newId}`);
     } catch {
       setSubmitError("Failed to save brew. Please try again.");
     } finally {
