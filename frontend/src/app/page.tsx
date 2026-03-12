@@ -61,6 +61,13 @@ export default function Home() {
 
   const isPageLoading = sessionStatus === "loading" || (!initialFetchDone && isLoadingHistory);
 
+  const recentFirst = useMemo(
+    () => [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    [entries],
+  );
+
+  const recentTwo = recentFirst.slice(0, 2);
+
   if (isPageLoading) {
     return (
       <main className="overflow-y-auto pb-28">
@@ -96,13 +103,6 @@ export default function Home() {
       </main>
     );
   }
-
-  const recentFirst = useMemo(
-    () => [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-    [entries],
-  );
-
-  const recentTwo = recentFirst.slice(0, 2);
 
 
   const editEntry = editBrewId ? entries.find((e) => e.id === editBrewId) ?? null : null;
