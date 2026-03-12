@@ -300,13 +300,13 @@ export default function LogBrewPage() {
                   setSelectedMethodId(method.method_id);
                   if (method.method_id !== "pour_over") setSelectedPourOverDeviceId("");
                 }}
-                className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
+                className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl border-2 transition-all ${
                   active
                     ? "bg-primary border-primary text-background-dark"
                     : "bg-primary/5 border-white/5 text-slate-300 hover:border-primary/30"
                 }`}
               >
-                <span className="material-symbols-outlined text-3xl mb-2">
+                <span className="material-symbols-outlined text-2xl mb-1">
                   {METHOD_ICON[method.method_id]}
                 </span>
                 <span className="text-[10px] font-bold uppercase text-center leading-tight">

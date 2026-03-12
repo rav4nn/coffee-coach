@@ -9,6 +9,7 @@ import { useBrewSessionStore } from "@/lib/brewSessionStore";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 import { BrewRatingSheet } from "@/components/BrewRatingSheet";
+import { BrewTimePicker } from "@/components/BrewTimePicker";
 
 type Phase = "preview" | "brewing" | "confirm" | "complete";
 
@@ -106,6 +107,34 @@ export default function GuidedRecipeDetailPage() {
         if (!mounted) return;
         if (!data || !Array.isArray(data.steps)) { setHasError(true); return; }
         setRecipe(data);
+
+        // Restore in-progress session if one exists for this recipe
+        const existingSession = useBrewSessionStore.getState().session;
+        if (mounted && existingSession && existingSession.recipe_id === params.id) {
+          sessionStartedAt.current = existingSession.started_at;
+          const completedCount = existingSession.steps.filter((s) => s.confirmed).length;
+          if (existingSession.completed_at) {
+            // Restore confirm phase
+            const stepTimes = existingSession.steps.map((step) =>
+              formatTimer(step.actual_duration_seconds ?? step.expected_duration_seconds ?? 0)
+            );
+            setConfirmStepTimes(stepTimes);
+            setConfirmCoffeeG(String(data.coffee_g));
+            setConfirmWaterMl(String(data.water_ml));
+            setConfirmWaterTempC(String(data.water_temp_c ?? ""));
+            const grind = GRIND_SIZES.find((g) => g.toLowerCase() === data.grind_size?.toLowerCase()) ?? "Medium";
+            setConfirmGrindSize(grind);
+            setConfirmBrewTime(formatTimer(existingSession.total_brew_time_seconds));
+            setPhase("confirm");
+          } else {
+            // Restore brewing phase
+            const diff = Math.max(0, Math.floor((Date.now() - new Date(existingSession.started_at).getTime()) / 1000));
+            setElapsedSeconds(diff);
+            setCurrentIndex(completedCount);
+            setBrewingActive(true);
+            setPhase("brewing");
+          }
+        }
       } catch {
         if (mounted) setHasError(true);
       } finally {
@@ -131,6 +160,12 @@ export default function GuidedRecipeDetailPage() {
       target_water_g: pourByTime.get(step.time_seconds) ?? null,
     }));
   }, [recipe]);
+
+  // Total of only timed steps — used for the brew timer progress bar
+  const totalTimerSeconds = useMemo(
+    () => mergedSteps.reduce((sum, s) => sum + (s.duration_seconds ?? 0), 0),
+    [mergedSteps],
+  );
 
   const currentStep = mergedSteps[currentIndex] ?? null;
 
@@ -262,6 +297,7 @@ export default function GuidedRecipeDetailPage() {
       const result = await postBrewApi({
         recipe_id: recipe.recipe_id,
         bean_id: selectedBeanId ?? null,
+        method_id: selectedMethodId ?? recipe.method,
         brew_type: "guided",
         coffee_grams: parseFloat(confirmCoffeeG) || recipe.coffee_g,
         water_ml: parseFloat(confirmWaterMl) || recipe.water_ml,
@@ -349,13 +385,6 @@ export default function GuidedRecipeDetailPage() {
             </button>
           )}
 
-          <Link
-            href="/"
-            className="w-full max-w-xs border border-primary/30 text-primary font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary/10 transition-all"
-          >
-            Done
-            <span className="material-symbols-outlined">home</span>
-          </Link>
         </main>
 
         {completedBrewId && (
@@ -468,14 +497,8 @@ export default function GuidedRecipeDetailPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Total Brew Time (mm:ss)</label>
-                  <input
-                    type="text"
-                    value={confirmBrewTime}
-                    onChange={(e) => setConfirmBrewTime(e.target.value)}
-                    placeholder="03:00"
-                    className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
-                  />
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Total Brew Time</label>
+                  <BrewTimePicker value={confirmBrewTime} onChange={setConfirmBrewTime} />
                 </div>
 
                 <div>
@@ -520,8 +543,8 @@ export default function GuidedRecipeDetailPage() {
   // ─── Main page ─────────────────────────────────────────────────────────────
 
   const isBrewing = phase === "brewing";
-  const progressPct = recipe.brew_time_seconds > 0
-    ? Math.min(100, (elapsedSeconds / recipe.brew_time_seconds) * 100)
+  const progressPct = totalTimerSeconds > 0
+    ? Math.min(100, (elapsedSeconds / totalTimerSeconds) * 100)
     : 0;
 
   return (
@@ -549,7 +572,7 @@ export default function GuidedRecipeDetailPage() {
           <div className="flex justify-between items-center mb-1.5">
             <p className="text-xs font-medium text-slate-400">Brewing Progress</p>
             <p className="text-xs font-bold text-primary">
-              {formatTimer(elapsedSeconds)} / {formatTimer(recipe.brew_time_seconds)}
+              {formatTimer(elapsedSeconds)} / {formatTimer(totalTimerSeconds)}
             </p>
           </div>
           <div className="h-2 w-full rounded-full bg-primary/20 overflow-hidden">
@@ -681,9 +704,18 @@ export default function GuidedRecipeDetailPage() {
                       {/* Countdown bar — current step only */}
                       {isCurrent && step.duration_seconds && stepCountdown !== null && (
                         <div className="mt-3">
-                          <p className="font-mono text-2xl font-bold text-primary mb-2">
-                            {formatTimer(stepCountdown)}
-                          </p>
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="font-mono text-2xl font-bold text-primary">
+                              {formatTimer(stepCountdown)}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={handleAdvance}
+                              className="text-xs font-bold text-slate-400 hover:text-slate-200 px-3 py-1 rounded-full border border-white/10 hover:border-white/30 transition-colors"
+                            >
+                              Skip
+                            </button>
+                          </div>
                           <div className="h-1.5 w-full rounded-full bg-primary/20 overflow-hidden">
                             <div
                               className="h-full bg-primary rounded-full transition-all duration-500"

@@ -36,6 +36,8 @@ export default function OnboardingPage() {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [ageError, setAgeError] = useState<string | null>(null);
 
   const toggleEquipment = (id: MethodCardId) => {
     setEquipment((prev) =>
@@ -43,16 +45,26 @@ export default function OnboardingPage() {
     );
   };
 
-  const nameValid = name.trim().length > 0;
+  const nameValid = /^[A-Za-z]+(?: [A-Za-z]+)*$/.test(name.trim());
   const ageNum = parseInt(age, 10);
-  const ageValid = age.length > 0 && !isNaN(ageNum) && ageNum >= 1 && ageNum <= 120;
+  const ageValid = /^\d+$/.test(age) && ageNum >= 10 && ageNum <= 100;
   const canContinue = nameValid && ageValid;
 
   const handleSubmit = async () => {
-    if (!canContinue) {
-      if (!nameValid) { setError("Please enter your name."); return; }
-      if (!ageValid) { setError("Please enter a valid age."); return; }
+    let valid = true;
+    if (!nameValid) {
+      setNameError(name.trim().length === 0 ? "Please enter your name." : "Name must contain only letters and spaces.");
+      valid = false;
+    } else {
+      setNameError(null);
     }
+    if (!ageValid) {
+      setAgeError(age.length === 0 ? "Please enter your age." : "Age must be a whole number between 10 and 100.");
+      valid = false;
+    } else {
+      setAgeError(null);
+    }
+    if (!valid) return;
 
     setSaving(true);
     setError(null);
@@ -132,8 +144,9 @@ export default function OnboardingPage() {
             placeholder="Enter your name"
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => { setName(e.target.value); setNameError(null); }}
           />
+          {nameError && <p className="text-rose-400 text-xs ml-1">{nameError}</p>}
         </label>
 
         {/* Age */}
@@ -147,10 +160,11 @@ export default function OnboardingPage() {
               min={1}
               max={120}
               value={age}
-              onChange={(e) => setAge(e.target.value)}
+              onChange={(e) => { setAge(e.target.value); setAgeError(null); }}
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/60 text-sm">YEARS</span>
           </div>
+          {ageError && <p className="text-rose-400 text-xs ml-1">{ageError}</p>}
         </label>
 
         {/* Primary equipment */}
@@ -192,7 +206,7 @@ export default function OnboardingPage() {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={saving || !canContinue}
+          disabled={saving}
           className="w-full bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
         >
           <span>{saving ? "Saving…" : "Continue to Dashboard"}</span>

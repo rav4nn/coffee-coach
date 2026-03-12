@@ -11,6 +11,7 @@ import { BrewEditSheet } from "@/components/BrewEditSheet";
 import { BrewRatingSheet } from "@/components/BrewRatingSheet";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useBeansStore } from "@/lib/beansStore";
+import { Skeleton } from "@/components/Skeleton";
 
 function methodLabel(methodId: string | null | undefined) {
   if (!methodId) return "Unknown Method";
@@ -40,10 +41,11 @@ function formatTime(dateStr: string) {
 
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const firstName = session?.user?.name?.split(" ")[0] ?? "Brewer";
 
   const entries = useBrewHistoryStore((state) => state.entries);
+  const isLoadingHistory = useBrewHistoryStore((state) => state.loading);
   const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
   const beans = useBeansStore((state) => state.userBeans);
   const fetchBeans = useBeansStore((state) => state.fetchBeans);
@@ -51,11 +53,49 @@ export default function Home() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editBrewId, setEditBrewId] = useState<string | null>(null);
   const [ratingBrewId, setRatingBrewId] = useState<string | null>(null);
+  const [initialFetchDone, setInitialFetchDone] = useState(false);
 
   useEffect(() => {
-    void fetchEntries();
-    void fetchBeans();
+    Promise.all([fetchEntries(), fetchBeans()]).finally(() => setInitialFetchDone(true));
   }, [fetchEntries, fetchBeans]);
+
+  const isPageLoading = sessionStatus === "loading" || (!initialFetchDone && isLoadingHistory);
+
+  if (isPageLoading) {
+    return (
+      <main className="overflow-y-auto pb-28">
+        <div className="px-4 pt-6 pb-4 space-y-2">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-7 w-48" />
+        </div>
+        <div className="px-4 pb-4 grid grid-cols-2 gap-3">
+          <div className="h-16 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" />
+          <div className="h-16 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" />
+        </div>
+        <section className="px-4 py-4">
+          <Skeleton className="h-5 w-28 mb-3" />
+          <div className="space-y-2">
+            {[0, 1].map((i) => (
+              <div key={i} className="rounded-2xl border border-primary/10 bg-primary/5 overflow-hidden animate-pulse">
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 shrink-0 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-primary/20 text-xl">coffee</span>
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <div className="flex justify-between gap-2">
+                      <Skeleton className="h-3.5 w-32 bg-primary/15" />
+                      <Skeleton className="h-3 w-10 bg-primary/10" />
+                    </div>
+                    <Skeleton className="h-3 w-40 bg-primary/10" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   const recentFirst = useMemo(
     () => [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),

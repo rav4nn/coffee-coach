@@ -9,6 +9,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BrewTimePicker } from "@/components/BrewTimePicker";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 
@@ -130,8 +131,11 @@ export default function FreestyleLogPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="brew-time">Brew Time (mm:ss)</Label>
-          <Input id="brew-time" placeholder="03:00" {...form.register("brewTime")} />
+          <Label>Brew Time</Label>
+          <BrewTimePicker
+            value={form.watch("brewTime")}
+            onChange={(v) => form.setValue("brewTime", v, { shouldValidate: true })}
+          />
           {errors.brewTime ? <p className="text-xs text-red-700">{errors.brewTime.message}</p> : null}
         </div>
 

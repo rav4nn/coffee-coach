@@ -111,9 +111,7 @@ export default function GuidedRecipesPage() {
           </span>
           <h1 className="text-lg font-bold text-slate-100">Pick a Recipe</h1>
         </div>
-        <div className="flex items-center justify-center size-10 rounded-full bg-primary text-background-dark font-bold text-sm">
-          BJ
-        </div>
+        <div className="size-10" />
       </header>
 
       {/* Recipe list */}

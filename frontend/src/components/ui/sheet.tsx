@@ -2,8 +2,6 @@
 
 import * as React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 
 const Sheet = Dialog.Root;
@@ -39,10 +37,6 @@ const SheetContent = React.forwardRef<
         {...props}
       >
         {children}
-        <SheetClose className="absolute right-4 top-4 rounded-full p-1 text-mocha/80 hover:bg-latte/60">
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </SheetClose>
       </Dialog.Content>
     </div>
   </SheetPortal>
