@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNav } from "@/components/BottomNav";
 
-const SHELL_FREE_ROUTES = ["/login", "/onboarding", "/account-info"];
+const SHELL_FREE_ROUTES = ["/login", "/onboarding", "/account-info", "/settings"];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();

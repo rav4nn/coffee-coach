@@ -4,11 +4,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 
-const WEEKLY_GOAL = 7;
+const DEFAULT_WEEKLY_GOAL = 7;
+const GOAL_KEY = "cc_weekly_goal";
 
 function getWeeklyBrewCount(entries: { createdAt: string }[]): number {
   const now = new Date();
@@ -46,9 +47,15 @@ export function ProfileDrawer({ open, onClose }: ProfileDrawerProps) {
   const user = session?.user;
   const displayName = user?.name ?? "Brewer";
 
+  const [weeklyGoal, setWeeklyGoal] = useState(DEFAULT_WEEKLY_GOAL);
+  useEffect(() => {
+    const stored = localStorage.getItem(GOAL_KEY);
+    if (stored) setWeeklyGoal(Number(stored));
+  }, [open]);
+
   const entries = useBrewHistoryStore((state) => state.entries);
   const weeklyBrews = useMemo(() => getWeeklyBrewCount(entries), [entries]);
-  const progress = Math.round((weeklyBrews / WEEKLY_GOAL) * 100);
+  const progress = Math.round((weeklyBrews / weeklyGoal) * 100);
 
   return (
     <>
@@ -96,7 +103,7 @@ export function ProfileDrawer({ open, onClose }: ProfileDrawerProps) {
             <span className="text-sm font-medium text-slate-400">Weekly Mastery</span>
             <span className="text-lg font-bold text-primary">
               {weeklyBrews}
-              <span className="text-sm font-normal text-slate-500"> / {WEEKLY_GOAL} brews</span>
+              <span className="text-sm font-normal text-slate-500"> / {weeklyGoal} brews</span>
             </span>
           </div>
           <div className="w-full h-1.5 bg-primary/10 rounded-full overflow-hidden">
@@ -120,24 +127,16 @@ export function ProfileDrawer({ open, onClose }: ProfileDrawerProps) {
                 <span className="material-symbols-outlined ml-auto text-slate-500 text-sm">chevron_right</span>
               </button>
             </li>
-            {[
-              { icon: "shield_person", label: "Privacy Settings" },
-              { icon: "settings", label: "Settings" },
-            ].map(({ icon, label }) => (
-              <li key={label}>
-                <button className="flex items-center gap-4 w-full px-4 py-4 rounded-xl hover:bg-primary/5 transition-colors group text-left">
-                  <span className="material-symbols-outlined text-slate-500 group-hover:text-primary">
-                    {icon}
-                  </span>
-                  <span className="text-base font-medium text-slate-300 group-hover:text-slate-100">
-                    {label}
-                  </span>
-                  <span className="material-symbols-outlined ml-auto text-slate-500 text-sm">
-                    chevron_right
-                  </span>
-                </button>
-              </li>
-            ))}
+            <li>
+              <button
+                onClick={() => { onClose(); router.push("/settings"); }}
+                className="flex items-center gap-4 w-full px-4 py-4 rounded-xl hover:bg-primary/5 transition-colors group text-left"
+              >
+                <span className="material-symbols-outlined text-slate-500 group-hover:text-primary">settings</span>
+                <span className="text-base font-medium text-slate-300 group-hover:text-slate-100">Settings</span>
+                <span className="material-symbols-outlined ml-auto text-slate-500 text-sm">chevron_right</span>
+              </button>
+            </li>
           </ul>
         </nav>
 

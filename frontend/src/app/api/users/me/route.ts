@@ -21,6 +21,17 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(data, { status: res.status });
 }
 
+export async function DELETE(request: NextRequest) {
+  const token = resolveToken(request, await getAccessToken());
+  const res = await fetch(`${BACKEND_URL}/api/users/me`, {
+    method: "DELETE",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  return new NextResponse(null, { status: res.status });
+}
+
 export async function PATCH(request: NextRequest) {
   const body = await request.json();
   const token = resolveToken(request, await getAccessToken());

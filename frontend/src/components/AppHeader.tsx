@@ -35,7 +35,7 @@ export function AppHeader() {
           isBrewingActive ? "max-h-0 opacity-0" : "max-h-24 opacity-100"
         }`}
       >
-        <div className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center justify-between px-6 py-4 max-w-phone mx-auto w-full">
           <button className="flex items-center justify-center p-2 rounded-full hover:bg-primary/10 transition-colors">
             <span className="material-symbols-outlined text-slate-300">coffee_maker</span>
           </button>
