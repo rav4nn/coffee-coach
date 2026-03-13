@@ -71,6 +71,29 @@ export default function Home() {
 
   const recentTwo = recentFirst.slice(0, 2);
 
+  const streak = useMemo(() => {
+    if (entries.length === 0) return 0;
+    const brewDays = new Set(entries.map((e) => new Date(e.createdAt).toDateString()));
+    let count = 0;
+    const check = new Date();
+    check.setHours(0, 0, 0, 0);
+    // If today has no brew yet, start counting from yesterday
+    if (!brewDays.has(check.toDateString())) {
+      check.setDate(check.getDate() - 1);
+    }
+    while (brewDays.has(check.toDateString())) {
+      count++;
+      check.setDate(check.getDate() - 1);
+    }
+    return count;
+  }, [entries]);
+
+  const personalBest = useMemo(() => {
+    const rated = entries.filter((e) => typeof e.rating === "number");
+    if (rated.length === 0) return null;
+    return rated.reduce((best, e) => (e.rating! > best.rating! ? e : best));
+  }, [entries]);
+
   if (isPageLoading) {
     return (
       <main className="overflow-y-auto pb-28">
@@ -115,6 +138,42 @@ export default function Home() {
     <main className="overflow-y-auto pb-28">
       <GreetingSection greetingLabel="Hello" userName={`Brewmaster ${firstName}`} />
       <QuickActions />
+
+      {/* Streak + Personal Best */}
+      {(streak > 0 || personalBest) && (
+        <div className={`px-4 pb-4 grid gap-3 ${streak > 0 && personalBest ? "grid-cols-2" : "grid-cols-1"}`}>
+          {streak > 0 && (
+            <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="material-symbols-outlined text-primary text-base">local_fire_department</span>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Streak</p>
+              </div>
+              <p className="text-2xl font-bold text-primary leading-none">
+                {streak}
+                <span className="text-xs font-normal text-slate-400 ml-1">day{streak !== 1 ? "s" : ""}</span>
+              </p>
+              <p className="text-[10px] text-slate-500 mt-1">consecutive brewing</p>
+            </div>
+          )}
+          {personalBest && (() => {
+            const bean = beans.find((b) => b.id === personalBest.beanId);
+            const beanLabel = bean ? `${bean.roaster} — ${bean.beanName}` : "Unknown Bean";
+            return (
+              <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <span className="material-symbols-outlined text-primary text-base">emoji_events</span>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Best Brew</p>
+                </div>
+                <p className="text-2xl font-bold text-primary leading-none">
+                  {personalBest.rating}
+                  <span className="text-xs font-normal text-slate-400 ml-0.5">/10</span>
+                </p>
+                <p className="text-[10px] text-slate-500 mt-1 truncate">{beanLabel}</p>
+              </div>
+            );
+          })()}
+        </div>
+      )}
 
       <section className="px-4 py-4">
         <div className="flex items-center justify-between mb-3">

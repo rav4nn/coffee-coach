@@ -243,10 +243,18 @@ export default function JournalPage() {
       if (filterTab === "favourites" && !entry.isFavourite) return false;
       if (filterTab === "recent" && entry.createdAt < sevenDaysAgo) return false;
       if (search) {
-        const beanName = beans.find((b) => b.id === entry.beanId)?.beanName ?? "";
+        const bean = beans.find((b) => b.id === entry.beanId);
+        const beanName = bean ? `${bean.roaster} — ${bean.beanName}` : "";
         const method = methodLabel(entry.methodId);
+        const notes = entry.notes ?? "";
+        const tasting = (entry.tastingNotes ?? []).join(" ");
         const q = search.toLowerCase();
-        if (!beanName.toLowerCase().includes(q) && !method.toLowerCase().includes(q)) return false;
+        if (
+          !beanName.toLowerCase().includes(q) &&
+          !method.toLowerCase().includes(q) &&
+          !notes.toLowerCase().includes(q) &&
+          !tasting.toLowerCase().includes(q)
+        ) return false;
       }
       return true;
     });
@@ -360,7 +368,7 @@ export default function JournalPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search past brews..."
+            placeholder="Search beans, notes, tasting notes..."
             className="flex-1 bg-transparent text-slate-100 placeholder:text-slate-500 text-sm outline-none"
           />
         </div>

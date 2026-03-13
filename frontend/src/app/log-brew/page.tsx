@@ -182,6 +182,22 @@ export default function LogBrewPage() {
   }, [methods]);
 
   const selectedBean = beans.find((bean) => bean.id === selectedBeanId);
+
+  const stalenessWarnings = useMemo(() => {
+    if (!selectedBean) return [];
+    const warnings: string[] = [];
+    if (selectedBean.is_pre_ground) {
+      warnings.push("Pre-ground coffee goes stale within days. For best flavour, consider switching to whole beans.");
+    }
+    if (selectedBean.roast_date) {
+      const days = Math.floor((Date.now() - new Date(selectedBean.roast_date).getTime()) / 86_400_000);
+      if (days > 45) {
+        warnings.push(`This bean was roasted ${days} days ago and may be past peak freshness.`);
+      }
+    }
+    return warnings;
+  }, [selectedBean]);
+
   const isPourOver = selectedMethodId === "pour_over";
   const canContinue =
     Boolean(selectedBeanId) &&
@@ -285,6 +301,18 @@ export default function LogBrewPage() {
           )}
         </div>
       </section>
+
+      {/* Staleness warning */}
+      {stalenessWarnings.length > 0 && (
+        <div className="mb-6 rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 flex gap-2.5">
+          <span className="material-symbols-outlined text-amber-400 text-base shrink-0 mt-0.5">warning</span>
+          <div className="flex flex-col gap-1">
+            {stalenessWarnings.map((w, i) => (
+              <p key={i} className="text-xs text-amber-300 leading-relaxed">{w}</p>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Brew Method Grid */}
       <section className="mb-8">

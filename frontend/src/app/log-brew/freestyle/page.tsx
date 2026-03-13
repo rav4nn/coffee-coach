@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BrewTimePicker } from "@/components/BrewTimePicker";
-import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
+import { useBrewHistoryStore, type FreestyleBrewEntry } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 
 const grindSizeOptions = ["Extra Fine", "Fine", "Medium-Fine", "Medium", "Medium-Coarse", "Coarse"] as const;
@@ -31,6 +31,7 @@ type FreestyleForm = z.infer<typeof freestyleSchema>;
 export default function FreestyleLogPage() {
   const router = useRouter();
   const addEntry = useBrewHistoryStore((state) => state.addEntry);
+  const brewEntries = useBrewHistoryStore((state) => state.entries);
   const selectedBeanId = useLogBrewStore((state) => state.selectedBeanId);
   const selectedMethodId = useLogBrewStore((state) => state.selectedMethodId);
   const selectedPourOverDeviceId = useLogBrewStore((state) => state.selectedPourOverDeviceId);
@@ -44,6 +45,16 @@ export default function FreestyleLogPage() {
 
   const isColdBrew = effectiveMethodId === "cold_brew";
 
+  const lastGrindForBean = useMemo(() => {
+    if (!selectedBeanId) return null;
+    const sorted = [...brewEntries]
+      .filter((e): e is FreestyleBrewEntry & { grindSize: NonNullable<FreestyleBrewEntry["grindSize"]> } =>
+        e.beanId === selectedBeanId && Boolean(e.grindSize)
+      )
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return sorted[0]?.grindSize ?? null;
+  }, [brewEntries, selectedBeanId]);
+
   const form = useForm<FreestyleForm>({
     resolver: zodResolver(freestyleSchema),
     defaultValues: {
@@ -55,6 +66,15 @@ export default function FreestyleLogPage() {
       notes: "",
     },
   });
+
+  const { setValue } = form;
+  const [grindPreFilled, setGrindPreFilled] = useState(false);
+  useEffect(() => {
+    if (lastGrindForBean) {
+      setValue("grindSize", lastGrindForBean, { shouldValidate: false });
+      setGrindPreFilled(true);
+    }
+  }, [lastGrindForBean, setValue]);
 
   const [tastingNotes, setTastingNotes] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -128,6 +148,12 @@ export default function FreestyleLogPage() {
             ))}
           </select>
           {errors.grindSize ? <p className="text-xs text-red-700">{errors.grindSize.message}</p> : null}
+          {grindPreFilled && !errors.grindSize && (
+            <p className="text-xs text-mocha/60 flex items-center gap-1 mt-0.5">
+              <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>history</span>
+              Pre-filled from your last brew with this bean
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
