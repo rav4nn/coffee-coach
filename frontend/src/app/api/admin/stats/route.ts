@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAccessToken } from "@/lib/auth";
+import { getAccessToken } from "@/lib/getAccessToken";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
 function resolveToken(request: NextRequest, backendToken: string | null): string | null {
   const authHeader = request.headers.get("Authorization");
