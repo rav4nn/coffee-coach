@@ -17,9 +17,12 @@ function methodLabel(methodId: string | null | undefined) {
 
 function methodIcon(methodId: string | null | undefined) {
   if (!methodId) return "coffee";
-  if (methodId.includes("cold_brew")) return "water_drop";
-  if (methodId.includes("aeropress")) return "import_export";
-  if (methodId.includes("french_press")) return "local_cafe";
+  if (methodId.includes("pour_over")) return "water_drop";
+  if (methodId.includes("aeropress")) return "compress";
+  if (methodId.includes("french_press")) return "coffee_maker";
+  if (methodId.includes("moka_pot")) return "soup_kitchen";
+  if (methodId.includes("cold_brew")) return "ac_unit";
+  if (methodId.includes("south_indian_filter")) return "filter_alt";
   return "coffee";
 }
 
@@ -51,14 +54,20 @@ function ratio(coffeeGrams: number, waterMl: number) {
 function RatingSparkline({ ratings }: { ratings: number[] }) {
   if (ratings.length === 0) return null;
   return (
-    <div className="flex items-end gap-0.5">
-      {ratings.slice(-5).map((r, i) => (
-        <div
-          key={i}
-          className={`w-1.5 rounded-sm ${r >= 8 ? "bg-green-400" : r >= 5 ? "bg-primary" : "bg-red-400"}`}
-          style={{ height: `${4 + (r / 10) * 10}px` }}
-        />
-      ))}
+    <div
+      className="flex flex-col items-end gap-0.5"
+      title="Last 5 brew ratings (green ≥ 8 · orange 5–7 · red < 5)"
+    >
+      <div className="flex items-end gap-0.5">
+        {ratings.slice(-5).map((r, i) => (
+          <div
+            key={i}
+            className={`w-1.5 rounded-sm ${r >= 8 ? "bg-green-400" : r >= 5 ? "bg-primary" : "bg-red-400"}`}
+            style={{ height: `${4 + (r / 10) * 10}px` }}
+          />
+        ))}
+      </div>
+      <p className="text-[8px] text-slate-600 leading-none">ratings</p>
     </div>
   );
 }
@@ -269,7 +278,8 @@ export default function JournalPage() {
     const map = new Map<string, { beanName: string; entries: FreestyleBrewEntry[] }>();
     for (const e of filtered) {
       const key = e.beanId ?? "unknown";
-      const beanName = beans.find((b) => b.id === key)?.beanName ?? "Unknown Bean";
+      const foundBean = beans.find((b) => b.id === key);
+      const beanName = foundBean ? `${foundBean.roaster} — ${foundBean.beanName}` : "Unknown Bean";
       if (!map.has(key)) map.set(key, { beanName, entries: [] });
       map.get(key)!.entries.push(e);
     }
@@ -279,7 +289,8 @@ export default function JournalPage() {
   const ratingEntry = ratingBrewId ? entries.find((e) => e.id === ratingBrewId) : null;
 
   function renderCard(entry: FreestyleBrewEntry) {
-    const beanName = beans.find((b) => b.id === entry.beanId)?.beanName ?? "Unknown Bean";
+    const bean = beans.find((b) => b.id === entry.beanId);
+    const beanName = bean ? `${bean.roaster} — ${bean.beanName}` : "Unknown Bean";
     const beanRatings = entry.beanId ? (beanRatingsMap.get(entry.beanId) ?? []) : [];
     return (
       <BrewCard

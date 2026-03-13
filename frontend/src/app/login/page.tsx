@@ -55,8 +55,8 @@ export default function LoginPage() {
         <div
           className="flex h-full"
           style={{
-            width: `${SLIDES.length * 100}vw`,
-            transform: `translateX(-${index * 100}vw)`,
+            width: `${SLIDES.length * 100}%`,
+            transform: `translateX(-${(index / SLIDES.length) * 100}%)`,
             transition: animated ? "transform 800ms cubic-bezier(0.4, 0, 0.2, 1)" : "none",
           }}
         >
@@ -65,7 +65,7 @@ export default function LoginPage() {
               key={i}
               className="relative bg-center bg-no-repeat bg-cover flex-shrink-0"
               style={{
-                width: "100vw",
+                width: `${100 / SLIDES.length}%`,
                 minHeight: "52vh",
                 backgroundImage: `url('${src}')`,
               }}

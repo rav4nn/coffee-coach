@@ -189,15 +189,30 @@ export default function MyBeansPage() {
             { id: "1", roaster: "Blue Tokai", beanName: "Attikan Estate", roastDate: "2023-10-20", isPreGround: false }
             { id: "2", roaster: "Third Wave", beanName: "El Diablo Blend", roastDate: "2023-11-12", isPreGround: true }
         */}
-        {filteredBeans.map((bean) => (
+        {filteredBeans.map((bean) => {
+          const roastFreshness = (() => {
+            if (!bean.roastDate) return null;
+            const days = Math.floor((Date.now() - new Date(bean.roastDate).getTime()) / 86_400_000);
+            if (days < 7) return { label: "Resting", color: "bg-sky-400/20 text-sky-400 border-sky-400/30" };
+            if (days <= 21) return { label: "Peak Fresh", color: "bg-green-400/20 text-green-400 border-green-400/30" };
+            if (days <= 45) return { label: "Good", color: "bg-primary/20 text-primary border-primary/30" };
+            return { label: "Aging", color: "bg-slate-500/20 text-slate-400 border-slate-500/30" };
+          })();
+
+          return (
           <article
             key={bean.id}
             className="flex flex-col gap-3 rounded-xl bg-primary/5 border border-primary/10 p-4"
           >
             <div className="flex gap-4">
-              {/* Image placeholder — swap with real image when available */}
-              <div className="w-24 h-24 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-4xl text-primary/50">coffee</span>
+              {/* Roast freshness indicator */}
+              <div className="w-24 h-24 rounded-lg bg-primary/10 border border-primary/20 flex flex-col items-center justify-center shrink-0 gap-1.5">
+                <span className="material-symbols-outlined text-3xl text-primary/50">coffee</span>
+                {roastFreshness && (
+                  <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full border ${roastFreshness.color}`}>
+                    {roastFreshness.label}
+                  </span>
+                )}
               </div>
               <div className="flex flex-col justify-between py-1 flex-1 min-w-0">
                 <div>
@@ -243,7 +258,8 @@ export default function MyBeansPage() {
               </Link>
             </div>
           </article>
-        ))}
+          );
+        })}
       </div>
 
       {/* Floating Add Button + Sheet */}

@@ -20,9 +20,12 @@ function methodLabel(methodId: string | null | undefined) {
 
 function methodIcon(methodId: string | null | undefined) {
   if (!methodId) return "coffee";
-  if (methodId.includes("cold_brew")) return "water_drop";
-  if (methodId.includes("aeropress")) return "import_export";
-  if (methodId.includes("french_press")) return "local_cafe";
+  if (methodId.includes("pour_over")) return "water_drop";
+  if (methodId.includes("aeropress")) return "compress";
+  if (methodId.includes("french_press")) return "coffee_maker";
+  if (methodId.includes("moka_pot")) return "soup_kitchen";
+  if (methodId.includes("cold_brew")) return "ac_unit";
+  if (methodId.includes("south_indian_filter")) return "filter_alt";
   return "coffee";
 }
 
@@ -116,6 +119,10 @@ export default function Home() {
       <section className="px-4 py-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-bold text-slate-100">Recent Brews</h3>
+          <Link href="/history" className="text-sm text-primary font-semibold flex items-center gap-0.5">
+            See all
+            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          </Link>
         </div>
 
         {recentTwo.length === 0 ? (
@@ -126,7 +133,8 @@ export default function Home() {
         ) : (
           <div className="space-y-2">
             {recentTwo.map((entry) => {
-              const beanName = beans.find((b) => b.id === entry.beanId)?.beanName ?? "Unknown Bean";
+              const bean = beans.find((b) => b.id === entry.beanId);
+              const beanName = bean ? `${bean.roaster} — ${bean.beanName}` : "Unknown Bean";
               const isOpen = expandedId === entry.id;
               const icon = methodIcon(entry.methodId);
 

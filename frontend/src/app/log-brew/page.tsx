@@ -318,6 +318,11 @@ export default function LogBrewPage() {
         </div>
       </section>
 
+      {/* Validation hint */}
+      {hasBeans && !selectedMethodId && !isLoading && (
+        <p className="text-xs text-slate-500 text-center -mt-4 mb-4">Select a brew method above to continue</p>
+      )}
+
       {/* Pour Over Device Selection (conditional) */}
       <section
         className={`mb-8 transition-all duration-300 ease-out overflow-hidden ${
