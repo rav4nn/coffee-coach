@@ -14,6 +14,7 @@ import {
 import { useBeansStore } from "@/lib/beansStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 import { usePreferencesStore } from "@/lib/preferencesStore";
+import { CoachTip } from "@/components/CoachTip";
 
 type MethodCardId =
   | "pour_over"
@@ -389,6 +390,10 @@ export default function LogBrewPage() {
         Next Step
         <span className="material-symbols-outlined">arrow_forward</span>
       </button>
+
+      <div className="mt-6">
+        <CoachTip />
+      </div>
 
       {/* No beans overlay */}
       {!hasBeans && !isLoading && (

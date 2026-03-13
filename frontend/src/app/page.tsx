@@ -2,11 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-import { GreetingSection } from "@/components/GreetingSection";
-import { QuickActions } from "@/components/QuickActions";
-import { CoachTip } from "@/components/CoachTip";
 import { BrewEditSheet } from "@/components/BrewEditSheet";
 import { BrewRatingSheet } from "@/components/BrewRatingSheet";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
@@ -44,8 +42,8 @@ function formatTime(dateStr: string) {
 
 
 export default function Home() {
-  const { data: session, status: sessionStatus } = useSession();
-  const firstName = session?.user?.name?.split(" ")[0] ?? "Brewer";
+  const router = useRouter();
+  const { status: sessionStatus } = useSession();
 
   const entries = useBrewHistoryStore((state) => state.entries);
   const isLoadingHistory = useBrewHistoryStore((state) => state.loading);
@@ -77,7 +75,6 @@ export default function Home() {
     let count = 0;
     const check = new Date();
     check.setHours(0, 0, 0, 0);
-    // If today has no brew yet, start counting from yesterday
     if (!brewDays.has(check.toDateString())) {
       check.setDate(check.getDate() - 1);
     }
@@ -97,13 +94,13 @@ export default function Home() {
   if (isPageLoading) {
     return (
       <main className="overflow-y-auto pb-28">
-        <div className="px-4 pt-6 pb-4 space-y-2">
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="h-7 w-48" />
+        <div className="px-4 pt-4 pb-3 grid grid-cols-2 gap-3">
+          <div className="h-20 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" />
+          <div className="h-20 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" />
         </div>
-        <div className="px-4 pb-4 grid grid-cols-2 gap-3">
-          <div className="h-16 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" />
-          <div className="h-16 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" />
+        <div className="px-4 pb-4 space-y-3">
+          <div className="h-14 rounded-2xl bg-primary/10 animate-pulse" />
+          <div className="h-14 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" />
         </div>
         <section className="px-4 py-4">
           <Skeleton className="h-5 w-28 mb-3" />
@@ -111,14 +108,9 @@ export default function Home() {
             {[0, 1].map((i) => (
               <div key={i} className="rounded-2xl border border-primary/10 bg-primary/5 overflow-hidden animate-pulse">
                 <div className="flex items-center gap-3 px-4 py-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 shrink-0 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-primary/20 text-xl">coffee</span>
-                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <div className="flex justify-between gap-2">
-                      <Skeleton className="h-3.5 w-32 bg-primary/15" />
-                      <Skeleton className="h-3 w-10 bg-primary/10" />
-                    </div>
+                    <Skeleton className="h-3.5 w-32 bg-primary/15" />
                     <Skeleton className="h-3 w-40 bg-primary/10" />
                   </div>
                 </div>
@@ -130,18 +122,14 @@ export default function Home() {
     );
   }
 
-
   const editEntry = editBrewId ? entries.find((e) => e.id === editBrewId) ?? null : null;
   const ratingEntry = ratingBrewId ? entries.find((e) => e.id === ratingBrewId) : null;
 
   return (
     <main className="overflow-y-auto pb-28">
-      <GreetingSection greetingLabel="Hello" userName={`Brewmaster ${firstName}`} />
-      <QuickActions />
-
-      {/* Streak + Personal Best */}
+      {/* Stat Cards */}
       {(streak > 0 || personalBest) && (
-        <div className={`px-4 pb-4 grid gap-3 ${streak > 0 && personalBest ? "grid-cols-2" : "grid-cols-1"}`}>
+        <div className={`px-4 pt-4 pb-3 grid gap-3 ${streak > 0 && personalBest ? "grid-cols-2" : "grid-cols-1"}`}>
           {streak > 0 && (
             <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
               <div className="flex items-center gap-1.5 mb-1.5">
@@ -159,7 +147,11 @@ export default function Home() {
             const bean = beans.find((b) => b.id === personalBest.beanId);
             const beanLabel = bean ? `${bean.roaster} — ${bean.beanName}` : "Unknown Bean";
             return (
-              <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
+              <button
+                type="button"
+                onClick={() => router.push(`/history?expand=${personalBest.id}`)}
+                className="rounded-xl bg-primary/5 border border-primary/10 p-3 text-left w-full hover:bg-primary/10 transition-colors"
+              >
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <span className="material-symbols-outlined text-primary text-base">emoji_events</span>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Best Brew</p>
@@ -169,12 +161,31 @@ export default function Home() {
                   <span className="text-xs font-normal text-slate-400 ml-0.5">/10</span>
                 </p>
                 <p className="text-[10px] text-slate-500 mt-1 truncate">{beanLabel}</p>
-              </div>
+              </button>
             );
           })()}
         </div>
       )}
 
+      {/* Action Buttons */}
+      <div className="px-4 py-3 space-y-3">
+        <Link
+          href="/log-brew"
+          className="flex items-center justify-center gap-2 w-full bg-primary text-background-dark font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.01] transition-transform"
+        >
+          <span className="material-symbols-outlined text-xl">add</span>
+          Start New Brew
+        </Link>
+        <Link
+          href="/history"
+          className="flex items-center justify-center gap-2 w-full bg-primary/5 border border-primary/20 text-slate-100 font-semibold py-4 rounded-2xl hover:scale-[1.01] transition-transform"
+        >
+          <span className="material-symbols-outlined text-primary text-xl">menu_book</span>
+          Open Brew Journal
+        </Link>
+      </div>
+
+      {/* Recent Brews */}
       <section className="px-4 py-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-bold text-slate-100">Recent Brews</h3>
@@ -295,8 +306,6 @@ export default function Home() {
           </div>
         )}
       </section>
-
-      <CoachTip />
 
       <BrewEditSheet
         entry={editEntry}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { BrewEditSheet } from "@/components/BrewEditSheet";
 import { BrewRatingSheet } from "@/components/BrewRatingSheet";
@@ -210,7 +211,8 @@ function BrewCard({ entry, beanName, beanRatings, isOpen, onToggle, onEdit, onCo
 }
 
 export default function JournalPage() {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const [expandedId, setExpandedId] = useState<string | null>(searchParams.get("expand"));
   const [ratingBrewId, setRatingBrewId] = useState<string | null>(null);
   const [editBrewId, setEditBrewId] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<FilterTab>("all");
