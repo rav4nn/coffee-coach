@@ -237,15 +237,25 @@ export default function MyBeansPage() {
                     <p className="text-primary text-xs font-bold uppercase tracking-wider truncate">
                       {bean.roaster}
                     </p>
-                    <span
-                      className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                        bean.isPreGround
-                          ? "bg-primary/10 text-primary/60"
-                          : "bg-primary/20 text-primary"
-                      }`}
-                    >
-                      {bean.isPreGround ? "GROUND" : "WHOLE"}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                          bean.isPreGround
+                            ? "bg-primary/10 text-primary/60"
+                            : "bg-primary/20 text-primary"
+                        }`}
+                      >
+                        {bean.isPreGround ? "GROUND" : "WHOLE"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setDeletingBeanId(bean.id)}
+                        className="inline-flex items-center justify-center size-6 rounded-md bg-primary/10 text-primary/70 hover:bg-primary/20 hover:text-primary transition-colors"
+                        aria-label={`Delete ${bean.beanName}`}
+                      >
+                        <span className="material-symbols-outlined text-sm">delete</span>
+                      </button>
+                    </div>
                   </div>
                   <p className="text-slate-100 text-base font-bold leading-tight mt-0.5 truncate">
                     {bean.beanName}
@@ -286,23 +296,6 @@ export default function MyBeansPage() {
               </div>
             )}
 
-            <div className="flex gap-2 pt-2 border-t border-primary/10">
-              <button
-                onClick={() => setDeletingBeanId(bean.id)}
-                className="flex-1 h-9 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center justify-center gap-2 hover:bg-primary/20 transition-colors"
-                aria-label={`Delete ${bean.beanName}`}
-              >
-                <span className="material-symbols-outlined text-sm">delete</span>
-                Remove
-              </button>
-              <Link
-                href="/log-brew"
-                className="flex-1 h-9 rounded-lg bg-primary text-background-dark text-sm font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
-              >
-                <span className="material-symbols-outlined text-sm">coffee</span>
-                Brew Now
-              </Link>
-            </div>
           </article>
           );
         })}

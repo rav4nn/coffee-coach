@@ -182,9 +182,9 @@ function CoachedBrewCard({ entry, beanName, onClick }: { entry: FreestyleBrewEnt
         <Image
           src="/coach/img3_whistle_blowing.png"
           alt="Coach"
-          width={56}
-          height={56}
-          className="w-14 h-14 object-contain shrink-0 drop-shadow-md"
+          width={64}
+          height={64}
+          className="w-16 h-16 object-contain shrink-0 drop-shadow-md"
         />
         <div className="flex-1 min-w-0">
           <p className="text-sm text-slate-200 leading-relaxed">{entry.coachingFeedback}</p>
@@ -211,11 +211,11 @@ function UncoachedBrewCard({ entry, beanName, onClick }: { entry: FreestyleBrewE
           <Image
             src="/coach/img3_holding_whistle.png"
             alt="Coach"
-            width={56}
-            height={56}
-            className="w-14 h-14 object-contain drop-shadow-md"
+            width={64}
+            height={64}
+            className="w-16 h-16 object-contain drop-shadow-md"
           />
-          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 rounded-full border-2 border-amber-500/30" />
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full border-2 border-amber-500/30" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-amber-200">Rate this brew and get coached!</p>
@@ -313,12 +313,12 @@ export default function CoachPage() {
       <div className="px-4 py-3">
         <div className="rounded-2xl bg-primary/10 border border-primary/20 p-5">
           <div className="flex items-start gap-3">
-            <div className="w-16 h-16 shrink-0">
+            <div className="w-18 h-18 shrink-0">
               <Image
                 src={insight.avatar}
                 alt="Coffee Coach"
-                width={64}
-                height={64}
+                width={72}
+                height={72}
                 className="w-full h-full object-contain drop-shadow-md"
               />
             </div>
@@ -383,7 +383,7 @@ export default function CoachPage() {
       {/* Coach's Tips — filtered by equipment */}
       <section className="px-4 py-3">
         <div className="flex items-center gap-2 mb-3">
-          <Image src="/coach/img2_reading_book.png" alt="Coach" width={28} height={28} className="object-contain" />
+          <Image src="/coach/img2_reading_book.png" alt="Coach" width={32} height={32} className="object-contain" />
           <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Coach&apos;s Tips</h3>
         </div>
         <div className="space-y-2">

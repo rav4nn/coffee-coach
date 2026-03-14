@@ -173,13 +173,13 @@ export default function LogBrewStepTwoPage() {
                 : "border-primary/30 bg-primary/5 hover:border-primary/50"
             }`}
           >
-            <div className="flex items-end gap-0">
+            <div className="flex items-center gap-0">
               <Image
                 src="/coach/img2_reading_book.png"
                 alt="Coach"
                 width={120}
                 height={120}
-                className="w-28 h-28 object-contain shrink-0 object-bottom"
+                className="w-28 h-28 object-contain shrink-0"
               />
               <div className="flex-1 min-w-0 py-4 pr-4">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">Recommended</p>
@@ -202,15 +202,15 @@ export default function LogBrewStepTwoPage() {
         <button
           type="button"
           onClick={() => setChoice("guided")}
-          className={`w-full flex flex-col p-5 rounded-xl border-2 text-left transition-all ${
+          className={`w-full flex flex-col p-4 rounded-xl border-2 text-left transition-all ${
             choice === "guided"
               ? "border-primary bg-primary/10"
               : "border-transparent bg-primary/5 hover:border-primary/30"
           }`}
         >
-          <div className="flex items-start justify-between w-full mb-3">
-            <div className="p-3 bg-primary/20 rounded-lg">
-              <span className="material-symbols-outlined text-primary text-3xl">receipt_long</span>
+          <div className="flex items-start justify-between w-full mb-2">
+            <div className="p-2.5 bg-primary/20 rounded-lg">
+              <span className="material-symbols-outlined text-primary text-2xl">receipt_long</span>
             </div>
             {recipeMethodKey && (
               <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-widest border border-primary/20">
@@ -218,7 +218,7 @@ export default function LogBrewStepTwoPage() {
               </span>
             )}
           </div>
-          <h3 className="text-xl font-bold text-slate-100 mb-1">Follow a Recipe</h3>
+          <h3 className="text-lg font-bold text-slate-100 mb-1">Follow a Recipe</h3>
           <p className="text-sm text-slate-400">We&apos;ll guide you step by step through every pour and wait time.</p>
         </button>
 
@@ -226,18 +226,18 @@ export default function LogBrewStepTwoPage() {
         <button
           type="button"
           onClick={() => setChoice("freestyle")}
-          className={`w-full flex flex-col p-5 rounded-xl border-2 text-left transition-all ${
+          className={`w-full flex flex-col p-4 rounded-xl border-2 text-left transition-all ${
             choice === "freestyle"
               ? "border-primary bg-primary/10"
               : "border-transparent bg-primary/5 hover:border-primary/30"
           }`}
         >
-          <div className="flex items-start justify-between w-full mb-3">
-            <div className="p-3 bg-primary/20 rounded-lg">
-              <span className="material-symbols-outlined text-primary text-3xl">edit_note</span>
+          <div className="flex items-start justify-between w-full mb-2">
+            <div className="p-2.5 bg-primary/20 rounded-lg">
+              <span className="material-symbols-outlined text-primary text-2xl">edit_note</span>
             </div>
           </div>
-          <h3 className="text-xl font-bold text-slate-100 mb-1">Use My Own Recipe</h3>
+          <h3 className="text-lg font-bold text-slate-100 mb-1">Use My Own Recipe</h3>
           <p className="text-sm text-slate-400">Feeling confident? Just log what you brew as you go.</p>
         </button>
       </div>
