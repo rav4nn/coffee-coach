@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -59,6 +60,15 @@ const METHOD_LABEL: Record<MethodCardId, string> = {
   moka_pot: "Moka Pot",
   cold_brew: "Cold Brew",
   south_indian_filter: "Filter Kaapi",
+};
+
+const METHOD_IMAGE: Record<MethodCardId, string> = {
+  pour_over: "/coach/img1_pour_over.png",
+  aeropress: "/coach/img1_aeropress.png",
+  french_press: "/coach/img1_french_press.png",
+  moka_pot: "/coach/img1_moka_pot.png",
+  cold_brew: "/coach/img1_cold_brew.png",
+  south_indian_filter: "/coach/img1_filter_kaapi.png",
 };
 
 function formatRoastDate(value: string | null) {
@@ -326,18 +336,27 @@ export default function LogBrewPage() {
                   setSelectedMethodId(method.method_id);
                   if (method.method_id !== "pour_over") setSelectedPourOverDeviceId("");
                 }}
-                className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl border-2 transition-all ${
+                className={`relative rounded-xl overflow-hidden border-2 transition-all ${
                   active
-                    ? "bg-primary border-primary text-background-dark"
-                    : "bg-primary/5 border-white/5 text-slate-300 hover:border-primary/30"
+                    ? "border-primary ring-2 ring-primary/40"
+                    : "border-white/5 hover:border-primary/30"
                 }`}
               >
-                <span className="material-symbols-outlined text-2xl mb-1">
-                  {METHOD_ICON[method.method_id]}
-                </span>
-                <span className="text-[10px] font-bold uppercase text-center leading-tight">
-                  {METHOD_LABEL[method.method_id]}
-                </span>
+                <div className="relative aspect-[4/5]">
+                  <Image
+                    src={METHOD_IMAGE[method.method_id]}
+                    alt={METHOD_LABEL[method.method_id]}
+                    fill
+                    className="object-cover"
+                    sizes="33vw"
+                  />
+                  {active && <div className="absolute inset-0 bg-primary/25" />}
+                </div>
+                <div className="absolute bottom-0 inset-x-0 py-1.5 bg-background-dark/80 backdrop-blur-sm">
+                  <span className="text-[10px] font-bold uppercase text-center leading-tight block text-slate-100">
+                    {METHOD_LABEL[method.method_id]}
+                  </span>
+                </div>
               </button>
             );
           })}

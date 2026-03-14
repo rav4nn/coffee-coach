@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -10,9 +11,13 @@ function SuccessContent() {
 
   return (
     <main className="flex-1 flex flex-col items-center justify-center px-6 gap-4 text-center">
-      <div className="w-20 h-20 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center mb-2">
-        <span className="material-symbols-outlined text-5xl text-primary">check_circle</span>
-      </div>
+      <Image
+        src="/coach/img3_hero_thumbs_up.png"
+        alt="Coach celebrating"
+        width={120}
+        height={120}
+        className="object-contain drop-shadow-lg mb-2"
+      />
       <h1 className="text-3xl font-bold text-slate-100">Brew Logged!</h1>
       <p className="text-sm text-slate-400">
         Your brew parameters were saved. Rate it and get coaching, or head home.

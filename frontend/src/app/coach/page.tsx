@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -74,13 +75,14 @@ function getFilteredTips(equipment: string[]): string[] {
 function generateInsight(
   entries: ReturnType<typeof useBrewHistoryStore.getState>["entries"],
   equipment: string[],
-): { icon: string; title: string; body: string } {
+): { icon: string; title: string; body: string; avatar: string } {
   if (entries.length === 0) {
     // No brews — show a tip based on equipment
     const tips = getFilteredTips(equipment);
     const tip = tips[Math.floor(Math.random() * tips.length)];
     return {
       icon: "waving_hand",
+      avatar: "/coach/img3_waving.png",
       title: "Welcome, brewer!",
       body: tip + "\n\nLog your first brew to get personalized coaching.",
     };
@@ -95,6 +97,7 @@ function generateInsight(
   if (unrated.length > 0) {
     return {
       icon: "rate_review",
+      avatar: "/coach/img3_holding_whistle.png",
       title: "Rate your recent brews",
       body: `You have ${unrated.length} unrated brew${unrated.length > 1 ? "s" : ""}. Rate them to unlock coaching insights.`,
     };
@@ -103,6 +106,7 @@ function generateInsight(
   if (rated.length === 0) {
     return {
       icon: "rate_review",
+      avatar: "/coach/img3_holding_whistle.png",
       title: "Rate your brews",
       body: "Rate your recent brews to get personalized coaching insights.",
     };
@@ -117,6 +121,7 @@ function generateInsight(
     if (hasSour) {
       return {
         icon: "trending_up",
+        avatar: "/coach/img2_laptop_focused.png",
         title: "Your brews are running sour",
         body: "Try grinding a touch finer and extending your brew time by 15-20 seconds.",
       };
@@ -124,12 +129,14 @@ function generateInsight(
     if (hasBitter) {
       return {
         icon: "trending_up",
+        avatar: "/coach/img2_laptop_focused.png",
         title: "Your brews are running bitter",
         body: "Go slightly coarser on your grind and shorten brew time.",
       };
     }
     return {
       icon: "psychology",
+      avatar: "/coach/img3_whistle_blowing.png",
       title: "Let's fix your brews",
       body: "Your recent ratings are low. Tap a brew below and tell me what's wrong — I'll help you dial it in.",
     };
@@ -144,6 +151,7 @@ function generateInsight(
     if (avgSecond - avgFirst >= 1.5) {
       return {
         icon: "trending_up",
+        avatar: "/coach/img3_hero_thumbs_up.png",
         title: "You're on a roll!",
         body: `Your ratings are trending up — averaging ${avgRating.toFixed(1)}/10. Keep doing what you're doing.`,
       };
@@ -154,6 +162,7 @@ function generateInsight(
   if (avgRating >= 8) {
     return {
       icon: "emoji_events",
+      avatar: "/coach/img3_thumbs_whistle.png",
       title: "You're brewing like a pro",
       body: `Averaging ${avgRating.toFixed(1)}/10 recently. Save your best brews as favourites to lock in your recipe.`,
     };
@@ -162,6 +171,7 @@ function generateInsight(
   // Mid range — refinement
   return {
     icon: "auto_fix_high",
+    avatar: "/coach/img3_whistle_blowing.png",
     title: "One tweak away",
     body: `You're averaging ${avgRating.toFixed(1)}/10. Pick a brew below and set a goal — I'll tell you what to change.`,
   };
@@ -239,8 +249,14 @@ export default function CoachPage() {
       <div className="px-4 py-3">
         <div className="rounded-2xl bg-primary/10 border border-primary/20 p-5">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0 mt-0.5">
-              <span className="material-symbols-outlined text-primary text-xl">{insight.icon}</span>
+            <div className="w-16 h-16 shrink-0">
+              <Image
+                src={insight.avatar}
+                alt="Coffee Coach"
+                width={64}
+                height={64}
+                className="w-full h-full object-contain drop-shadow-md"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-lg font-bold text-slate-100">{insight.title}</h2>
@@ -325,7 +341,10 @@ export default function CoachPage() {
 
       {/* Coach's Tips — filtered by equipment */}
       <section className="px-4 py-3">
-        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Coach&apos;s Tips</h3>
+        <div className="flex items-center gap-2 mb-3">
+          <Image src="/coach/img2_reading_book.png" alt="Coach" width={28} height={28} className="object-contain" />
+          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Coach&apos;s Tips</h3>
+        </div>
         <div className="space-y-2">
           {filteredTips.map((tip, i) => (
             <div

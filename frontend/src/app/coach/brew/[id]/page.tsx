@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 
 import { GoalPicker } from "@/components/GoalPicker";
@@ -65,6 +66,16 @@ export default function BrewCoachPage() {
   const isLocked = !!brew?.coachingFeedback;
   const isPerfect = rating === 10;
   const isOscillating = response?.trend === "oscillating";
+
+  const coachAvatar = isLoading
+    ? "/coach/img2_laptop_focused.png"
+    : isPerfect
+    ? "/coach/img3_hero_thumbs_up.png"
+    : response?.fix
+    ? "/coach/img3_whistle_blowing.png"
+    : isLocked
+    ? "/coach/img3_thumbs_whistle.png"
+    : "/coach/img3_holding_whistle.png";
 
   function handleRatingChange(value: number) {
     setRating(value);
@@ -166,10 +177,17 @@ export default function BrewCoachPage() {
         >
           <span className="material-symbols-outlined text-slate-100">arrow_back</span>
         </button>
-        <div>
+        <div className="flex-1 min-w-0">
           <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Coaching</p>
           <h1 className="text-lg font-bold text-slate-100">How was this brew?</h1>
         </div>
+        <Image
+          src={coachAvatar}
+          alt="Coach"
+          width={44}
+          height={44}
+          className="object-contain drop-shadow-md transition-all duration-300"
+        />
       </header>
 
       <div className="px-4 py-4 space-y-4">
