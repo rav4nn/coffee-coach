@@ -215,8 +215,15 @@ export async function postBrewApi(payload: Record<string, unknown>) {
   return (await response.json()) as Record<string, unknown>;
 }
 
+export type CoachingChangeApi = {
+  param: "grindSize" | "brewTime" | "coffeeGrams" | "waterTempC";
+  direction: "finer" | "coarser" | "increase" | "decrease";
+  suggestion: string;
+};
+
 export type CoachingResponseApi = {
   fix: string;
+  changes?: CoachingChangeApi[];
   freshness_caveat?: string;
   trend?: "improving" | "worsening" | "oscillating" | "plateau" | string;
 };

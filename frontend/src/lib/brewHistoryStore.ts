@@ -1,5 +1,9 @@
 import { create } from "zustand";
 
+import type { CoachingChangeApi } from "@/lib/api";
+
+export type CoachingChange = CoachingChangeApi;
+
 export type FreestyleBrewEntry = {
   id: string;
   createdAt: string;
@@ -7,6 +11,7 @@ export type FreestyleBrewEntry = {
   methodId: string | null;
   rating?: number | null;
   coachingFeedback?: string | null;
+  coachingChanges?: CoachingChange[] | null;
   isFavourite?: boolean;
   coffeeGrams: number;
   waterMl: number;
@@ -33,6 +38,7 @@ function toEntry(raw: Record<string, unknown>): FreestyleBrewEntry {
     methodId: (raw.method_id as string | null) ?? null,
     rating: (raw.rating as number | null) ?? null,
     coachingFeedback: (raw.coaching_feedback as string | null) ?? null,
+    coachingChanges: (raw.coaching_changes as CoachingChange[] | null) ?? null,
     isFavourite: (raw.is_favourite as boolean) ?? false,
     coffeeGrams: (raw.coffee_grams as number) ?? 0,
     waterMl: (raw.water_ml as number) ?? 0,
@@ -89,6 +95,7 @@ export const useBrewHistoryStore = create<BrewHistoryStore>()((set) => ({
     const apiPatch: Record<string, unknown> = {};
     if (patch.rating !== undefined) apiPatch.rating = patch.rating;
     if (patch.coachingFeedback !== undefined) apiPatch.coaching_feedback = patch.coachingFeedback;
+    if (patch.coachingChanges !== undefined) apiPatch.coaching_changes = patch.coachingChanges;
     if (patch.isFavourite !== undefined) apiPatch.is_favourite = patch.isFavourite;
     if (patch.coffeeGrams !== undefined) apiPatch.coffee_grams = patch.coffeeGrams;
     if (patch.waterMl !== undefined) apiPatch.water_ml = patch.waterMl;

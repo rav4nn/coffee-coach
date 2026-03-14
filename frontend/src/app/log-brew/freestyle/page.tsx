@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -10,10 +11,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BrewTimePicker } from "@/components/BrewTimePicker";
-import { useBrewHistoryStore, type FreestyleBrewEntry } from "@/lib/brewHistoryStore";
+import { useBrewHistoryStore, type FreestyleBrewEntry, type CoachingChange } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 
 const grindSizeOptions = ["Extra Fine", "Fine", "Medium-Fine", "Medium", "Medium-Coarse", "Coarse"] as const;
+
+function shiftGrind(current: string, direction: "finer" | "coarser"): string {
+  const idx = grindSizeOptions.indexOf(current as typeof grindSizeOptions[number]);
+  if (idx === -1) return current;
+  const newIdx = direction === "finer" ? Math.max(0, idx - 1) : Math.min(grindSizeOptions.length - 1, idx + 1);
+  return grindSizeOptions[newIdx];
+}
+
+function CoachHint({ change, originalValue }: { change: CoachingChange; originalValue?: string }) {
+  return (
+    <div className="flex items-start gap-1.5 mt-1 px-2 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
+      <Image
+        src="/coach/img3_whistle_blowing.png"
+        alt="Coach"
+        width={16}
+        height={16}
+        className="w-4 h-4 object-contain shrink-0 mt-0.5"
+      />
+      <p className="text-xs text-primary leading-relaxed">
+        <span className="font-semibold">Coach says:</span> {change.suggestion}
+        {originalValue && <span className="text-primary/60"> (was {originalValue})</span>}
+      </p>
+    </div>
+  );
+}
 
 const freestyleSchema = z.object({
   coffeeGrams: z.coerce.number().positive("Enter coffee amount"),
@@ -35,6 +61,11 @@ export default function FreestyleLogPage() {
   const selectedBeanId = useLogBrewStore((state) => state.selectedBeanId);
   const selectedMethodId = useLogBrewStore((state) => state.selectedMethodId);
   const selectedPourOverDeviceId = useLogBrewStore((state) => state.selectedPourOverDeviceId);
+  const coachBrewRef = useLogBrewStore((state) => state.coachBrewRef);
+  const coachChanges = useLogBrewStore((state) => state.coachChanges);
+  const clearCoachMode = useLogBrewStore((state) => state.clearCoachMode);
+
+  const isCoachMode = !!coachBrewRef && !!coachChanges && coachChanges.length > 0;
 
   const effectiveMethodId = useMemo(() => {
     if (selectedMethodId === "pour_over") {
@@ -45,7 +76,40 @@ export default function FreestyleLogPage() {
 
   const isColdBrew = effectiveMethodId === "cold_brew";
 
+  // Build coach-adjusted defaults
+  const coachDefaults = useMemo(() => {
+    if (!isCoachMode || !coachBrewRef) return null;
+    const defaults: FreestyleForm = {
+      coffeeGrams: coachBrewRef.coffeeGrams,
+      waterMl: coachBrewRef.waterMl,
+      waterTempC: coachBrewRef.waterTempC ?? undefined,
+      grindSize: coachBrewRef.grindSize,
+      brewTime: coachBrewRef.brewTime,
+      notes: "",
+    };
+
+    // Apply grind shifts
+    for (const change of coachChanges!) {
+      if (change.param === "grindSize" && (change.direction === "finer" || change.direction === "coarser")) {
+        defaults.grindSize = shiftGrind(defaults.grindSize, change.direction) as typeof defaults.grindSize;
+      }
+    }
+
+    return defaults;
+  }, [isCoachMode, coachBrewRef, coachChanges]);
+
+  // Build a map of which params have coach changes for easy lookup
+  const coachChangeMap = useMemo(() => {
+    if (!coachChanges) return new Map<string, CoachingChange>();
+    const map = new Map<string, CoachingChange>();
+    for (const c of coachChanges) {
+      map.set(c.param, c);
+    }
+    return map;
+  }, [coachChanges]);
+
   const lastGrindForBean = useMemo(() => {
+    if (isCoachMode) return null; // Skip when in coach mode
     if (!selectedBeanId) return null;
     const sorted = [...brewEntries]
       .filter((e): e is FreestyleBrewEntry & { grindSize: NonNullable<FreestyleBrewEntry["grindSize"]> } =>
@@ -53,11 +117,11 @@ export default function FreestyleLogPage() {
       )
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return sorted[0]?.grindSize ?? null;
-  }, [brewEntries, selectedBeanId]);
+  }, [brewEntries, selectedBeanId, isCoachMode]);
 
   const form = useForm<FreestyleForm>({
     resolver: zodResolver(freestyleSchema),
-    defaultValues: {
+    defaultValues: coachDefaults ?? {
       coffeeGrams: undefined,
       waterMl: undefined,
       waterTempC: undefined,
@@ -70,11 +134,11 @@ export default function FreestyleLogPage() {
   const { setValue } = form;
   const [grindPreFilled, setGrindPreFilled] = useState(false);
   useEffect(() => {
-    if (lastGrindForBean) {
+    if (!isCoachMode && lastGrindForBean) {
       setValue("grindSize", lastGrindForBean, { shouldValidate: false });
       setGrindPreFilled(true);
     }
-  }, [lastGrindForBean, setValue]);
+  }, [lastGrindForBean, setValue, isCoachMode]);
 
   const [tastingNotes, setTastingNotes] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -96,6 +160,7 @@ export default function FreestyleLogPage() {
         notes: values.notes?.trim() ? values.notes.trim() : null,
         tastingNotes: tastingNotes.length > 0 ? tastingNotes : null,
       });
+      clearCoachMode();
       const newId = useBrewHistoryStore.getState().entries[0]?.id ?? "";
       router.push(`/log-brew/freestyle/success?brew_id=${newId}`);
     } catch {
@@ -108,9 +173,22 @@ export default function FreestyleLogPage() {
   return (
     <section className="space-y-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-mocha/70">Freestyle Brew</p>
-        <h1 className="font-serif text-4xl font-bold leading-tight text-espresso">Log Your Brew Parameters</h1>
-        <p className="mt-1 text-sm text-mocha/80">Capture this brew so we can coach your next one.</p>
+        {isCoachMode ? (
+          <>
+            <div className="flex items-center gap-2">
+              <Image src="/coach/img3_whistle_blowing.png" alt="Coach" width={24} height={24} className="w-6 h-6 object-contain" />
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Follow the Coach</p>
+            </div>
+            <h1 className="font-serif text-4xl font-bold leading-tight text-espresso mt-1">Coach&apos;s Recipe</h1>
+            <p className="mt-1 text-sm text-mocha/80">Your last brew&apos;s params with the coach&apos;s adjustments applied.</p>
+          </>
+        ) : (
+          <>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-mocha/70">Freestyle Brew</p>
+            <h1 className="font-serif text-4xl font-bold leading-tight text-espresso">Log Your Brew Parameters</h1>
+            <p className="mt-1 text-sm text-mocha/80">Capture this brew so we can coach your next one.</p>
+          </>
+        )}
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 rounded-3xl border border-mocha/10 bg-steam p-4 shadow-card">
@@ -118,6 +196,12 @@ export default function FreestyleLogPage() {
           <Label htmlFor="coffee-grams">Coffee (g)</Label>
           <Input id="coffee-grams" type="number" step="0.1" {...form.register("coffeeGrams")} />
           {errors.coffeeGrams ? <p className="text-xs text-red-700">{errors.coffeeGrams.message}</p> : null}
+          {coachChangeMap.has("coffeeGrams") && (
+            <CoachHint
+              change={coachChangeMap.get("coffeeGrams")!}
+              originalValue={coachBrewRef ? `${coachBrewRef.coffeeGrams}g` : undefined}
+            />
+          )}
         </div>
 
         <div className="space-y-2">
@@ -131,6 +215,12 @@ export default function FreestyleLogPage() {
             <Label htmlFor="water-temp">Water Temperature (°C)</Label>
             <Input id="water-temp" type="number" step="1" {...form.register("waterTempC")} />
             {errors.waterTempC ? <p className="text-xs text-red-700">{errors.waterTempC.message}</p> : null}
+            {coachChangeMap.has("waterTempC") && (
+              <CoachHint
+                change={coachChangeMap.get("waterTempC")!}
+                originalValue={coachBrewRef?.waterTempC ? `${coachBrewRef.waterTempC}°C` : undefined}
+              />
+            )}
           </div>
         ) : null}
 
@@ -148,11 +238,18 @@ export default function FreestyleLogPage() {
             ))}
           </select>
           {errors.grindSize ? <p className="text-xs text-red-700">{errors.grindSize.message}</p> : null}
-          {grindPreFilled && !errors.grindSize && (
-            <p className="text-xs text-mocha/60 flex items-center gap-1 mt-0.5">
-              <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>history</span>
-              Pre-filled from your last brew with this bean
-            </p>
+          {coachChangeMap.has("grindSize") ? (
+            <CoachHint
+              change={coachChangeMap.get("grindSize")!}
+              originalValue={coachBrewRef?.grindSize}
+            />
+          ) : (
+            grindPreFilled && !errors.grindSize && (
+              <p className="text-xs text-mocha/60 flex items-center gap-1 mt-0.5">
+                <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>history</span>
+                Pre-filled from your last brew with this bean
+              </p>
+            )
           )}
         </div>
 
@@ -163,6 +260,12 @@ export default function FreestyleLogPage() {
             onChange={(v) => form.setValue("brewTime", v, { shouldValidate: true })}
           />
           {errors.brewTime ? <p className="text-xs text-red-700">{errors.brewTime.message}</p> : null}
+          {coachChangeMap.has("brewTime") && (
+            <CoachHint
+              change={coachChangeMap.get("brewTime")!}
+              originalValue={coachBrewRef?.brewTime}
+            />
+          )}
         </div>
 
         {/* Tasting notes */}

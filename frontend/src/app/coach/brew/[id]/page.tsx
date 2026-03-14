@@ -90,7 +90,11 @@ export default function BrewCoachPage() {
     try {
       const data = await postCoachingApi({ brew_id: brewId, ...payload });
       setResponse(data);
-      void updateEntry(brewId, { rating, coachingFeedback: data.fix });
+      void updateEntry(brewId, {
+        rating,
+        coachingFeedback: data.fix,
+        coachingChanges: data.changes ?? null,
+      });
     } finally {
       setIsLoading(false);
     }

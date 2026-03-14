@@ -5,18 +5,25 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
+import { useBrewHistoryStore, type FreestyleBrewEntry } from "@/lib/brewHistoryStore";
 import { useBeansStore } from "@/lib/beansStore";
 import { COACH_TIPS } from "@/lib/coachTips";
 
 function methodLabel(methodId: string | null | undefined) {
   if (!methodId) return "Unknown Method";
-  return methodId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const labels: Record<string, string> = {
+    v60: "V60", chemex: "Chemex", kalita_wave: "Kalita Wave",
+    clever_dripper: "Clever Dripper", hario_switch: "Hario Switch",
+    aeropress: "AeroPress", french_press: "French Press",
+    moka_pot: "Moka Pot", cold_brew: "Cold Brew",
+    south_indian_filter: "Filter Kaapi", pour_over: "Pour Over",
+  };
+  return labels[methodId] ?? methodId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function methodIcon(methodId: string | null | undefined) {
   if (!methodId) return "coffee";
-  if (methodId.includes("pour_over")) return "water_drop";
+  if (methodId.includes("pour_over") || methodId === "v60" || methodId === "chemex" || methodId === "kalita_wave" || methodId === "clever_dripper" || methodId === "hario_switch") return "water_drop";
   if (methodId.includes("aeropress")) return "compress";
   if (methodId.includes("french_press")) return "coffee_maker";
   if (methodId.includes("moka_pot")) return "soup_kitchen";
@@ -42,16 +49,10 @@ function formatDate(dateStr: string) {
 
 /** Map method IDs to the keyword prefix used in COACH_TIPS */
 const METHOD_TIP_PREFIX: Record<string, string> = {
-  pour_over: "pour over",
-  v60: "pour over",
-  chemex: "pour over",
-  kalita_wave: "pour over",
-  clever_dripper: "pour over",
-  hario_switch: "pour over",
-  aeropress: "aeropress",
-  french_press: "french press",
-  moka_pot: "moka pot",
-  cold_brew: "cold brew",
+  pour_over: "pour over", v60: "pour over", chemex: "pour over",
+  kalita_wave: "pour over", clever_dripper: "pour over", hario_switch: "pour over",
+  aeropress: "aeropress", french_press: "french press",
+  moka_pot: "moka pot", cold_brew: "cold brew",
   south_indian_filter: "filter kaapi",
 };
 
@@ -62,7 +63,6 @@ function getFilteredTips(equipment: string[]): string[] {
     const lower = tip.toLowerCase();
     return prefixes.some((p) => lower.includes(p));
   });
-  // Also include generic tips (those that don't match any specific method prefix)
   const allPrefixes = Object.values(METHOD_TIP_PREFIX);
   const generic = COACH_TIPS.filter((tip) => {
     const lower = tip.toLowerCase();
@@ -73,11 +73,10 @@ function getFilteredTips(equipment: string[]): string[] {
 }
 
 function generateInsight(
-  entries: ReturnType<typeof useBrewHistoryStore.getState>["entries"],
+  entries: FreestyleBrewEntry[],
   equipment: string[],
 ): { icon: string; title: string; body: string; avatar: string } {
   if (entries.length === 0) {
-    // No brews — show a tip based on equipment
     const tips = getFilteredTips(equipment);
     const tip = tips[Math.floor(Math.random() * tips.length)];
     return {
@@ -92,7 +91,6 @@ function generateInsight(
   const recent = sorted.slice(0, 5);
   const rated = recent.filter((e) => typeof e.rating === "number");
 
-  // Check for unrated brews
   const unrated = sorted.filter((e) => e.rating === null || e.rating === undefined);
   if (unrated.length > 0) {
     return {
@@ -114,7 +112,6 @@ function generateInsight(
 
   const avgRating = rated.reduce((sum, e) => sum + (e.rating ?? 0), 0) / rated.length;
 
-  // Low ratings — diagnosis mode
   if (avgRating <= 4) {
     const hasSour = recent.some((e) => e.coachingFeedback?.toLowerCase().includes("sour"));
     const hasBitter = recent.some((e) => e.coachingFeedback?.toLowerCase().includes("bitter"));
@@ -142,7 +139,6 @@ function generateInsight(
     };
   }
 
-  // Improving — ratings trending up
   if (rated.length >= 3) {
     const firstHalf = rated.slice(Math.floor(rated.length / 2));
     const secondHalf = rated.slice(0, Math.floor(rated.length / 2));
@@ -158,7 +154,6 @@ function generateInsight(
     }
   }
 
-  // High ratings — lock-in mode
   if (avgRating >= 8) {
     return {
       icon: "emoji_events",
@@ -168,13 +163,72 @@ function generateInsight(
     };
   }
 
-  // Mid range — refinement
   return {
     icon: "auto_fix_high",
     avatar: "/coach/img3_whistle_blowing.png",
     title: "One tweak away",
     body: `You're averaging ${avgRating.toFixed(1)}/10. Pick a brew below and set a goal — I'll tell you what to change.`,
   };
+}
+
+function CoachedBrewCard({ entry, beanName, onClick }: { entry: FreestyleBrewEntry; beanName: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full rounded-xl border border-primary/15 bg-primary/5 p-3 text-left hover:border-primary/30 transition-colors"
+    >
+      <div className="flex gap-3">
+        <Image
+          src="/coach/img3_whistle_blowing.png"
+          alt="Coach"
+          width={28}
+          height={28}
+          className="w-7 h-7 object-contain shrink-0 mt-0.5"
+        />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-slate-200 leading-relaxed">{entry.coachingFeedback}</p>
+          <p className="text-[10px] text-slate-500 mt-1.5">
+            {methodLabel(entry.methodId)} · {beanName} · {formatDate(entry.createdAt)}
+            {typeof entry.rating === "number" && ` · ${entry.rating}/10`}
+          </p>
+        </div>
+        <span className="material-symbols-outlined text-primary/30 text-base shrink-0 mt-0.5">chevron_right</span>
+      </div>
+    </button>
+  );
+}
+
+function UncoachedBrewCard({ entry, beanName, onClick }: { entry: FreestyleBrewEntry; beanName: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-left hover:border-amber-500/50 transition-colors"
+    >
+      <div className="flex gap-3">
+        <div className="relative shrink-0 mt-0.5">
+          <Image
+            src="/coach/img3_holding_whistle.png"
+            alt="Coach"
+            width={28}
+            height={28}
+            className="w-7 h-7 object-contain"
+          />
+          <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-400 rounded-full border border-amber-500/30" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-amber-200">Rate this brew and get coached!</p>
+          <p className="text-[10px] text-slate-500 mt-1">
+            {methodLabel(entry.methodId)} · {beanName} · {ratio(entry.coffeeGrams, entry.waterMl)} · {formatDate(entry.createdAt)}
+          </p>
+        </div>
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold self-center shrink-0 whitespace-nowrap">
+          Get Coached
+        </span>
+      </div>
+    </button>
+  );
 }
 
 export default function CoachPage() {
@@ -192,7 +246,6 @@ export default function CoachPage() {
     Promise.all([fetchEntries(), fetchBeans()]).finally(() => setInitialFetchDone(true));
   }, [fetchEntries, fetchBeans]);
 
-  // Load user equipment from profile
   useEffect(() => {
     fetch("/api/users/me", { cache: "no-store" })
       .then((r) => r.json())
@@ -204,12 +257,19 @@ export default function CoachPage() {
       .catch(() => {});
   }, []);
 
-  const recentFirst = useMemo(
-    () => [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-    [entries],
-  );
+  // Group brews by method, last 2 per method
+  const brewsByMethod = useMemo(() => {
+    const sorted = [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const groups: Record<string, FreestyleBrewEntry[]> = {};
+    for (const entry of sorted) {
+      const key = entry.methodId ?? "unknown";
+      if (!groups[key]) groups[key] = [];
+      if (groups[key].length < 2) groups[key].push(entry);
+    }
+    return groups;
+  }, [entries]);
 
-  const recentFive = recentFirst.slice(0, 5);
+  const methodKeys = Object.keys(brewsByMethod);
 
   const insight = useMemo(
     () => generateInsight(entries, equipment),
@@ -219,11 +279,15 @@ export default function CoachPage() {
 
   const filteredTips = useMemo(() => {
     const tips = getFilteredTips(equipment);
-    // Shuffle and pick 2
     const shuffled = [...tips].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [equipment.length]);
+
+  function getBeanName(beanId: string | null) {
+    if (!beanId) return "Unknown Bean";
+    return beans.find((b) => b.id === beanId)?.beanName ?? "Unknown Bean";
+  }
 
   if (!initialFetchDone && loading) {
     return (
@@ -275,67 +339,43 @@ export default function CoachPage() {
         </div>
       </div>
 
-      {/* Recent Brews — interactive cards */}
-      {recentFive.length > 0 && (
-        <section className="px-4 py-3">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Recent Brews</h3>
-            <Link href="/history" className="text-xs text-primary font-semibold flex items-center gap-0.5">
-              View all
-              <span className="material-symbols-outlined text-xs">arrow_forward</span>
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {recentFive.map((entry) => {
-              const bean = beans.find((b) => b.id === entry.beanId);
-              const beanName = bean ? bean.beanName : "Unknown Bean";
-              const icon = methodIcon(entry.methodId);
-              const hasRating = typeof entry.rating === "number";
-              const hasCoaching = !!entry.coachingFeedback;
+      {/* Brews grouped by method — coaching-centric cards */}
+      {methodKeys.length > 0 && (
+        <section className="px-4 py-3 space-y-5">
+          {methodKeys.map((methodId) => {
+            const methodBrews = brewsByMethod[methodId];
+            const icon = methodIcon(methodId);
+            return (
+              <div key={methodId}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="material-symbols-outlined text-primary text-base">{icon}</span>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{methodLabel(methodId)}</h3>
+                </div>
+                <div className="space-y-2">
+                  {methodBrews.map((entry) => {
+                    const beanName = getBeanName(entry.beanId);
+                    const hasCoaching = !!entry.coachingFeedback;
 
-              return (
-                <button
-                  key={entry.id}
-                  type="button"
-                  onClick={() => router.push(`/coach/brew/${entry.id}`)}
-                  className="w-full rounded-xl border border-primary/15 bg-primary/5 p-3 text-left hover:border-primary/30 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-primary text-lg">{icon}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline justify-between gap-1">
-                        <p className="text-sm font-semibold text-slate-100 truncate">{beanName}</p>
-                        <p className="text-[10px] text-slate-500 shrink-0">{formatDate(entry.createdAt)}</p>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        {methodLabel(entry.methodId)} · {entry.coffeeGrams}g · {ratio(entry.coffeeGrams, entry.waterMl)}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        {hasRating && (
-                          <span className="flex items-center gap-0.5 text-xs text-primary font-semibold">
-                            <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>star</span>
-                            {entry.rating}/10
-                          </span>
-                        )}
-                        {hasCoaching && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary/80 font-semibold">Coached</span>
-                        )}
-                        {!hasRating && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-400 font-semibold">Unrated</span>
-                        )}
-                        {entry.isFavourite && (
-                          <span className="material-symbols-outlined text-primary" style={{ fontSize: "12px" }}>favorite</span>
-                        )}
-                      </div>
-                    </div>
-                    <span className="material-symbols-outlined text-primary/40 text-lg shrink-0">chevron_right</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                    return hasCoaching ? (
+                      <CoachedBrewCard
+                        key={entry.id}
+                        entry={entry}
+                        beanName={beanName}
+                        onClick={() => router.push(`/coach/brew/${entry.id}`)}
+                      />
+                    ) : (
+                      <UncoachedBrewCard
+                        key={entry.id}
+                        entry={entry}
+                        beanName={beanName}
+                        onClick={() => router.push(`/coach/brew/${entry.id}`)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </section>
       )}
 

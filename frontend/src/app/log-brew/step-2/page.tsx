@@ -1,13 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import recipes from "@/data/recipes.json";
+import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 
-type Choice = "guided" | "freestyle";
+type Choice = "coach" | "guided" | "freestyle";
 
 type RecipeRecord = {
   method?: string;
@@ -63,8 +65,32 @@ function prettyMethodName(methodKey: string | null) {
 export default function LogBrewStepTwoPage() {
   const router = useRouter();
   const [choice, setChoice] = useState<Choice | null>(null);
+  const selectedBeanId = useLogBrewStore((state) => state.selectedBeanId);
   const selectedMethodId = useLogBrewStore((state) => state.selectedMethodId);
   const selectedPourOverDeviceId = useLogBrewStore((state) => state.selectedPourOverDeviceId);
+  const setCoachMode = useLogBrewStore((state) => state.setCoachMode);
+
+  const entries = useBrewHistoryStore((state) => state.entries);
+
+  const effectiveMethodId = useMemo(() => {
+    if (selectedMethodId === "pour_over") {
+      return selectedPourOverDeviceId ?? selectedMethodId;
+    }
+    return selectedMethodId;
+  }, [selectedMethodId, selectedPourOverDeviceId]);
+
+  // Find most recent brew for same bean+method combo that has coaching changes
+  const coachedBrew = useMemo(() => {
+    if (!selectedBeanId || !effectiveMethodId) return null;
+    const sorted = [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return sorted.find(
+      (e) =>
+        e.beanId === selectedBeanId &&
+        e.methodId === effectiveMethodId &&
+        e.coachingChanges &&
+        e.coachingChanges.length > 0,
+    ) ?? null;
+  }, [entries, selectedBeanId, effectiveMethodId]);
 
   const recipeMethodKey = useMemo(
     () => toRecipeMethodKey(selectedMethodId, selectedPourOverDeviceId),
@@ -81,6 +107,12 @@ export default function LogBrewStepTwoPage() {
 
   function handleNext() {
     if (!choice) {
+      return;
+    }
+
+    if (choice === "coach" && coachedBrew?.coachingChanges) {
+      setCoachMode(coachedBrew, coachedBrew.coachingChanges);
+      router.push("/log-brew/freestyle");
       return;
     }
 
@@ -131,6 +163,39 @@ export default function LogBrewStepTwoPage() {
 
       {/* Option cards */}
       <div className="flex flex-col gap-4 flex-1">
+        {/* Follow the Coach — conditional */}
+        {coachedBrew && (
+          <button
+            type="button"
+            onClick={() => setChoice("coach")}
+            className={`w-full flex items-start gap-4 p-5 rounded-xl border-2 text-left transition-all ${
+              choice === "coach"
+                ? "border-primary bg-primary/10"
+                : "border-transparent bg-primary/5 hover:border-primary/30"
+            }`}
+          >
+            <Image
+              src="/coach/img3_whistle_blowing.png"
+              alt="Coach"
+              width={56}
+              height={56}
+              className="w-14 h-14 object-contain shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between w-full mb-1">
+                <h3 className="text-xl font-bold text-slate-100">Follow the Coach</h3>
+                <span className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-widest border border-primary/20 shrink-0 ml-2">
+                  {coachedBrew.coachingChanges?.length} {coachedBrew.coachingChanges?.length === 1 ? "change" : "changes"}
+                </span>
+              </div>
+              <p className="text-sm text-slate-400">Apply your coach&apos;s advice from your last {prettyMethodName(effectiveMethodId)} brew.</p>
+              {coachedBrew.coachingFeedback && (
+                <p className="text-xs text-primary/70 mt-2 italic truncate">&ldquo;{coachedBrew.coachingFeedback}&rdquo;</p>
+              )}
+            </div>
+          </button>
+        )}
+
         {/* Follow a Recipe */}
         <button
           type="button"

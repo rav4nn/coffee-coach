@@ -163,12 +163,6 @@ function BrewCard({ entry, beanName, isOpen, onToggle, onEdit }: BrewCardProps) 
             </div>
           )}
 
-          {entry.coachingFeedback && (
-            <div className="rounded-xl bg-primary/10 border border-primary/20 p-3">
-              <p className="text-[10px] uppercase tracking-wider text-primary/70 font-semibold mb-1">Coach Says</p>
-              <p className="text-sm text-slate-300">{entry.coachingFeedback}</p>
-            </div>
-          )}
         </div>
       )}
     </article>
