@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import { usePathname } from "next/navigation";
 
 import { useBrewSessionStore } from "@/lib/brewSessionStore";
+import myBeansIcon from "../../stitch/nav_icons/my_beans.png";
 
 const LEFT_ITEMS = [
   { href: "/", label: "Home", icon: "home" },
@@ -12,7 +13,7 @@ const LEFT_ITEMS = [
 ];
 
 const RIGHT_ITEMS = [
-  { href: "/my-beans", label: "My Beans", icon: "nutrition" },
+  { href: "/my-beans", label: "My Beans", icon: myBeansIcon },
   { href: "/history", label: "Journal", icon: "menu_book" },
 ];
 
@@ -24,19 +25,38 @@ export function BottomNav() {
     return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
   }
 
-  function NavItem({ href, label, icon }: { href: string; label: string; icon: string }) {
+  function NavItem({
+    href,
+    label,
+    icon,
+  }: {
+    href: string;
+    label: string;
+    icon: string | StaticImageData;
+  }) {
     const active = isActive(href);
+    const isImageIcon = typeof icon !== "string";
     return (
       <Link
         href={href}
         className={`flex flex-col items-center gap-1 ${active ? "text-primary" : "text-slate-500"}`}
       >
-        <span
-          className="material-symbols-outlined"
-          style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
-        >
-          {icon}
-        </span>
+        {isImageIcon ? (
+          <Image
+            src={icon}
+            alt={`${label} icon`}
+            width={20}
+            height={20}
+            className={active ? "opacity-100" : "opacity-70"}
+          />
+        ) : (
+          <span
+            className="material-symbols-outlined"
+            style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
+          >
+            {icon}
+          </span>
+        )}
         <span className={`text-[10px] ${active ? "font-bold" : "font-medium"}`}>{label}</span>
       </Link>
     );

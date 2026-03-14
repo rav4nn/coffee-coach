@@ -347,7 +347,9 @@ export default function CoachPage() {
             return (
               <div key={methodId}>
                 <div className="flex items-center gap-2 mb-2">
-                  <Image src={methodImage(methodId)} alt={methodLabel(methodId)} width={20} height={20} className="w-5 h-5 object-contain" />
+                  <div className="w-7 h-7 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-center shrink-0">
+                    <Image src={methodImage(methodId)} alt={methodLabel(methodId)} width={18} height={18} className="w-[18px] h-[18px] object-contain" />
+                  </div>
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{methodLabel(methodId)}</h3>
                 </div>
                 <div className="space-y-2">

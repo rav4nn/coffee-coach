@@ -79,7 +79,7 @@ function BrewCard({ entry, beanName, isOpen, onToggle, onEdit }: BrewCardProps) 
       {/* Card header row — tap anywhere except pencil to toggle */}
       <div className="flex items-center gap-3 px-4 py-3">
         <button type="button" onClick={onToggle} className="flex items-center gap-3 flex-1 min-w-0 text-left">
-          <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 overflow-hidden">
+          <div className="w-12 h-12 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
             <Image src={imgSrc} alt="" width={32} height={32} className="w-8 h-8 object-contain" />
           </div>
           <div className="flex-1 min-w-0">

@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Bean, History, House, SquarePlus } from "lucide-react";
+import { History, House, SquarePlus } from "lucide-react";
+import myBeansIcon from "../../stitch/nav_icons/my_beans.png";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: House },
   { href: "/log-brew", label: "Log Brew", icon: SquarePlus },
-  { href: "/my-beans", label: "My Beans", icon: Bean },
+  { href: "/my-beans", label: "My Beans", icon: null },
   { href: "/history", label: "History", icon: History },
 ];
 
@@ -23,6 +25,7 @@ export function Navbar() {
               ? pathname === item.href
               : pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
+          const isMyBeans = item.href === "/my-beans";
 
           return (
             <Link
@@ -33,7 +36,17 @@ export function Navbar() {
                 active ? "text-mocha font-bold" : "text-charcoal font-medium hover:text-espresso",
               ].join(" ")}
             >
-              <Icon className="h-[18px] w-[18px]" />
+              {isMyBeans ? (
+                <Image
+                  src={myBeansIcon}
+                  alt="My Beans"
+                  width={18}
+                  height={18}
+                  className={active ? "opacity-100" : "opacity-70"}
+                />
+              ) : (
+                Icon && <Icon className="h-[18px] w-[18px]" />
+              )}
               {item.label}
             </Link>
           );
