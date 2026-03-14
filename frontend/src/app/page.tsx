@@ -1,14 +1,29 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import { BrewEditSheet } from "@/components/BrewEditSheet";
+import { ProfileDrawer } from "@/components/ProfileDrawer";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useBeansStore } from "@/lib/beansStore";
 import { Skeleton } from "@/components/Skeleton";
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return "MORNING, BREWER";
+  if (h >= 12 && h < 17) return "AFTERNOON, BREWER";
+  if (h >= 17 && h < 21) return "EVENING, BREWER";
+  return "NIGHT OWL, BREWER";
+}
+
+function getInitials(name: string | null | undefined): string {
+  if (!name) return "?";
+  return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+}
 
 function methodLabel(methodId: string | null | undefined) {
   if (!methodId) return "Unknown Method";
@@ -42,7 +57,7 @@ function formatTime(dateStr: string) {
 
 export default function Home() {
   const router = useRouter();
-  const { status: sessionStatus } = useSession();
+  const { status: sessionStatus, data: session } = useSession();
 
   const entries = useBrewHistoryStore((state) => state.entries);
   const isLoadingHistory = useBrewHistoryStore((state) => state.loading);
@@ -53,6 +68,7 @@ export default function Home() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editBrewId, setEditBrewId] = useState<string | null>(null);
   const [initialFetchDone, setInitialFetchDone] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([fetchEntries(), fetchBeans()]).finally(() => setInitialFetchDone(true));
@@ -121,8 +137,33 @@ export default function Home() {
   }
 
   const editEntry = editBrewId ? entries.find((e) => e.id === editBrewId) ?? null : null;
+  const user = session?.user;
 
   return (
+    <>
+    <header className="sticky top-0 z-10 bg-background-dark/90 backdrop-blur-md">
+      <div className="flex items-center justify-between px-4 py-3 max-w-phone mx-auto">
+        <button
+          onClick={() => setProfileOpen(true)}
+          className="w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/20 flex items-center justify-center flex-shrink-0 hover:border-primary/60 transition-colors overflow-hidden"
+          aria-label="Open profile"
+        >
+          {user?.image ? (
+            <Image src={user.image} alt={user.name ?? "Profile"} width={40} height={40} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
+          ) : (
+            <span className="text-sm font-bold text-primary">{getInitials(user?.name)}</span>
+          )}
+        </button>
+        <div className="text-center">
+          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary">{getGreeting()}</p>
+          <p className="text-base font-bold text-slate-100 leading-tight">Coffee Coach</p>
+        </div>
+        <Link href="/settings" className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-primary/10 transition-colors" aria-label="Settings">
+          <span className="material-symbols-outlined text-slate-400">settings</span>
+        </Link>
+      </div>
+    </header>
+
     <main className="overflow-y-auto pb-28">
       {/* Stat Cards */}
       {(streak > 0 || personalBest) && (
@@ -177,7 +218,7 @@ export default function Home() {
           href="/coach"
           className="flex items-center justify-center gap-2 w-full bg-primary/5 border border-primary/20 text-slate-100 font-semibold py-4 rounded-2xl hover:scale-[1.01] transition-transform"
         >
-          <span className="material-symbols-outlined text-primary text-xl">psychology</span>
+          <Image src="/coach/img3_whistle_blowing.png" alt="" width={24} height={24} className="object-contain" />
           Get Coached
         </Link>
       </div>
@@ -310,5 +351,8 @@ export default function Home() {
         onOpenChange={(o) => { if (!o) setEditBrewId(null); }}
       />
     </main>
+
+    <ProfileDrawer open={profileOpen} onClose={() => setProfileOpen(false)} />
+    </>
   );
 }

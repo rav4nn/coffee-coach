@@ -25,6 +25,7 @@ export function AppHeader() {
   const { data: session } = useSession();
 
   if (pathname.startsWith("/log-brew")) return null;
+  if (pathname === "/") return null;
 
   const user = session?.user;
 
