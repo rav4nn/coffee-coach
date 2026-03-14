@@ -144,13 +144,13 @@ export default function Home() {
     <header className="sticky top-0 z-10 bg-background-dark/90 backdrop-blur-md">
       <div className="flex items-center justify-between px-4 py-3 max-w-phone mx-auto">
         {/* Coach icon + greeting bubble */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/30">
-            <Image src="/coach/img3_thumbs_whistle.png" alt="Coffee Coach" width={44} height={44} className="object-contain" />
+        <div className="flex items-center gap-3">
+          <div className="w-14 h-14 rounded-full bg-primary overflow-hidden flex items-center justify-center shrink-0 shadow-lg shadow-primary/30 p-1">
+            <Image src="/coach/img3_thumbs_whistle.png" alt="Coffee Coach" width={56} height={56} className="w-full h-full object-contain" />
           </div>
-          <div className="rounded-2xl rounded-tl-sm bg-primary/10 border border-primary/20 px-3 py-1.5">
-            <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-primary leading-none">{getGreeting()}</p>
-            <p className="text-sm font-bold text-slate-100 leading-snug mt-0.5">Coffee Coach</p>
+          <div className="rounded-2xl rounded-tl-sm bg-primary/10 border border-primary/20 px-3.5 py-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary leading-none">{getGreeting()}</p>
+            <p className="text-base font-bold text-slate-100 leading-snug mt-1">Coffee Coach</p>
           </div>
         </div>
 
@@ -223,7 +223,7 @@ export default function Home() {
           href="/coach"
           className="flex items-center justify-center gap-2 w-full bg-primary/5 border border-primary/20 text-slate-100 font-semibold py-4 rounded-2xl hover:scale-[1.01] transition-transform"
         >
-          <Image src="/coach/img3_whistle_blowing.png" alt="" width={24} height={24} className="object-contain" />
+          <Image src="/coach/img3_whistle_blowing.png" alt="" width={32} height={32} className="object-contain" />
           Get Coached
         </Link>
       </div>
