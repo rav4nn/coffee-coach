@@ -4,7 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { History, House, SquarePlus } from "lucide-react";
-import myBeansIcon from "../../stitch/nav_icons/my_beans.png";
+
+const MY_BEANS_ICON = "/nav_icons/my_beans.png";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: House },
@@ -38,7 +39,7 @@ export function Navbar() {
             >
               {isMyBeans ? (
                 <Image
-                  src={myBeansIcon}
+                  src={MY_BEANS_ICON}
                   alt="My Beans"
                   width={18}
                   height={18}

@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image, { type StaticImageData } from "next/image";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 import { useBrewSessionStore } from "@/lib/brewSessionStore";
-import myBeansIcon from "../../stitch/nav_icons/my_beans.png";
 
 const LEFT_ITEMS = [
   { href: "/", label: "Home", icon: "home" },
@@ -13,7 +12,7 @@ const LEFT_ITEMS = [
 ];
 
 const RIGHT_ITEMS = [
-  { href: "/my-beans", label: "My Beans", icon: myBeansIcon },
+  { href: "/my-beans", label: "My Beans", icon: "/nav_icons/my_beans.png" },
   { href: "/history", label: "Journal", icon: "menu_book" },
 ];
 
@@ -25,17 +24,9 @@ export function BottomNav() {
     return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
   }
 
-  function NavItem({
-    href,
-    label,
-    icon,
-  }: {
-    href: string;
-    label: string;
-    icon: string | StaticImageData;
-  }) {
+  function NavItem({ href, label, icon }: { href: string; label: string; icon: string }) {
     const active = isActive(href);
-    const isImageIcon = typeof icon !== "string";
+    const isImageIcon = icon.startsWith("/");
     return (
       <Link
         href={href}
