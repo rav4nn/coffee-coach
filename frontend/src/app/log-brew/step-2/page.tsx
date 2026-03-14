@@ -79,7 +79,7 @@ export default function LogBrewStepTwoPage() {
     return selectedMethodId;
   }, [selectedMethodId, selectedPourOverDeviceId]);
 
-  // Find most recent brew for same bean+method combo that has coaching changes
+  // Find most recent brew for same bean+method combo that has coaching feedback
   const coachedBrew = useMemo(() => {
     if (!selectedBeanId || !effectiveMethodId) return null;
     const sorted = [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -87,8 +87,7 @@ export default function LogBrewStepTwoPage() {
       (e) =>
         e.beanId === selectedBeanId &&
         e.methodId === effectiveMethodId &&
-        e.coachingChanges &&
-        e.coachingChanges.length > 0,
+        !!e.coachingFeedback,
     ) ?? null;
   }, [entries, selectedBeanId, effectiveMethodId]);
 
@@ -110,8 +109,8 @@ export default function LogBrewStepTwoPage() {
       return;
     }
 
-    if (choice === "coach" && coachedBrew?.coachingChanges) {
-      setCoachMode(coachedBrew, coachedBrew.coachingChanges);
+    if (choice === "coach" && coachedBrew) {
+      setCoachMode(coachedBrew, coachedBrew.coachingChanges ?? []);
       router.push("/log-brew/freestyle");
       return;
     }
@@ -168,30 +167,33 @@ export default function LogBrewStepTwoPage() {
           <button
             type="button"
             onClick={() => setChoice("coach")}
-            className={`w-full flex items-start gap-4 p-5 rounded-xl border-2 text-left transition-all ${
+            className={`w-full rounded-xl border-2 text-left transition-all overflow-hidden ${
               choice === "coach"
                 ? "border-primary bg-primary/10"
-                : "border-transparent bg-primary/5 hover:border-primary/30"
+                : "border-primary/30 bg-primary/5 hover:border-primary/50"
             }`}
           >
-            <Image
-              src="/coach/img3_whistle_blowing.png"
-              alt="Coach"
-              width={56}
-              height={56}
-              className="w-14 h-14 object-contain shrink-0"
-            />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between w-full mb-1">
-                <h3 className="text-xl font-bold text-slate-100">Follow the Coach</h3>
-                <span className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-widest border border-primary/20 shrink-0 ml-2">
-                  {coachedBrew.coachingChanges?.length} {coachedBrew.coachingChanges?.length === 1 ? "change" : "changes"}
-                </span>
+            <div className="flex items-end gap-0">
+              <Image
+                src="/coach/img2_reading_book.png"
+                alt="Coach"
+                width={120}
+                height={120}
+                className="w-28 h-28 object-contain shrink-0 object-bottom"
+              />
+              <div className="flex-1 min-w-0 py-4 pr-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">Recommended</p>
+                <h3 className="text-xl font-bold text-slate-100 leading-tight">Follow the Coach</h3>
+                <p className="text-xs text-slate-400 mt-1">Apply your coach&apos;s advice from your last {prettyMethodName(effectiveMethodId)} brew.</p>
+                {coachedBrew.coachingFeedback && (
+                  <p className="text-xs text-primary/80 mt-2 italic line-clamp-2">&ldquo;{coachedBrew.coachingFeedback}&rdquo;</p>
+                )}
+                {coachedBrew.coachingChanges && coachedBrew.coachingChanges.length > 0 && (
+                  <span className="inline-block mt-2 bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest border border-primary/20">
+                    {coachedBrew.coachingChanges.length} {coachedBrew.coachingChanges.length === 1 ? "change" : "changes"}
+                  </span>
+                )}
               </div>
-              <p className="text-sm text-slate-400">Apply your coach&apos;s advice from your last {prettyMethodName(effectiveMethodId)} brew.</p>
-              {coachedBrew.coachingFeedback && (
-                <p className="text-xs text-primary/70 mt-2 italic truncate">&ldquo;{coachedBrew.coachingFeedback}&rdquo;</p>
-              )}
             </div>
           </button>
         )}

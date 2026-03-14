@@ -65,7 +65,7 @@ export default function FreestyleLogPage() {
   const coachChanges = useLogBrewStore((state) => state.coachChanges);
   const clearCoachMode = useLogBrewStore((state) => state.clearCoachMode);
 
-  const isCoachMode = !!coachBrewRef && !!coachChanges && coachChanges.length > 0;
+  const isCoachMode = !!coachBrewRef && coachChanges !== null;
 
   const effectiveMethodId = useMemo(() => {
     if (selectedMethodId === "pour_over") {
