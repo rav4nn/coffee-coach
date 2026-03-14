@@ -24,16 +24,12 @@ const BREW_METHODS: { id: MethodCardId; label: string; icon: string }[] = [
   { id: "south_indian_filter", label: "Filter Kaapi",   icon: "filter_alt" },
 ];
 
-const AVATARS = ["avatar_1", "avatar_2", "avatar_3", "avatar_4", "avatar_5"];
-
 export default function OnboardingPage() {
   const { data: session, update } = useSession();
 
   const [name, setName] = useState(session?.user?.name ?? "");
   const [age, setAge] = useState("");
-  const [avatar, setAvatar] = useState("avatar_1");
   const [equipment, setEquipment] = useState<MethodCardId[]>([]);
-  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -69,7 +65,7 @@ export default function OnboardingPage() {
     setSaving(true);
     setError(null);
     try {
-      await patchUserProfileApi({ name: name.trim(), age: ageNum, avatar, primary_equipment: equipment });
+      await patchUserProfileApi({ name: name.trim(), age: ageNum, primary_equipment: equipment });
       await update({ profile_complete: true });
       window.location.href = "/";
     } catch (err) {
@@ -84,43 +80,23 @@ export default function OnboardingPage() {
       <div className="flex pt-10 px-6 pb-4">
         <div className="flex w-full flex-col gap-4 items-center">
           <div className="flex gap-4 flex-col items-center">
-            {/* Avatar */}
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full border-2 border-primary ring-4 ring-primary/10 shadow-xl overflow-hidden">
+            {/* Google profile picture */}
+            <div className="w-24 h-24 rounded-full border-2 border-primary ring-4 ring-primary/10 shadow-xl overflow-hidden bg-primary/20 flex items-center justify-center">
+              {session?.user?.image ? (
                 <Image
-                  src={`/avatars/${avatar}.png`}
-                  alt="Selected avatar"
+                  src={session.user.image}
+                  alt={session.user.name ?? "Profile"}
                   width={96}
                   height={96}
                   className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
                 />
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAvatarPicker((v) => !v)}
-                className="absolute bottom-0 right-0 bg-primary text-background-dark p-1.5 rounded-full border-2 border-background-dark"
-                aria-label="Change avatar"
-              >
-                <span className="material-symbols-outlined text-sm block">photo_camera</span>
-              </button>
+              ) : (
+                <span className="text-2xl font-bold text-primary">
+                  {(session?.user?.name ?? "?")[0].toUpperCase()}
+                </span>
+              )}
             </div>
-
-            {/* Avatar picker */}
-            {showAvatarPicker && (
-              <div className="flex flex-wrap justify-center gap-3">
-                {AVATARS.map((id) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => { setAvatar(id); setShowAvatarPicker(false); }}
-                    className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all ${avatar === id ? "border-primary scale-110" : "border-transparent"}`}
-                    aria-label={id}
-                  >
-                    <Image src={`/avatars/${id}.png`} alt={id} width={48} height={48} className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
 
             <div className="flex flex-col items-center">
               <p className="text-slate-100 text-2xl font-bold text-center">

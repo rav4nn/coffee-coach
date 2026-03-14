@@ -143,6 +143,18 @@ export default function Home() {
     <>
     <header className="sticky top-0 z-10 bg-background-dark/90 backdrop-blur-md">
       <div className="flex items-center justify-between px-4 py-3 max-w-phone mx-auto">
+        {/* Coach icon + greeting bubble */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/30">
+            <Image src="/coach/img3_thumbs_whistle.png" alt="Coffee Coach" width={44} height={44} className="object-contain" />
+          </div>
+          <div className="rounded-2xl rounded-tl-sm bg-primary/10 border border-primary/20 px-3 py-1.5">
+            <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-primary leading-none">{getGreeting()}</p>
+            <p className="text-sm font-bold text-slate-100 leading-snug mt-0.5">Coffee Coach</p>
+          </div>
+        </div>
+
+        {/* Google profile picture */}
         <button
           onClick={() => setProfileOpen(true)}
           className="w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/20 flex items-center justify-center flex-shrink-0 hover:border-primary/60 transition-colors overflow-hidden"
@@ -154,13 +166,6 @@ export default function Home() {
             <span className="text-sm font-bold text-primary">{getInitials(user?.name)}</span>
           )}
         </button>
-        <div className="text-center">
-          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary">{getGreeting()}</p>
-          <p className="text-base font-bold text-slate-100 leading-tight">Coffee Coach</p>
-        </div>
-        <Link href="/settings" className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-primary/10 transition-colors" aria-label="Settings">
-          <span className="material-symbols-outlined text-slate-400">settings</span>
-        </Link>
       </div>
     </header>
 
