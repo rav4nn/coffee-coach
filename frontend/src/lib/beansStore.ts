@@ -33,7 +33,11 @@ export const useBeansStore = create<BeansStore>()((set, get) => ({
   fetchBeans: async () => {
     set({ isLoading: true });
     try {
-      const beans = await getUserBeansApi();
+      // Use the Next.js proxy route so auth is handled server-side,
+      // avoiding the race condition where _accessToken isn't set yet.
+      const res = await fetch("/api/user/beans", { cache: "no-store" });
+      if (!res.ok) return;
+      const beans = await res.json();
       set({ userBeans: normalize(beans) });
     } finally {
       set({ isLoading: false });

@@ -187,9 +187,6 @@ export default function LogBrewPage() {
   const stalenessWarnings = useMemo(() => {
     if (!selectedBean) return [];
     const warnings: string[] = [];
-    if (selectedBean.is_pre_ground) {
-      warnings.push("Pre-ground coffee goes stale within days. For best flavour, consider switching to whole beans.");
-    }
     if (selectedBean.roast_date) {
       const days = Math.floor((Date.now() - new Date(selectedBean.roast_date).getTime()) / 86_400_000);
       if (days > 45) {

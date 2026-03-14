@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import { BrewEditSheet } from "@/components/BrewEditSheet";
-import { BrewRatingSheet } from "@/components/BrewRatingSheet";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useBeansStore } from "@/lib/beansStore";
 import { Skeleton } from "@/components/Skeleton";
@@ -53,7 +52,6 @@ export default function Home() {
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editBrewId, setEditBrewId] = useState<string | null>(null);
-  const [ratingBrewId, setRatingBrewId] = useState<string | null>(null);
   const [initialFetchDone, setInitialFetchDone] = useState(false);
 
   useEffect(() => {
@@ -123,7 +121,6 @@ export default function Home() {
   }
 
   const editEntry = editBrewId ? entries.find((e) => e.id === editBrewId) ?? null : null;
-  const ratingEntry = ratingBrewId ? entries.find((e) => e.id === ratingBrewId) : null;
 
   return (
     <main className="overflow-y-auto pb-28">
@@ -177,11 +174,11 @@ export default function Home() {
           Start New Brew
         </Link>
         <Link
-          href="/history"
+          href="/coach"
           className="flex items-center justify-center gap-2 w-full bg-primary/5 border border-primary/20 text-slate-100 font-semibold py-4 rounded-2xl hover:scale-[1.01] transition-transform"
         >
-          <span className="material-symbols-outlined text-primary text-xl">menu_book</span>
-          Open Brew Journal
+          <span className="material-symbols-outlined text-primary text-xl">psychology</span>
+          Get Coached
         </Link>
       </div>
 
@@ -291,7 +288,7 @@ export default function Home() {
                           Edit Brew
                         </button>
                         <button
-                          onClick={() => setRatingBrewId(entry.id)}
+                          onClick={() => router.push(`/coach/brew/${entry.id}`)}
                           className="flex-1 h-10 rounded-xl bg-primary text-background-dark text-sm font-semibold flex items-center justify-center gap-1.5"
                         >
                           <span className="material-symbols-outlined text-sm">psychology</span>
@@ -311,14 +308,6 @@ export default function Home() {
         entry={editEntry}
         open={editBrewId !== null}
         onOpenChange={(o) => { if (!o) setEditBrewId(null); }}
-      />
-
-      <BrewRatingSheet
-        brewId={ratingBrewId ?? ""}
-        open={ratingBrewId !== null}
-        onOpenChange={(o) => { if (!o) setRatingBrewId(null); }}
-        initialRating={ratingEntry?.rating}
-        initialFeedback={ratingEntry?.coachingFeedback}
       />
     </main>
   );

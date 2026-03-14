@@ -8,7 +8,6 @@ import { getRecipeByIdApi, postBrewApi, type GuidedRecipe } from "@/lib/api";
 import { useBrewSessionStore } from "@/lib/brewSessionStore";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
-import { BrewRatingSheet } from "@/components/BrewRatingSheet";
 import { BrewTimePicker } from "@/components/BrewTimePicker";
 
 type Phase = "preview" | "brewing" | "confirm" | "complete";
@@ -90,7 +89,6 @@ export default function GuidedRecipeDetailPage() {
 
   // Complete phase state
   const [completedBrewId, setCompletedBrewId] = useState<string | null>(null);
-  const [showRatingSheet, setShowRatingSheet] = useState(false);
 
   const autoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -365,36 +363,25 @@ export default function GuidedRecipeDetailPage() {
 
   if (phase === "complete") {
     return (
-      <>
-        <main className="flex-1 flex flex-col items-center justify-center px-6 gap-4 text-center">
-          <div className="w-20 h-20 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center mb-2">
-            <span className="material-symbols-outlined text-5xl text-primary">check_circle</span>
-          </div>
-          <h1 className="text-3xl font-bold text-slate-100">Brew Complete!</h1>
-          <p className="font-mono text-xl text-primary">{confirmBrewTime}</p>
-          <p className="text-sm text-slate-400">Great work. Enjoy your cup.</p>
-
-          {completedBrewId && (
-            <button
-              type="button"
-              onClick={() => setShowRatingSheet(true)}
-              className="w-full max-w-xs bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 mt-4 hover:brightness-110 transition-all"
-            >
-              <span className="material-symbols-outlined">psychology</span>
-              How was that brew?
-            </button>
-          )}
-
-        </main>
+      <main className="flex-1 flex flex-col items-center justify-center px-6 gap-4 text-center">
+        <div className="w-20 h-20 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center mb-2">
+          <span className="material-symbols-outlined text-5xl text-primary">check_circle</span>
+        </div>
+        <h1 className="text-3xl font-bold text-slate-100">Brew Complete!</h1>
+        <p className="font-mono text-xl text-primary">{confirmBrewTime}</p>
+        <p className="text-sm text-slate-400">Great work. Enjoy your cup.</p>
 
         {completedBrewId && (
-          <BrewRatingSheet
-            brewId={completedBrewId}
-            open={showRatingSheet}
-            onOpenChange={setShowRatingSheet}
-          />
+          <button
+            type="button"
+            onClick={() => router.push(`/coach/brew/${completedBrewId}`)}
+            className="w-full max-w-xs bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 mt-4 hover:brightness-110 transition-all"
+          >
+            <span className="material-symbols-outlined">psychology</span>
+            How was that brew?
+          </button>
         )}
-      </>
+      </main>
     );
   }
 
@@ -681,7 +668,7 @@ export default function GuidedRecipeDetailPage() {
                     {/* Step body */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <p className={`text-sm leading-snug ${isCurrent ? "font-bold text-slate-100" : "font-medium text-slate-300"}`}>
+                        <p className={`text-sm leading-snug ${isCurrent ? "font-medium text-slate-100" : "font-medium text-slate-300"}`}>
                           {step.instruction}
                         </p>
                         {step.duration_seconds && (

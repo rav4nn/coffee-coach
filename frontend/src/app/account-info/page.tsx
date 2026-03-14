@@ -24,15 +24,11 @@ const BREW_METHODS: { id: MethodCardId; label: string; icon: string }[] = [
   { id: "south_indian_filter", label: "Filter Kaapi", icon: "filter_alt" },
 ];
 
-const AVATARS = ["avatar_1", "avatar_2", "avatar_3", "avatar_4", "avatar_5"];
-
 export default function AccountInfoPage() {
   const { data: session } = useSession();
   const router = useRouter();
 
-  const [avatar, setAvatar] = useState<string | null>(null);
   const [equipment, setEquipment] = useState<MethodCardId[]>([]);
-  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +38,6 @@ export default function AccountInfoPage() {
     fetch("/api/users/me", { cache: "no-store" })
       .then((r) => r.json())
       .then((user) => {
-        setAvatar(user.avatar ?? null);
         if (Array.isArray(user.primary_equipment)) {
           setEquipment(user.primary_equipment as MethodCardId[]);
         }
@@ -67,7 +62,6 @@ export default function AccountInfoPage() {
       await patchUserProfileApi({
         name: profile.name ?? session?.user?.name ?? "Brewer",
         age: profile.age ?? 0,
-        avatar: avatar ?? "avatar_1",
         primary_equipment: equipment,
       });
       setSaved(true);
@@ -95,54 +89,23 @@ export default function AccountInfoPage() {
       <div className="flex pt-4 px-6 pb-4">
         <div className="flex w-full flex-col gap-4 items-center">
           <div className="flex gap-4 flex-col items-center">
-            {/* Avatar — show Google photo if no custom avatar is saved */}
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full border-2 border-primary ring-4 ring-primary/10 shadow-xl overflow-hidden">
-                {!avatar && session?.user?.image ? (
-                  <Image
-                    src={session.user.image}
-                    alt="Google profile photo"
-                    width={96}
-                    height={96}
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <Image
-                    src={`/avatars/${avatar ?? "avatar_1"}.png`}
-                    alt="Selected avatar"
-                    width={96}
-                    height={96}
-                    className="w-full h-full object-cover"
-                  />
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAvatarPicker((v) => !v)}
-                className="absolute bottom-0 right-0 bg-primary text-background-dark p-1.5 rounded-full border-2 border-background-dark"
-                aria-label="Change avatar"
-              >
-                <span className="material-symbols-outlined text-sm block">photo_camera</span>
-              </button>
+            {/* Profile photo from Google */}
+            <div className="w-24 h-24 rounded-full border-2 border-primary ring-4 ring-primary/10 shadow-xl overflow-hidden flex items-center justify-center bg-primary/20">
+              {session?.user?.image ? (
+                <Image
+                  src={session.user.image}
+                  alt="Profile photo"
+                  width={96}
+                  height={96}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span className="text-3xl font-bold text-primary">
+                  {(session?.user?.name ?? "?").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                </span>
+              )}
             </div>
-
-            {/* Avatar picker */}
-            {showAvatarPicker && (
-              <div className="flex flex-wrap justify-center gap-3">
-                {AVATARS.map((id) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => { setAvatar(id); setShowAvatarPicker(false); }}
-                    className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all ${(avatar ?? "avatar_1") === id ? "border-primary scale-110" : "border-transparent"}`}
-                    aria-label={id}
-                  >
-                    <Image src={`/avatars/${id}.png`} alt={id} width={48} height={48} className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>

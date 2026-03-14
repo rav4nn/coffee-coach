@@ -242,7 +242,7 @@ export async function postCoachingApi(payload: {
 export type UserProfileUpdatePayload = {
   name: string;
   age: number;
-  avatar: string;
+  avatar?: string;
   primary_equipment: string[];
 };
 

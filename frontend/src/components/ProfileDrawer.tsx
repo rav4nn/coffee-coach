@@ -84,8 +84,8 @@ export function ProfileDrawer({ open, onClose }: ProfileDrawerProps) {
 
           {/* Avatar */}
           <div className="w-24 h-24 rounded-full border-2 border-primary overflow-hidden mb-4 flex items-center justify-center bg-primary/20">
-            {user?.avatar ? (
-              <Image src={`/avatars/${user.avatar}.png`} alt={displayName} width={96} height={96} className="w-full h-full object-cover" />
+            {user?.image ? (
+              <Image src={user.image} alt={displayName} width={96} height={96} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             ) : (
               <span className="text-3xl font-bold text-primary">{getInitials(displayName)}</span>
             )}

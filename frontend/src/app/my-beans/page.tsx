@@ -43,6 +43,7 @@ export default function MyBeansPage() {
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [filterTab, setFilterTab] = useState<FilterTab>("all");
+  const [deletingBeanId, setDeletingBeanId] = useState<string | null>(null);
 
   const form = useForm<AddBeanFormValues>({
     resolver: zodResolver(addBeanSchema),
@@ -242,7 +243,7 @@ export default function MyBeansPage() {
             </div>
             <div className="flex gap-2 pt-2 border-t border-primary/10">
               <button
-                onClick={() => deleteBean(bean.id)}
+                onClick={() => setDeletingBeanId(bean.id)}
                 className="flex-1 h-9 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center justify-center gap-2 hover:bg-primary/20 transition-colors"
                 aria-label={`Delete ${bean.beanName}`}
               >
@@ -261,6 +262,40 @@ export default function MyBeansPage() {
           );
         })}
       </div>
+
+      {/* Delete confirmation overlay */}
+      {deletingBeanId && (() => {
+        const bean = userBeans.find((b) => b.id === deletingBeanId);
+        return (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-background-dark/80 backdrop-blur-sm p-4">
+            <div className="w-full max-w-sm rounded-2xl border border-primary/20 bg-[#2a1d11] p-6 shadow-2xl">
+              <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-primary">delete</span>
+              </div>
+              <h2 className="text-xl font-bold text-slate-100 mb-1">Remove bean?</h2>
+              <p className="text-sm text-slate-400 mb-6">
+                {bean ? `"${bean.roaster} — ${bean.beanName}" will be removed from your collection.` : "This bean will be removed from your collection."}
+              </p>
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={() => { deleteBean(deletingBeanId); setDeletingBeanId(null); }}
+                  className="w-full bg-primary text-background-dark font-bold py-3 rounded-xl hover:brightness-110 transition-all"
+                >
+                  Yes, Remove
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeletingBeanId(null)}
+                  className="w-full border border-slate-600 text-slate-400 font-medium py-3 rounded-xl hover:text-slate-200 hover:border-slate-400 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Floating Add Button + Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>

@@ -45,21 +45,14 @@ export function AppHeader() {
             className="w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/20 flex items-center justify-center flex-shrink-0 hover:border-primary/60 hover:bg-primary/30 transition-colors overflow-hidden"
             aria-label="Open profile"
           >
-            {user?.avatar ? (
-              <Image
-                src={`/avatars/${user.avatar}.png`}
-                alt={user.name ?? "Profile"}
-                width={40}
-                height={40}
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : user?.image ? (
+            {user?.image ? (
               <Image
                 src={user.image}
                 alt={user.name ?? "Profile"}
                 width={40}
                 height={40}
                 className="w-full h-full object-cover rounded-full"
+                referrerPolicy="no-referrer"
               />
             ) : (
               <span className="text-sm font-bold text-primary">{getInitials(user?.name)}</span>

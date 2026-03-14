@@ -22,7 +22,6 @@ const FIRST_REAL = 1; // index of first real slide in SLIDES
 export default function LoginPage() {
   const [index, setIndex] = useState(FIRST_REAL);
   const [animated, setAnimated] = useState(true);
-  const dotIndex = ((index - FIRST_REAL) + HERO_IMAGES.length) % HERO_IMAGES.length;
 
   const indexRef = useRef(index);
   indexRef.current = index;
@@ -75,20 +74,6 @@ export default function LoginPage() {
           ))}
         </div>
 
-        {/* Dot indicators */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-10">
-          {HERO_IMAGES.map((_, i) => (
-            <div
-              key={i}
-              className="rounded-full transition-all duration-300"
-              style={{
-                width: i === dotIndex ? "16px" : "6px",
-                height: "6px",
-                background: i === dotIndex ? "#f49d25" : "rgba(255,255,255,0.3)",
-              }}
-            />
-          ))}
-        </div>
       </div>
 
       {/* Content */}

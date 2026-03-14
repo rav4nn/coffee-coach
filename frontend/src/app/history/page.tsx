@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
+import { useRouter } from "next/navigation";
+
 import { BrewEditSheet } from "@/components/BrewEditSheet";
-import { BrewRatingSheet } from "@/components/BrewRatingSheet";
 import { useBeansStore } from "@/lib/beansStore";
 import { useBrewHistoryStore, type FreestyleBrewEntry } from "@/lib/brewHistoryStore";
 
@@ -212,8 +213,8 @@ function BrewCard({ entry, beanName, beanRatings, isOpen, onToggle, onEdit, onCo
 
 export default function JournalPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [expandedId, setExpandedId] = useState<string | null>(searchParams.get("expand"));
-  const [ratingBrewId, setRatingBrewId] = useState<string | null>(null);
   const [editBrewId, setEditBrewId] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<FilterTab>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("date");
@@ -296,8 +297,6 @@ export default function JournalPage() {
     return Array.from(map.values()).sort((a, b) => b.entries.length - a.entries.length);
   }, [filtered, beans]);
 
-  const ratingEntry = ratingBrewId ? entries.find((e) => e.id === ratingBrewId) : null;
-
   function renderCard(entry: FreestyleBrewEntry) {
     const bean = beans.find((b) => b.id === entry.beanId);
     const beanName = bean ? `${bean.roaster} — ${bean.beanName}` : "Unknown Bean";
@@ -311,7 +310,7 @@ export default function JournalPage() {
         isOpen={expandedId === entry.id}
         onToggle={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
         onEdit={() => setEditBrewId(entry.id)}
-        onCoach={() => setRatingBrewId(entry.id)}
+        onCoach={() => router.push(`/coach/brew/${entry.id}`)}
       />
     );
   }
@@ -423,15 +422,6 @@ export default function JournalPage() {
         entry={editBrewId ? entries.find((e) => e.id === editBrewId) ?? null : null}
         open={editBrewId !== null}
         onOpenChange={(o) => { if (!o) setEditBrewId(null); }}
-      />
-
-      <BrewRatingSheet
-        brewId={ratingBrewId ?? ""}
-        open={ratingBrewId !== null}
-        onOpenChange={(o) => { if (!o) setRatingBrewId(null); }}
-        initialRating={ratingEntry?.rating}
-        initialFeedback={ratingEntry?.coachingFeedback}
-        initialTastingNotes={ratingEntry?.tastingNotes}
       />
     </section>
   );
