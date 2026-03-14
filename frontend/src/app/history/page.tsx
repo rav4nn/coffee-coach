@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
 import { BrewEditSheet } from "@/components/BrewEditSheet";
@@ -21,15 +22,15 @@ function methodLabel(methodId: string | null | undefined) {
   return methodId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function methodIcon(methodId: string | null | undefined) {
-  if (!methodId) return "coffee";
-  if (methodId.includes("pour_over")) return "water_drop";
-  if (methodId.includes("aeropress")) return "compress";
-  if (methodId.includes("french_press")) return "coffee_maker";
-  if (methodId.includes("moka_pot")) return "soup_kitchen";
-  if (methodId.includes("cold_brew")) return "ac_unit";
-  if (methodId.includes("south_indian_filter")) return "filter_alt";
-  return "coffee";
+function methodImage(methodId: string | null | undefined): string {
+  if (!methodId) return "/methods/pour_over.png";
+  if (methodId.includes("pour_over") || methodId === "v60" || methodId === "chemex" || methodId === "kalita_wave" || methodId === "clever_dripper" || methodId === "hario_switch" || methodId === "wilfa_pour_over" || methodId === "origami_dripper") return "/methods/pour_over.png";
+  if (methodId.includes("aeropress")) return "/methods/aeropress.png";
+  if (methodId.includes("french_press")) return "/methods/french_press.png";
+  if (methodId.includes("moka_pot")) return "/methods/moka_pot.png";
+  if (methodId.includes("cold_brew")) return "/methods/cold_brew.png";
+  if (methodId.includes("south_indian_filter")) return "/methods/filter.png";
+  return "/methods/pour_over.png";
 }
 
 function formatTime(dateStr: string) {
@@ -66,7 +67,7 @@ interface BrewCardProps {
 }
 
 function BrewCard({ entry, beanName, isOpen, onToggle, onEdit }: BrewCardProps) {
-  const icon = methodIcon(entry.methodId);
+  const imgSrc = methodImage(entry.methodId);
   const chips = entry.tastingNotes ?? [];
   const visibleChips = chips.slice(0, 3);
   const extraChips = chips.length - visibleChips.length;
@@ -78,8 +79,8 @@ function BrewCard({ entry, beanName, isOpen, onToggle, onEdit }: BrewCardProps) 
       {/* Card header row — tap anywhere except pencil to toggle */}
       <div className="flex items-center gap-3 px-4 py-3">
         <button type="button" onClick={onToggle} className="flex items-center gap-3 flex-1 min-w-0 text-left">
-          <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-primary text-xl">{icon}</span>
+          <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 overflow-hidden">
+            <Image src={imgSrc} alt="" width={32} height={32} className="w-8 h-8 object-contain" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-slate-100 truncate">{h1}</p>

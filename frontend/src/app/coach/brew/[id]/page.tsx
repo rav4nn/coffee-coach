@@ -15,15 +15,15 @@ function methodLabel(methodId: string | null | undefined) {
   return methodId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function methodIcon(methodId: string | null | undefined) {
-  if (!methodId) return "coffee";
-  if (methodId.includes("pour_over")) return "water_drop";
-  if (methodId.includes("aeropress")) return "compress";
-  if (methodId.includes("french_press")) return "coffee_maker";
-  if (methodId.includes("moka_pot")) return "soup_kitchen";
-  if (methodId.includes("cold_brew")) return "ac_unit";
-  if (methodId.includes("south_indian_filter")) return "filter_alt";
-  return "coffee";
+function methodImage(methodId: string | null | undefined): string {
+  if (!methodId) return "/methods/pour_over.png";
+  if (methodId.includes("pour_over") || methodId === "v60" || methodId === "chemex" || methodId === "kalita_wave" || methodId === "clever_dripper" || methodId === "hario_switch" || methodId === "wilfa_pour_over" || methodId === "origami_dripper") return "/methods/pour_over.png";
+  if (methodId.includes("aeropress")) return "/methods/aeropress.png";
+  if (methodId.includes("french_press")) return "/methods/french_press.png";
+  if (methodId.includes("moka_pot")) return "/methods/moka_pot.png";
+  if (methodId.includes("cold_brew")) return "/methods/cold_brew.png";
+  if (methodId.includes("south_indian_filter")) return "/methods/filter.png";
+  return "/methods/pour_over.png";
 }
 
 export default function BrewCoachPage() {
@@ -167,7 +167,7 @@ export default function BrewCoachPage() {
   }
 
   const beanName = bean ? `${bean.roaster} — ${bean.beanName}` : "Unknown Bean";
-  const icon = methodIcon(brew.methodId);
+  const imgSrc = methodImage(brew.methodId);
 
   return (
     <main className="overflow-y-auto pb-28">
@@ -198,8 +198,8 @@ export default function BrewCoachPage() {
         {/* Brew Parameters Summary */}
         <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-primary text-lg">{icon}</span>
+            <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 overflow-hidden">
+              <Image src={imgSrc} alt="" width={28} height={28} className="w-7 h-7 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-slate-100 truncate">{beanName}</p>

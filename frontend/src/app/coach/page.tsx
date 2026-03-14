@@ -21,15 +21,15 @@ function methodLabel(methodId: string | null | undefined) {
   return labels[methodId] ?? methodId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function methodIcon(methodId: string | null | undefined) {
-  if (!methodId) return "coffee";
-  if (methodId.includes("pour_over") || methodId === "v60" || methodId === "chemex" || methodId === "kalita_wave" || methodId === "clever_dripper" || methodId === "hario_switch") return "water_drop";
-  if (methodId.includes("aeropress")) return "compress";
-  if (methodId.includes("french_press")) return "coffee_maker";
-  if (methodId.includes("moka_pot")) return "soup_kitchen";
-  if (methodId.includes("cold_brew")) return "ac_unit";
-  if (methodId.includes("south_indian_filter")) return "filter_alt";
-  return "coffee";
+function methodImage(methodId: string | null | undefined): string {
+  if (!methodId) return "/methods/pour_over.png";
+  if (methodId.includes("pour_over") || methodId === "v60" || methodId === "chemex" || methodId === "kalita_wave" || methodId === "clever_dripper" || methodId === "hario_switch" || methodId === "wilfa_pour_over" || methodId === "origami_dripper") return "/methods/pour_over.png";
+  if (methodId.includes("aeropress")) return "/methods/aeropress.png";
+  if (methodId.includes("french_press")) return "/methods/french_press.png";
+  if (methodId.includes("moka_pot")) return "/methods/moka_pot.png";
+  if (methodId.includes("cold_brew")) return "/methods/cold_brew.png";
+  if (methodId.includes("south_indian_filter")) return "/methods/filter.png";
+  return "/methods/pour_over.png";
 }
 
 function ratio(coffeeGrams: number, waterMl: number) {
@@ -176,24 +176,24 @@ function CoachedBrewCard({ entry, beanName, onClick }: { entry: FreestyleBrewEnt
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-xl border border-primary/15 bg-primary/5 p-3 text-left hover:border-primary/30 transition-colors"
+      className="w-full rounded-xl border border-primary/15 bg-primary/5 p-4 text-left hover:border-primary/30 transition-colors"
     >
-      <div className="flex gap-3">
+      <div className="flex gap-4 items-start">
         <Image
           src="/coach/img3_whistle_blowing.png"
           alt="Coach"
-          width={28}
-          height={28}
-          className="w-7 h-7 object-contain shrink-0 mt-0.5"
+          width={56}
+          height={56}
+          className="w-14 h-14 object-contain shrink-0 drop-shadow-md"
         />
         <div className="flex-1 min-w-0">
           <p className="text-sm text-slate-200 leading-relaxed">{entry.coachingFeedback}</p>
-          <p className="text-[10px] text-slate-500 mt-1.5">
-            {methodLabel(entry.methodId)} · {beanName} · {formatDate(entry.createdAt)}
+          <p className="text-[10px] text-slate-500 mt-2">
+            {beanName} · {ratio(entry.coffeeGrams, entry.waterMl)} · {formatDate(entry.createdAt)}
             {typeof entry.rating === "number" && ` · ${entry.rating}/10`}
           </p>
         </div>
-        <span className="material-symbols-outlined text-primary/30 text-base shrink-0 mt-0.5">chevron_right</span>
+        <span className="material-symbols-outlined text-primary/30 text-base shrink-0 mt-4">chevron_right</span>
       </div>
     </button>
   );
@@ -204,28 +204,28 @@ function UncoachedBrewCard({ entry, beanName, onClick }: { entry: FreestyleBrewE
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-left hover:border-amber-500/50 transition-colors"
+      className="w-full rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-left hover:border-amber-500/50 transition-colors"
     >
-      <div className="flex gap-3">
-        <div className="relative shrink-0 mt-0.5">
+      <div className="flex gap-4 items-start">
+        <div className="relative shrink-0">
           <Image
             src="/coach/img3_holding_whistle.png"
             alt="Coach"
-            width={28}
-            height={28}
-            className="w-7 h-7 object-contain"
+            width={56}
+            height={56}
+            className="w-14 h-14 object-contain drop-shadow-md"
           />
-          <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-400 rounded-full border border-amber-500/30" />
+          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 rounded-full border-2 border-amber-500/30" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-amber-200">Rate this brew and get coached!</p>
-          <p className="text-[10px] text-slate-500 mt-1">
-            {methodLabel(entry.methodId)} · {beanName} · {ratio(entry.coffeeGrams, entry.waterMl)} · {formatDate(entry.createdAt)}
+          <p className="text-[10px] text-slate-500 mt-1.5">
+            {beanName} · {ratio(entry.coffeeGrams, entry.waterMl)} · {formatDate(entry.createdAt)}
           </p>
+          <span className="inline-block mt-2 text-[10px] px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 font-bold">
+            Get Coached
+          </span>
         </div>
-        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold self-center shrink-0 whitespace-nowrap">
-          Get Coached
-        </span>
       </div>
     </button>
   );
@@ -344,11 +344,10 @@ export default function CoachPage() {
         <section className="px-4 py-3 space-y-5">
           {methodKeys.map((methodId) => {
             const methodBrews = brewsByMethod[methodId];
-            const icon = methodIcon(methodId);
             return (
               <div key={methodId}>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-primary text-base">{icon}</span>
+                  <Image src={methodImage(methodId)} alt={methodLabel(methodId)} width={20} height={20} className="w-5 h-5 object-contain" />
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{methodLabel(methodId)}</h3>
                 </div>
                 <div className="space-y-2">
