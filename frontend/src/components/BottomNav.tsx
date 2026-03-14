@@ -64,9 +64,9 @@ export function BottomNav() {
 
   return (
     <nav className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-phone border-t border-primary/10 bg-background-dark/95 backdrop-blur-md px-4 pb-6 pt-3 z-50 transition-transform duration-300 ease-in-out ${isBrewingActive ? "translate-y-full" : "translate-y-0"}`}>
-      <div className="flex justify-between items-end px-2">
+      <div className="flex items-end justify-center gap-8">
         {/* Left items */}
-        <div className="flex gap-6">
+        <div className="flex gap-4">
           {LEFT_ITEMS.map((item) => <NavItem key={item.href} {...item} />)}
         </div>
 
@@ -89,7 +89,7 @@ export function BottomNav() {
         </div>
 
         {/* Right items */}
-        <div className="flex gap-6">
+        <div className="flex gap-4">
           {RIGHT_ITEMS.map((item) => <NavItem key={item.href} {...item} />)}
         </div>
       </div>
