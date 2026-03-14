@@ -53,38 +53,16 @@ function ratio(coffeeGrams: number, waterMl: number) {
   return `1:${Math.round(waterMl / coffeeGrams)} Ratio`;
 }
 
-function RatingSparkline({ ratings }: { ratings: number[] }) {
-  if (ratings.length === 0) return null;
-  return (
-    <div
-      className="flex flex-col items-end gap-0.5"
-      title="Last 5 brew ratings (green ≥ 8 · orange 5–7 · red < 5)"
-    >
-      <div className="flex items-end gap-0.5">
-        {ratings.slice(-5).map((r, i) => (
-          <div
-            key={i}
-            className={`w-1.5 rounded-sm ${r >= 8 ? "bg-green-400" : r >= 5 ? "bg-primary" : "bg-red-400"}`}
-            style={{ height: `${4 + (r / 10) * 10}px` }}
-          />
-        ))}
-      </div>
-      <p className="text-[8px] text-slate-600 leading-none">ratings</p>
-    </div>
-  );
-}
-
 interface BrewCardProps {
   entry: FreestyleBrewEntry;
   beanName: string;
-  beanRatings: number[];
   isOpen: boolean;
   onToggle: () => void;
   onEdit: () => void;
   onCoach: () => void;
 }
 
-function BrewCard({ entry, beanName, beanRatings, isOpen, onToggle, onEdit, onCoach }: BrewCardProps) {
+function BrewCard({ entry, beanName, isOpen, onToggle, onEdit, onCoach }: BrewCardProps) {
   const icon = methodIcon(entry.methodId);
   const chips = entry.tastingNotes ?? [];
   const visibleChips = chips.slice(0, 3);
@@ -126,7 +104,7 @@ function BrewCard({ entry, beanName, beanRatings, isOpen, onToggle, onEdit, onCo
             </div>
           )}
 
-          {/* Rating + sparkline */}
+          {/* Rating + favourite */}
           <div className="flex items-center gap-2 mt-0.5">
             {typeof entry.rating === "number" && (
               <span className="flex items-center gap-0.5 text-xs text-primary font-semibold">
@@ -134,7 +112,6 @@ function BrewCard({ entry, beanName, beanRatings, isOpen, onToggle, onEdit, onCo
                 {entry.rating}/10
               </span>
             )}
-            <RatingSparkline ratings={beanRatings} />
             {entry.isFavourite && (
               <span className="material-symbols-outlined text-primary" style={{ fontSize: "13px" }}>favorite</span>
             )}
@@ -263,18 +240,6 @@ export default function JournalPage() {
     });
   }, [recentFirst, filterTab, search, beans, sevenDaysAgo]);
 
-  // Per-bean rating history (all entries, not just filtered) for sparklines
-  const beanRatingsMap = useMemo(() => {
-    const map = new Map<string, number[]>();
-    const sorted = [...entries].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-    for (const e of sorted) {
-      if (!e.beanId || typeof e.rating !== "number") continue;
-      if (!map.has(e.beanId)) map.set(e.beanId, []);
-      map.get(e.beanId)!.push(e.rating);
-    }
-    return map;
-  }, [entries]);
-
   const dateGroups = useMemo(() => {
     const map = new Map<string, FreestyleBrewEntry[]>();
     for (const entry of filtered) {
@@ -300,13 +265,11 @@ export default function JournalPage() {
   function renderCard(entry: FreestyleBrewEntry) {
     const bean = beans.find((b) => b.id === entry.beanId);
     const beanName = bean ? `${bean.roaster} — ${bean.beanName}` : "Unknown Bean";
-    const beanRatings = entry.beanId ? (beanRatingsMap.get(entry.beanId) ?? []) : [];
     return (
       <BrewCard
         key={entry.id}
         entry={entry}
         beanName={beanName}
-        beanRatings={beanRatings}
         isOpen={expandedId === entry.id}
         onToggle={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
         onEdit={() => setEditBrewId(entry.id)}
@@ -401,15 +364,12 @@ export default function JournalPage() {
               : null;
             return (
               <div key={beanName}>
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <p className="text-sm font-bold text-slate-100">{beanName}</p>
-                    <p className="text-xs text-slate-500">
-                      {beanEntries.length} brew{beanEntries.length !== 1 ? "s" : ""}
-                      {avgRating ? ` · avg ${avgRating}/10` : ""}
-                    </p>
-                  </div>
-                  {ratings.length > 1 && <RatingSparkline ratings={ratings} />}
+                <div className="mb-2">
+                  <p className="text-sm font-bold text-slate-100">{beanName}</p>
+                  <p className="text-xs text-slate-500">
+                    {beanEntries.length} brew{beanEntries.length !== 1 ? "s" : ""}
+                    {avgRating ? ` · avg ${avgRating}/10` : ""}
+                  </p>
                 </div>
                 <div className="space-y-2">{beanEntries.map(renderCard)}</div>
               </div>

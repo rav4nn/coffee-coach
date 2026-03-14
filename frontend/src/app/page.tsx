@@ -50,7 +50,7 @@ export default function Home() {
         <div className="flex flex-col items-center px-6 pt-8 pb-2">
           <div className="w-52 h-52">
             <Image
-              src="/coach/img3_thumbs_whistle.png"
+              src="/coach/img3_hero_thumbs_up.png"
               alt="Coffee Coach"
               width={208}
               height={208}
