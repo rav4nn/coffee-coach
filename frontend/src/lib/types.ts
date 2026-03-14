@@ -13,6 +13,7 @@ export type UserBean = {
   beanName: string;
   roastDate: string | null;
   isPreGround: boolean;
+  imageUrl: string | null;
 };
 
 export type RecipeSummary = {

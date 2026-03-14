@@ -24,6 +24,7 @@ function normalize(beans: Awaited<ReturnType<typeof getUserBeansApi>>): UserBean
     roaster: bean.roaster,
     roastDate: bean.roast_date ?? null,
     isPreGround: bean.is_pre_ground,
+    imageUrl: (bean as { image_url?: string | null }).image_url ?? null,
   }));
 }
 
@@ -54,6 +55,7 @@ export const useBeansStore = create<BeansStore>()((set, get) => ({
           roaster: saved.roaster,
           roastDate: saved.roast_date ?? null,
           isPreGround: saved.is_pre_ground,
+          imageUrl: (saved as { image_url?: string | null }).image_url ?? null,
         },
         ...state.userBeans.filter((item) => item.id !== saved.id),
       ],

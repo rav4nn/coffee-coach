@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Link from "next/link";
+import Image from "next/image";
 
 import { SearchableCombobox } from "@/components/SearchableCombobox";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -191,14 +192,25 @@ export default function MyBeansPage() {
             { id: "2", roaster: "Third Wave", beanName: "El Diablo Blend", roastDate: "2023-11-12", isPreGround: true }
         */}
         {filteredBeans.map((bean) => {
-          const roastFreshness = (() => {
-            if (!bean.roastDate) return null;
-            const days = Math.floor((Date.now() - new Date(bean.roastDate).getTime()) / 86_400_000);
-            if (days < 7) return { label: "Resting", color: "bg-sky-400/20 text-sky-400 border-sky-400/30" };
-            if (days <= 21) return { label: "Peak Fresh", color: "bg-green-400/20 text-green-400 border-green-400/30" };
-            if (days <= 45) return { label: "Good", color: "bg-primary/20 text-primary border-primary/30" };
-            return { label: "Aging", color: "bg-slate-500/20 text-slate-400 border-slate-500/30" };
-          })();
+          const days = bean.roastDate
+            ? Math.floor((Date.now() - new Date(bean.roastDate).getTime()) / 86_400_000)
+            : null;
+
+          // Freshness zones: 0–7 Resting, 7–21 Peak Fresh, 21–45 Good, 45+ Aging
+          // Track displayed over 60 days max
+          const TRACK_MAX = 60;
+          const clampedDays = days !== null ? Math.min(days, TRACK_MAX) : null;
+          const pct = clampedDays !== null ? (clampedDays / TRACK_MAX) * 100 : null;
+
+          const freshness = days === null
+            ? null
+            : days < 7
+            ? { label: "Resting", sublabel: "Let it degas a few more days", color: "text-sky-400", trackColor: "bg-sky-400" }
+            : days <= 21
+            ? { label: "Peak Fresh", sublabel: "Perfect window — brew it now", color: "text-green-400", trackColor: "bg-green-400" }
+            : days <= 45
+            ? { label: "Good", sublabel: "Still tasty, flavours softening", color: "text-primary", trackColor: "bg-primary" }
+            : { label: "Aging", sublabel: "Past peak — use it up soon", color: "text-slate-400", trackColor: "bg-slate-400" };
 
           return (
           <article
@@ -206,16 +218,20 @@ export default function MyBeansPage() {
             className="flex flex-col gap-3 rounded-xl bg-primary/5 border border-primary/10 p-4"
           >
             <div className="flex gap-4">
-              {/* Roast freshness indicator */}
-              <div className="w-24 h-24 rounded-lg bg-primary/10 border border-primary/20 flex flex-col items-center justify-center shrink-0 gap-1.5">
-                <span className="material-symbols-outlined text-3xl text-primary/50">coffee</span>
-                {roastFreshness && (
-                  <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full border ${roastFreshness.color}`}>
-                    {roastFreshness.label}
-                  </span>
+              <div className="w-16 h-16 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 overflow-hidden">
+                {bean.imageUrl ? (
+                  <Image
+                    src={bean.imageUrl}
+                    alt={bean.beanName}
+                    width={64}
+                    height={64}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="material-symbols-outlined text-3xl text-primary/50">coffee</span>
                 )}
               </div>
-              <div className="flex flex-col justify-between py-1 flex-1 min-w-0">
+              <div className="flex flex-col justify-between py-0.5 flex-1 min-w-0">
                 <div>
                   <div className="flex justify-between items-start gap-2">
                     <p className="text-primary text-xs font-bold uppercase tracking-wider truncate">
@@ -231,7 +247,7 @@ export default function MyBeansPage() {
                       {bean.isPreGround ? "GROUND" : "WHOLE"}
                     </span>
                   </div>
-                  <p className="text-slate-100 text-lg font-bold leading-tight mt-0.5 truncate">
+                  <p className="text-slate-100 text-base font-bold leading-tight mt-0.5 truncate">
                     {bean.beanName}
                   </p>
                 </div>
@@ -241,6 +257,35 @@ export default function MyBeansPage() {
                 </div>
               </div>
             </div>
+
+            {/* Freshness slider */}
+            {freshness && pct !== null && days !== null && (
+              <div className="pt-1 pb-0.5">
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <span className={`text-xs font-bold ${freshness.color}`}>{freshness.label}</span>
+                  <span className="text-[10px] text-slate-500">{days}d since roast</span>
+                </div>
+                {/* Track */}
+                <div className="relative h-2 rounded-full bg-primary/10 overflow-hidden">
+                  {/* Zone markers */}
+                  <div className="absolute inset-y-0 left-0 bg-sky-400/25 rounded-full" style={{ width: `${(7 / TRACK_MAX) * 100}%` }} />
+                  <div className="absolute inset-y-0 bg-green-400/25" style={{ left: `${(7 / TRACK_MAX) * 100}%`, width: `${(14 / TRACK_MAX) * 100}%` }} />
+                  <div className="absolute inset-y-0 bg-primary/25" style={{ left: `${(21 / TRACK_MAX) * 100}%`, width: `${(24 / TRACK_MAX) * 100}%` }} />
+                  <div className="absolute inset-y-0 bg-slate-500/20 rounded-r-full" style={{ left: `${(45 / TRACK_MAX) * 100}%`, right: 0 }} />
+                  {/* Fill up to current position */}
+                  <div className={`absolute inset-y-0 left-0 rounded-full ${freshness.trackColor}`} style={{ width: `${pct}%`, opacity: 0.9 }} />
+                </div>
+                {/* Zone labels */}
+                <div className="flex justify-between mt-1" style={{ fontSize: "9px" }}>
+                  <span className="text-sky-400/60 font-semibold">Rest</span>
+                  <span className="text-green-400/60 font-semibold">Peak</span>
+                  <span className="text-primary/60 font-semibold">Good</span>
+                  <span className="text-slate-500 font-semibold">Aging</span>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1 italic">{freshness.sublabel}</p>
+              </div>
+            )}
+
             <div className="flex gap-2 pt-2 border-t border-primary/10">
               <button
                 onClick={() => setDeletingBeanId(bean.id)}
