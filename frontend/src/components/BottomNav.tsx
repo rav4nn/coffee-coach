@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 import { useBrewSessionStore } from "@/lib/brewSessionStore";
 
-const NAV_ITEMS = [
+const LEFT_ITEMS = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/log-brew", label: "Log Brew", icon: "add_circle" },
+];
+
+const RIGHT_ITEMS = [
   { href: "/my-beans", label: "My Beans", icon: "nutrition" },
   { href: "/history", label: "Journal", icon: "menu_book" },
 ];
@@ -16,35 +20,60 @@ export function BottomNav() {
   const pathname = usePathname();
   const isBrewingActive = useBrewSessionStore((state) => state.isBrewingActive);
 
+  function isActive(href: string) {
+    return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+  }
+
+  function NavItem({ href, label, icon }: { href: string; label: string; icon: string }) {
+    const active = isActive(href);
+    return (
+      <Link
+        href={href}
+        className={`flex flex-col items-center gap-1 ${active ? "text-primary" : "text-slate-500"}`}
+      >
+        <span
+          className="material-symbols-outlined"
+          style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
+        >
+          {icon}
+        </span>
+        <span className={`text-[10px] ${active ? "font-bold" : "font-medium"}`}>{label}</span>
+      </Link>
+    );
+  }
+
+  const coachActive = isActive("/coach");
+
   return (
     <nav className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-phone border-t border-primary/10 bg-background-dark/95 backdrop-blur-md px-4 pb-6 pt-3 z-50 transition-transform duration-300 ease-in-out ${isBrewingActive ? "translate-y-full" : "translate-y-0"}`}>
-      <div className="flex justify-between items-center px-6">
-        {NAV_ITEMS.map((item) => {
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+      <div className="flex justify-between items-end px-2">
+        {/* Left items */}
+        <div className="flex gap-6">
+          {LEFT_ITEMS.map((item) => <NavItem key={item.href} {...item} />)}
+        </div>
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center gap-1 ${
-                active ? "text-primary" : "text-slate-500"
-              }`}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
-              >
-                {item.icon}
-              </span>
-              <span className={`text-[10px] ${active ? "font-bold" : "font-medium"}`}>
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+        {/* Centre Coach FAB */}
+        <div className="flex flex-col items-center -mt-8 relative">
+          <Link href="/coach" className="flex flex-col items-center gap-1">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 transition-colors ${coachActive ? "bg-primary" : "bg-primary/80"}`}>
+              <Image
+                src="/coach/img3_whistle_blowing.png"
+                alt="Coach"
+                width={48}
+                height={48}
+                className="w-full h-full object-contain p-1"
+              />
+            </div>
+            <span className={`text-[10px] mt-0.5 ${coachActive ? "text-primary font-bold" : "text-slate-400 font-medium"}`}>
+              Coach
+            </span>
+          </Link>
+        </div>
+
+        {/* Right items */}
+        <div className="flex gap-6">
+          {RIGHT_ITEMS.map((item) => <NavItem key={item.href} {...item} />)}
+        </div>
       </div>
     </nav>
   );

@@ -86,66 +86,66 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
         <p className="text-xl font-bold text-slate-100 mb-6">Update Brew Parameters</p>
 
         <div className="space-y-4">
-          {/* Coffee grams */}
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-              Coffee (g)
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              value={coffeeGrams}
-              onChange={(e) => setCoffeeGrams(e.target.value)}
-              className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
-            />
-          </div>
-
-          {/* Water ml */}
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-              Water (ml)
-            </label>
-            <input
-              type="number"
-              step="1"
-              value={waterMl}
-              onChange={(e) => setWaterMl(e.target.value)}
-              className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
-            />
-          </div>
-
-          {/* Water temp (hidden for cold brew) */}
-          {!isColdBrew && (
+          {/* Coffee + Water side by side */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                Water Temperature (°C)
+                Coffee (g)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={coffeeGrams}
+                onChange={(e) => setCoffeeGrams(e.target.value)}
+                className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                Water (ml)
               </label>
               <input
                 type="number"
                 step="1"
-                value={waterTempC}
-                onChange={(e) => setWaterTempC(e.target.value)}
+                value={waterMl}
+                onChange={(e) => setWaterMl(e.target.value)}
                 className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
               />
             </div>
-          )}
+          </div>
 
-          {/* Grind size */}
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-              Grind Size
-            </label>
-            <select
-              value={grindSize}
-              onChange={(e) => setGrindSize(e.target.value as FreestyleBrewEntry["grindSize"])}
-              className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
-            >
-              {GRIND_SIZES.map((s) => (
-                <option key={s} value={s} className="bg-[#1a0f00]">
-                  {s}
-                </option>
-              ))}
-            </select>
+          {/* Grind + Temp side by side */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                Grind Size
+              </label>
+              <select
+                value={grindSize}
+                onChange={(e) => setGrindSize(e.target.value as FreestyleBrewEntry["grindSize"])}
+                className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
+              >
+                {GRIND_SIZES.map((s) => (
+                  <option key={s} value={s} className="bg-[#1a0f00]">
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {!isColdBrew && (
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                  Temp (°C)
+                </label>
+                <input
+                  type="number"
+                  step="1"
+                  value={waterTempC}
+                  onChange={(e) => setWaterTempC(e.target.value)}
+                  className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
+                />
+              </div>
+            )}
           </div>
 
           {/* Brew time */}

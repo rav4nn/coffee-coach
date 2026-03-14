@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import { BrewEditSheet } from "@/components/BrewEditSheet";
 import { useBeansStore } from "@/lib/beansStore";
@@ -63,10 +63,9 @@ interface BrewCardProps {
   isOpen: boolean;
   onToggle: () => void;
   onEdit: () => void;
-  onCoach: () => void;
 }
 
-function BrewCard({ entry, beanName, isOpen, onToggle, onEdit, onCoach }: BrewCardProps) {
+function BrewCard({ entry, beanName, isOpen, onToggle, onEdit }: BrewCardProps) {
   const icon = methodIcon(entry.methodId);
   const chips = entry.tastingNotes ?? [];
   const visibleChips = chips.slice(0, 3);
@@ -76,52 +75,56 @@ function BrewCard({ entry, beanName, isOpen, onToggle, onEdit, onCoach }: BrewCa
 
   return (
     <article className="rounded-2xl border border-primary/20 bg-primary/5 overflow-hidden">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left"
-      >
-        <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-          <span className="material-symbols-outlined text-primary text-xl">{icon}</span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-baseline justify-between gap-1">
-            <p className="text-sm font-bold text-slate-100 truncate">{h1}</p>
-            <p className="text-xs text-slate-400 shrink-0">{formatTime(entry.createdAt)}</p>
+      {/* Card header row — tap anywhere except pencil to toggle */}
+      <div className="flex items-center gap-3 px-4 py-3">
+        <button type="button" onClick={onToggle} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+          <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-primary text-xl">{icon}</span>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5 truncate">{beanName}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-slate-100 truncate">{h1}</p>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">{beanName}</p>
 
-          {entry.notes && (
-            <p className="text-xs text-slate-300 italic mt-0.5 truncate">"{entry.notes}"</p>
-          )}
+            {entry.notes && (
+              <p className="text-xs text-slate-300 italic mt-0.5 truncate">"{entry.notes}"</p>
+            )}
 
-          {!entry.notes && chips.length > 0 && (
-            <div className="flex items-center gap-1 mt-1 flex-wrap">
-              {visibleChips.map((c) => (
-                <span key={c} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary/80 font-semibold">{c}</span>
-              ))}
-              {extraChips > 0 && (
-                <span className="text-[10px] text-slate-500">+{extraChips} more</span>
+            {!entry.notes && chips.length > 0 && (
+              <div className="flex items-center gap-1 mt-1 flex-wrap">
+                {visibleChips.map((c) => (
+                  <span key={c} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary/80 font-semibold">{c}</span>
+                ))}
+                {extraChips > 0 && (
+                  <span className="text-[10px] text-slate-500">+{extraChips} more</span>
+                )}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-xs text-slate-500">{formatTime(entry.createdAt)}</span>
+              {typeof entry.rating === "number" && (
+                <span className="flex items-center gap-0.5 text-xs text-primary font-semibold">
+                  <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>star</span>
+                  {entry.rating}/10
+                </span>
+              )}
+              {entry.isFavourite && (
+                <span className="material-symbols-outlined text-primary" style={{ fontSize: "13px" }}>favorite</span>
               )}
             </div>
-          )}
-
-          <div className="flex items-center gap-2 mt-0.5">
-            {typeof entry.rating === "number" && (
-              <span className="flex items-center gap-0.5 text-xs text-primary font-semibold">
-                <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>star</span>
-                {entry.rating}/10
-              </span>
-            )}
-            {entry.isFavourite && (
-              <span className="material-symbols-outlined text-primary" style={{ fontSize: "13px" }}>favorite</span>
-            )}
           </div>
-        </div>
-        <span className="material-symbols-outlined text-slate-500 text-lg shrink-0">
-          {isOpen ? "expand_less" : "chevron_right"}
-        </span>
-      </button>
+        </button>
+
+        {/* Edit pencil */}
+        <button
+          type="button"
+          onClick={onEdit}
+          className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 hover:bg-primary/20 transition-colors"
+          aria-label="Edit brew"
+        >
+          <span className="material-symbols-outlined text-primary" style={{ fontSize: "16px" }}>edit</span>
+        </button>
+      </div>
 
       {isOpen && (
         <div className="border-t border-primary/15 px-4 py-4 space-y-4">
@@ -166,23 +169,6 @@ function BrewCard({ entry, beanName, isOpen, onToggle, onEdit, onCoach }: BrewCa
               <p className="text-sm text-slate-300">{entry.coachingFeedback}</p>
             </div>
           )}
-
-          <div className="flex gap-2 pt-1">
-            <button
-              onClick={onEdit}
-              className="flex-1 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-semibold flex items-center justify-center gap-1.5"
-            >
-              <span className="material-symbols-outlined text-sm">edit</span>
-              Edit Brew
-            </button>
-            <button
-              onClick={onCoach}
-              className="flex-1 h-10 rounded-xl bg-primary text-background-dark text-sm font-semibold flex items-center justify-center gap-1.5"
-            >
-              <span className="material-symbols-outlined text-sm">psychology</span>
-              Ask Coach
-            </button>
-          </div>
         </div>
       )}
     </article>
@@ -321,7 +307,6 @@ function FilterDropdown({
 
 export default function JournalPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [expandedId, setExpandedId] = useState<string | null>(searchParams.get("expand"));
   const [editBrewId, setEditBrewId] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({ methods: [], beanIds: [] });
@@ -386,7 +371,6 @@ export default function JournalPage() {
         isOpen={expandedId === entry.id}
         onToggle={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
         onEdit={() => setEditBrewId(entry.id)}
-        onCoach={() => router.push(`/coach/brew/${entry.id}`)}
       />
     );
   }
