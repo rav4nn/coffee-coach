@@ -38,13 +38,20 @@ export function Navbar() {
               ].join(" ")}
             >
               {isMyBeans ? (
-                <Image
-                  src={MY_BEANS_ICON}
-                  alt="My Beans"
-                  width={18}
-                  height={18}
-                  className={active ? "opacity-100" : "opacity-70"}
-                />
+                <span
+                  className={[
+                    "flex items-center justify-center w-6 h-6 rounded-md border",
+                    active ? "bg-espresso/30 border-espresso/40" : "bg-espresso/15 border-espresso/25",
+                  ].join(" ")}
+                >
+                  <Image
+                    src={MY_BEANS_ICON}
+                    alt="My Beans"
+                    width={18}
+                    height={18}
+                    className={active ? "opacity-100" : "opacity-80"}
+                  />
+                </span>
               ) : (
                 Icon && <Icon className="h-[18px] w-[18px]" />
               )}

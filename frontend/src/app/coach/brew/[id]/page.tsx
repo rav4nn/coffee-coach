@@ -198,7 +198,7 @@ export default function BrewCoachPage() {
         {/* Brew Parameters Summary */}
         <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+            <div className="w-10 h-10 rounded-lg bg-espresso/20 border border-espresso/30 flex items-center justify-center shrink-0 overflow-hidden">
               <Image src={imgSrc} alt="" width={28} height={28} className="w-7 h-7 object-contain" />
             </div>
             <div className="flex-1 min-w-0">

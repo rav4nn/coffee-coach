@@ -33,13 +33,20 @@ export function BottomNav() {
         className={`flex flex-col items-center gap-1 ${active ? "text-primary" : "text-slate-500"}`}
       >
         {isImageIcon ? (
-          <Image
-            src={icon}
-            alt={`${label} icon`}
-            width={20}
-            height={20}
-            className={active ? "opacity-100" : "opacity-70"}
-          />
+          <span
+            className={[
+              "flex items-center justify-center w-6 h-6 rounded-md border",
+              active ? "bg-espresso/30 border-espresso/40" : "bg-espresso/15 border-espresso/25",
+            ].join(" ")}
+          >
+            <Image
+              src={icon}
+              alt={`${label} icon`}
+              width={18}
+              height={18}
+              className={active ? "opacity-100" : "opacity-80"}
+            />
+          </span>
         ) : (
           <span
             className="material-symbols-outlined"
