@@ -29,6 +29,13 @@ const GRIND_SIZES = [
   "Coarse",
 ] as const;
 
+/** Resolve math expressions like "(0.45 x 225)g" → "101g" in step instructions */
+function resolveInstructionMath(instruction: string): string {
+  return instruction.replace(/\((\d+\.?\d*)\s*x\s*(\d+\.?\d*)\)/g, (_, a, b) => {
+    return String(Math.round(parseFloat(a) * parseFloat(b)));
+  });
+}
+
 function formatTimer(totalSeconds: number) {
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
@@ -562,7 +569,7 @@ export default function GuidedRecipeDetailPage() {
                     <div className="size-7 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0">
                       {i + 1}
                     </div>
-                    <p className="flex-1 text-sm text-slate-300 leading-snug">{step.instruction}</p>
+                    <p className="flex-1 text-sm text-slate-300 leading-snug">{resolveInstructionMath(step.instruction)}</p>
                     {step.duration_seconds !== null ? (
                       <input
                         type="text"
@@ -878,7 +885,7 @@ export default function GuidedRecipeDetailPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <p className={`text-sm leading-snug ${isCurrent ? "font-medium text-slate-100" : "font-medium text-slate-300"}`}>
-                          {step.instruction}
+                          {resolveInstructionMath(step.instruction)}
                         </p>
                         {step.duration_seconds && (
                           <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${

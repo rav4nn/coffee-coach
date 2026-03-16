@@ -115,7 +115,7 @@ export default function GuidedRecipesPage() {
       </header>
 
       {/* Recipe list */}
-      <main className="flex-1 overflow-y-auto pb-32">
+      <main className="flex-1 overflow-y-auto pb-56">
         <div className="px-4 py-6 space-y-4">
 
           {/* ── Favourite brews ── */}

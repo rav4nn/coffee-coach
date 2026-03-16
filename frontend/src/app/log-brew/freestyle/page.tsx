@@ -243,27 +243,28 @@ export default function FreestyleLogPage() {
   }
 
   return (
-    <section className="space-y-5">
-      <div>
+    <main className="overflow-y-auto pb-28">
+      {/* Header */}
+      <div className="px-4 pt-4 pb-2">
         {isCoachMode ? (
           <>
             <div className="flex items-center gap-2">
               <Image src="/coach/img3_whistle_blowing.png" alt="Coach" width={24} height={24} className="w-6 h-6 object-contain" />
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Follow the Coach</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Follow the Coach</p>
             </div>
-            <h1 className="font-serif text-4xl font-bold leading-tight text-espresso mt-1">Coach&apos;s Recipe</h1>
-            <p className="mt-1 text-sm text-mocha/80">Your last brew&apos;s params with the coach&apos;s adjustments applied.</p>
+            <h1 className="text-2xl font-bold text-slate-100 mt-1">Coach&apos;s Recipe</h1>
+            <p className="mt-1 text-sm text-slate-400">Your last brew&apos;s params with the coach&apos;s adjustments applied.</p>
           </>
         ) : (
           <>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-mocha/70">Freestyle Brew</p>
-            <h1 className="font-serif text-4xl font-bold leading-tight text-espresso">Log Your Brew Parameters</h1>
-            <p className="mt-1 text-sm text-mocha/80">Capture this brew so we can coach your next one.</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Freestyle Brew</p>
+            <h1 className="text-2xl font-bold text-slate-100">Log Your Brew Parameters</h1>
+            <p className="mt-1 text-sm text-slate-400">Capture this brew so we can coach your next one.</p>
           </>
         )}
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="px-4 space-y-4 pt-2">
         {/* ── Brewing Essentials ──────────────────────────────────── */}
         <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
           <div className="flex items-center gap-2 mb-1">
@@ -455,6 +456,6 @@ export default function FreestyleLogPage() {
           {submitting ? "Saving…" : "Log Brew"}
         </Button>
       </form>
-    </section>
+    </main>
   );
 }
