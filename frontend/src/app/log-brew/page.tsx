@@ -245,7 +245,10 @@ export default function LogBrewPage() {
       {/* Bean Selection */}
       <section className="mb-8">
         <p className="text-sm font-medium text-slate-400 mb-3">Bean Selection</p>
-        <div className="relative">
+        {isLoading ? (
+          <div className="h-[60px] rounded-xl bg-primary/5 border border-primary/20 animate-pulse" />
+        ) : null}
+        <div className={`relative ${isLoading ? "hidden" : ""}`}>
           <button
             type="button"
             onClick={() => setBeanDropdownOpen((v) => !v)}
@@ -326,7 +329,16 @@ export default function LogBrewPage() {
       {/* Brew Method Grid */}
       <section className="mb-8">
         <p className="text-sm font-medium text-slate-400 mb-4">Brew Method</p>
-        <div className="grid grid-cols-3 gap-3">
+        {isLoading ? (
+          <div className="grid grid-cols-3 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-xl bg-primary/5 border border-white/5 animate-pulse overflow-hidden">
+                <div className="aspect-[4/5]" />
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <div className={`grid grid-cols-3 gap-3 ${isLoading ? "hidden" : ""}`}>
           {visibleMethodCards.map((method) => {
             const active = selectedMethodId === method.method_id;
             return (

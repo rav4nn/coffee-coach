@@ -35,7 +35,7 @@ function formatRoastDate(date: string | null) {
   });
 }
 
-type FilterTab = "all" | "whole" | "ground";
+type FilterTab = "all" | "degassing" | "in_zone" | "fading" | "running_low";
 
 export default function MyBeansPage() {
   const { userBeans, fetchBeans, addBean, deleteBean, restockBean, isLoading } = useBeansStore();
@@ -114,11 +114,18 @@ export default function MyBeansPage() {
         !search ||
         bean.beanName.toLowerCase().includes(search.toLowerCase()) ||
         bean.roaster.toLowerCase().includes(search.toLowerCase());
-      const matchesFilter =
-        filterTab === "all" ||
-        (filterTab === "ground" && bean.isPreGround) ||
-        (filterTab === "whole" && !bean.isPreGround);
-      return matchesSearch && matchesFilter;
+      if (!matchesSearch) return false;
+      if (filterTab === "all") return true;
+      const days = bean.roastDate
+        ? Math.floor((Date.now() - new Date(bean.roastDate).getTime()) / 86_400_000)
+        : null;
+      if (filterTab === "degassing") return days !== null && days < 7;
+      if (filterTab === "in_zone") return days !== null && days >= 7 && days <= 21;
+      if (filterTab === "fading") return days !== null && days > 21;
+      if (filterTab === "running_low")
+        return bean.bagWeightGrams !== null && bean.remainingGrams !== null &&
+          bean.remainingGrams < bean.bagWeightGrams * 0.2;
+      return true;
     });
   }, [userBeans, search, filterTab]);
 
@@ -139,24 +146,27 @@ export default function MyBeansPage() {
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-3 px-4 py-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        {(["all", "whole", "ground"] as FilterTab[]).map((tab) => {
-          const labels: Record<FilterTab, string> = { all: "All Beans", whole: "Whole Bean", ground: "Ground" };
+      <div className="flex gap-2 px-4 py-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        {(["all", "degassing", "in_zone", "fading", "running_low"] as FilterTab[]).map((tab) => {
+          const labels: Record<FilterTab, string> = {
+            all: "All",
+            degassing: "Degassing",
+            in_zone: "In the Zone",
+            fading: "Fading",
+            running_low: "Running Low",
+          };
           const active = filterTab === tab;
           return (
             <button
               key={tab}
               onClick={() => setFilterTab(tab)}
-              className={`flex h-9 shrink-0 items-center justify-center gap-1 rounded-full px-4 text-sm font-semibold transition-colors ${
+              className={`flex h-8 shrink-0 items-center justify-center rounded-full px-3 text-xs font-semibold transition-colors ${
                 active
                   ? "bg-primary text-background-dark"
                   : "bg-primary/10 text-primary/80 border border-primary/20"
               }`}
             >
               {labels[tab]}
-              {tab !== "all" && (
-                <span className="material-symbols-outlined text-sm">keyboard_arrow_down</span>
-              )}
             </button>
           );
         })}
@@ -164,9 +174,27 @@ export default function MyBeansPage() {
 
       {/* Bean list */}
       <div className="flex-1 px-4 py-3 flex flex-col gap-4">
-        {isLoading && (
-          <p className="text-sm text-slate-500 text-center py-8">Loading your beans…</p>
-        )}
+        {isLoading && Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="rounded-xl bg-primary/5 border border-primary/10 overflow-hidden animate-pulse">
+            <div className="flex items-stretch">
+              <div className="w-32 shrink-0 min-h-[148px] bg-primary/10" />
+              <div className="flex-1 p-4 flex flex-col justify-between gap-3">
+                <div className="flex flex-col gap-2 pr-8">
+                  <div className="h-2.5 w-16 rounded-full bg-primary/10" />
+                  <div className="h-4 w-36 rounded-full bg-primary/15" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="h-2.5 w-28 rounded-full bg-primary/10" />
+                  <div className="h-2.5 w-20 rounded-full bg-primary/10" />
+                </div>
+              </div>
+            </div>
+            <div className="px-4 py-3 border-t border-primary/10 flex flex-col gap-2">
+              <div className="h-2 rounded-full bg-primary/10" />
+              <div className="h-2 rounded-full bg-primary/10" />
+            </div>
+          </div>
+        ))}
 
         {!isLoading && userBeans.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
@@ -190,18 +218,11 @@ export default function MyBeansPage() {
           <p className="text-sm text-slate-500 text-center py-8">No beans match your search.</p>
         )}
 
-        {/* Bean cards
-            Style reference (commented-out mock shapes):
-            { id: "1", roaster: "Blue Tokai", beanName: "Attikan Estate", roastDate: "2023-10-20", isPreGround: false }
-            { id: "2", roaster: "Third Wave", beanName: "El Diablo Blend", roastDate: "2023-11-12", isPreGround: true }
-        */}
         {filteredBeans.map((bean) => {
           const days = bean.roastDate
             ? Math.floor((Date.now() - new Date(bean.roastDate).getTime()) / 86_400_000)
             : null;
 
-          // Freshness zones: 0–7 Resting, 7–21 Peak Fresh, 21–45 Good, 45+ Aging
-          // Track displayed over 60 days max
           const TRACK_MAX = 60;
           const clampedDays = days !== null ? Math.min(days, TRACK_MAX) : null;
           const pct = clampedDays !== null ? (clampedDays / TRACK_MAX) * 100 : null;
@@ -209,131 +230,112 @@ export default function MyBeansPage() {
           const freshness = days === null
             ? null
             : days < 7
-            ? { label: "Resting", sublabel: "Let it degas a few more days", color: "text-sky-400", trackColor: "bg-sky-400" }
+            ? { label: "Degassing", color: "text-sky-400", trackColor: "bg-sky-400" }
             : days <= 21
-            ? { label: "Peak Fresh", sublabel: "Perfect window — brew it now", color: "text-green-400", trackColor: "bg-green-400" }
+            ? { label: "In the Zone", color: "text-green-400", trackColor: "bg-green-400" }
             : days <= 45
-            ? { label: "Good", sublabel: "Still tasty, flavours softening", color: "text-primary", trackColor: "bg-primary" }
-            : { label: "Aging", sublabel: "Past peak — use it up soon", color: "text-slate-400", trackColor: "bg-slate-400" };
+            ? { label: "Fading", color: "text-primary", trackColor: "bg-primary" }
+            : { label: "Aging", color: "text-slate-400", trackColor: "bg-slate-400" };
+
+          const isRunningLow = bean.bagWeightGrams !== null && bean.remainingGrams !== null &&
+            bean.remainingGrams < bean.bagWeightGrams * 0.2;
 
           return (
           <article
             key={bean.id}
-            className="flex flex-col gap-3 rounded-xl bg-primary/5 border border-primary/10 p-4"
+            className="rounded-xl bg-primary/5 border border-primary/10 overflow-hidden"
           >
-            <div className="flex gap-4">
-              <div className="w-16 h-16 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 overflow-hidden">
+            {/* Image + info row */}
+            <div className="flex items-stretch">
+              {/* Image */}
+              <div className="w-32 shrink-0 relative bg-primary/10 min-h-[148px]">
                 {bean.imageUrl ? (
                   <Image
                     src={bean.imageUrl}
                     alt={bean.beanName}
-                    width={64}
-                    height={64}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="128px"
                   />
                 ) : (
-                  <span className="material-symbols-outlined text-3xl text-primary/50">coffee</span>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-5xl text-primary/30">coffee</span>
+                  </div>
                 )}
               </div>
-              <div className="flex flex-col justify-between py-0.5 flex-1 min-w-0">
-                <div>
-                  <div className="flex justify-between items-start gap-2">
-                    <p className="text-primary text-xs font-bold uppercase tracking-wider truncate">
-                      {bean.roaster}
-                    </p>
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                          bean.isPreGround
-                            ? "bg-primary/10 text-primary/60"
-                            : "bg-primary/20 text-primary"
-                        }`}
-                      >
-                        {bean.isPreGround ? "GROUND" : "WHOLE"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setDeletingBeanId(bean.id)}
-                        className="inline-flex items-center justify-center size-6 rounded-md bg-primary/10 text-primary/70 hover:bg-primary/20 hover:text-primary transition-colors"
-                        aria-label={`Delete ${bean.beanName}`}
-                      >
-                        <span className="material-symbols-outlined text-sm">delete</span>
-                      </button>
-                    </div>
-                  </div>
-                  <p className="text-slate-100 text-base font-bold leading-tight mt-0.5 truncate">
+
+              {/* Info */}
+              <div className="flex-1 p-4 flex flex-col justify-between min-w-0 relative">
+                <button
+                  type="button"
+                  onClick={() => setDeletingBeanId(bean.id)}
+                  className="absolute top-3 right-3 flex items-center justify-center size-6 rounded-md bg-primary/10 text-primary/60 hover:bg-primary/20 hover:text-primary transition-colors"
+                  aria-label={`Delete ${bean.beanName}`}
+                >
+                  <span className="material-symbols-outlined text-sm">delete</span>
+                </button>
+
+                <div className="pr-8">
+                  <p className="text-primary text-[10px] font-bold uppercase tracking-wider truncate">
+                    {bean.roaster}
+                  </p>
+                  <p className="text-slate-100 text-base font-bold leading-snug mt-0.5 line-clamp-2">
                     {bean.beanName}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-primary/40">
-                  <span className="material-symbols-outlined text-sm">calendar_today</span>
-                  <p className="text-xs font-medium">Roasted: {formatRoastDate(bean.roastDate)}</p>
+
+                <div className="mt-3 flex flex-col gap-1">
+                  <p className="text-xs text-slate-500">
+                    {bean.roastDate ? `Roasted ${formatRoastDate(bean.roastDate)}` : "Roast date unknown"}
+                  </p>
+                  {bean.bagWeightGrams !== null && bean.remainingGrams !== null && (
+                    <div className="flex items-center justify-between gap-2">
+                      <p className={`text-xs ${
+                        bean.remainingGrams <= 0
+                          ? "text-red-400"
+                          : isRunningLow
+                          ? "text-amber-400"
+                          : "text-slate-500"
+                      }`}>
+                        {bean.remainingGrams <= 0
+                          ? "Bag empty"
+                          : `${Math.max(0, bean.remainingGrams).toFixed(0)}g left${isRunningLow ? " · running low" : ""}`}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => { setRestockingBeanId(bean.id); setRestockValue(String(Math.max(0, bean.remainingGrams!))); }}
+                        className="text-[10px] text-primary/50 font-semibold hover:text-primary transition-colors shrink-0"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Freshness slider */}
+            {/* Freshness bar */}
             {freshness && pct !== null && days !== null && (
-              <div className="pt-1 pb-0.5">
+              <div className="px-4 pt-3 pb-4 border-t border-primary/10">
                 <div className="flex items-baseline justify-between mb-1.5">
                   <span className={`text-xs font-bold ${freshness.color}`}>{freshness.label}</span>
                   <span className="text-[10px] text-slate-500">{days}d since roast</span>
                 </div>
-                {/* Track */}
                 <div className="relative h-2 rounded-full bg-primary/10 overflow-hidden">
-                  {/* Zone markers */}
                   <div className="absolute inset-y-0 left-0 bg-sky-400/25 rounded-full" style={{ width: `${(7 / TRACK_MAX) * 100}%` }} />
                   <div className="absolute inset-y-0 bg-green-400/25" style={{ left: `${(7 / TRACK_MAX) * 100}%`, width: `${(14 / TRACK_MAX) * 100}%` }} />
                   <div className="absolute inset-y-0 bg-primary/25" style={{ left: `${(21 / TRACK_MAX) * 100}%`, width: `${(24 / TRACK_MAX) * 100}%` }} />
                   <div className="absolute inset-y-0 bg-slate-500/20 rounded-r-full" style={{ left: `${(45 / TRACK_MAX) * 100}%`, right: 0 }} />
-                  {/* Fill up to current position */}
                   <div className={`absolute inset-y-0 left-0 rounded-full ${freshness.trackColor}`} style={{ width: `${pct}%`, opacity: 0.9 }} />
                 </div>
-                {/* Zone labels */}
                 <div className="flex justify-between mt-1" style={{ fontSize: "9px" }}>
                   <span className="text-sky-400/60 font-semibold">Rest</span>
                   <span className="text-green-400/60 font-semibold">Peak</span>
                   <span className="text-primary/60 font-semibold">Good</span>
                   <span className="text-slate-500 font-semibold">Aging</span>
                 </div>
-                <p className="text-[10px] text-slate-500 mt-1 italic">{freshness.sublabel}</p>
               </div>
             )}
-
-            {/* Bag remaining tracker */}
-            {bean.bagWeightGrams !== null && bean.remainingGrams !== null && (
-              <div className="pt-1 pb-0.5">
-                <div className="flex items-baseline justify-between mb-1.5">
-                  <span className="text-xs font-bold text-primary/70">Bag Remaining</span>
-                  <span className="text-[10px] text-slate-500">
-                    {Math.max(0, bean.remainingGrams).toFixed(0)}g / {bean.bagWeightGrams.toFixed(0)}g
-                  </span>
-                </div>
-                <div className="relative h-2 rounded-full bg-primary/10 overflow-hidden">
-                  <div
-                    className="absolute inset-y-0 left-0 rounded-full bg-primary/60"
-                    style={{ width: `${Math.min(100, Math.max(0, (bean.remainingGrams / bean.bagWeightGrams) * 100))}%` }}
-                  />
-                </div>
-                <div className="flex items-center justify-between mt-1.5">
-                  <p className="text-[10px] text-slate-500">
-                    {bean.remainingGrams <= 0
-                      ? "Bag empty — time to restock!"
-                      : bean.remainingGrams < bean.bagWeightGrams * 0.2
-                      ? "Running low — restock soon"
-                      : ""}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => { setRestockingBeanId(bean.id); setRestockValue(String(Math.max(0, bean.remainingGrams!))); }}
-                    className="text-[10px] text-primary/60 font-semibold hover:text-primary transition-colors"
-                  >
-                    Edit
-                  </button>
-                </div>
-              </div>
-            )}
-
           </article>
           );
         })}
@@ -392,7 +394,15 @@ export default function MyBeansPage() {
         const bean = userBeans.find((b) => b.id === deletingBeanId);
         return (
           <div className="fixed inset-0 z-50 flex items-end justify-center bg-background-dark/80 backdrop-blur-sm p-4">
-            <div className="w-full max-w-sm rounded-2xl border border-primary/20 bg-[#2a1d11] p-6 shadow-2xl">
+            <div className="relative w-full max-w-sm rounded-2xl border border-primary/20 bg-[#2a1d11] p-6 shadow-2xl">
+              <button
+                type="button"
+                onClick={() => setDeletingBeanId(null)}
+                className="absolute top-4 right-4 flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-slate-400 hover:text-slate-100 hover:bg-primary/20 transition-colors"
+                aria-label="Close"
+              >
+                <span className="material-symbols-outlined text-base">close</span>
+              </button>
               <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
                 <span className="material-symbols-outlined text-primary">delete</span>
               </div>
