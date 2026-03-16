@@ -127,6 +127,8 @@ export default function LogBrewPage() {
                 roaster: bean.roaster,
                 roast_date: bean.roastDate,
                 is_pre_ground: bean.isPreGround,
+                bag_weight_grams: bean.bagWeightGrams ?? null,
+                remaining_grams: bean.remainingGrams ?? null,
               }));
 
         setBeans(beansResponse);
