@@ -14,6 +14,8 @@ export type UserBean = {
   roastDate: string | null;
   isPreGround: boolean;
   imageUrl: string | null;
+  bagWeightGrams: number | null;
+  remainingGrams: number | null;
 };
 
 export type RecipeSummary = {

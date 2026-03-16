@@ -32,6 +32,8 @@ export type ApiUserBean = {
   roaster: string;
   roast_date: string | null;
   is_pre_ground: boolean;
+  bag_weight_grams: number | null;
+  remaining_grams: number | null;
 };
 
 export type BrewMethodApi = {
@@ -82,6 +84,7 @@ export type CreateUserBeanPayload = {
   coffee_id: string;
   roast_date?: string | null;
   is_pre_ground: boolean;
+  bag_weight_grams: number;
 };
 
 function requestInit(init?: RequestInit): RequestInit {
@@ -137,6 +140,20 @@ export async function postUserBeanApi(payload: CreateUserBeanPayload) {
     throw new Error("Failed to save bean");
   }
 
+  return (await response.json()) as ApiUserBean;
+}
+
+export async function patchUserBeanApi(id: string, payload: { remaining_grams: number }) {
+  const response = await fetch(
+    `/api/user/beans/${id}`,
+    requestInit({
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  );
+  if (!response.ok) {
+    throw new Error("Failed to update bean");
+  }
   return (await response.json()) as ApiUserBean;
 }
 

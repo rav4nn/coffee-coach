@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 import { SearchableCombobox } from "@/components/SearchableCombobox";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -21,6 +21,7 @@ const addBeanSchema = z.object({
     { message: "Roast date cannot be in the future" },
   ),
   isPreGround: z.boolean().default(false),
+  bagWeightGrams: z.coerce.number({ invalid_type_error: "Enter bag weight" }).positive("Must be greater than 0"),
 });
 
 type AddBeanFormValues = z.infer<typeof addBeanSchema>;
@@ -37,8 +38,10 @@ function formatRoastDate(date: string | null) {
 type FilterTab = "all" | "whole" | "ground";
 
 export default function MyBeansPage() {
-  const { userBeans, fetchBeans, addBean, deleteBean, isLoading } = useBeansStore();
+  const { userBeans, fetchBeans, addBean, deleteBean, restockBean, isLoading } = useBeansStore();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [restockingBeanId, setRestockingBeanId] = useState<string | null>(null);
+  const [restockValue, setRestockValue] = useState<string>("");
   const [roasters, setRoasters] = useState<string[]>([]);
   const [catalogBeans, setCatalogBeans] = useState<CatalogBean[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
@@ -48,7 +51,7 @@ export default function MyBeansPage() {
 
   const form = useForm<AddBeanFormValues>({
     resolver: zodResolver(addBeanSchema),
-    defaultValues: { roaster: "", coffeeId: "", roastDate: "", isPreGround: false },
+    defaultValues: { roaster: "", coffeeId: "", roastDate: "", isPreGround: false, bagWeightGrams: undefined },
   });
 
   const selectedRoaster = form.watch("roaster");
@@ -93,10 +96,11 @@ export default function MyBeansPage() {
         coffee_id: values.coffeeId,
         roast_date: values.roastDate?.trim() ? values.roastDate : null,
         is_pre_ground: values.isPreGround,
+        bag_weight_grams: values.bagWeightGrams,
         name: selectedBean.name,
         roaster: selectedBean.roaster,
       });
-      form.reset({ roaster: "", coffeeId: "", roastDate: "", isPreGround: false });
+      form.reset({ roaster: "", coffeeId: "", roastDate: "", isPreGround: false, bagWeightGrams: undefined });
       setCatalogBeans([]);
       setSheetOpen(false);
     } catch {
@@ -296,10 +300,92 @@ export default function MyBeansPage() {
               </div>
             )}
 
+            {/* Bag remaining tracker */}
+            {bean.bagWeightGrams !== null && bean.remainingGrams !== null && (
+              <div className="pt-1 pb-0.5">
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <span className="text-xs font-bold text-primary/70">Bag Remaining</span>
+                  <span className="text-[10px] text-slate-500">
+                    {Math.max(0, bean.remainingGrams).toFixed(0)}g / {bean.bagWeightGrams.toFixed(0)}g
+                  </span>
+                </div>
+                <div className="relative h-2 rounded-full bg-primary/10 overflow-hidden">
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-full bg-primary/60"
+                    style={{ width: `${Math.min(100, Math.max(0, (bean.remainingGrams / bean.bagWeightGrams) * 100))}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-between mt-1.5">
+                  <p className="text-[10px] text-slate-500">
+                    {bean.remainingGrams <= 0
+                      ? "Bag empty — time to restock!"
+                      : bean.remainingGrams < bean.bagWeightGrams * 0.2
+                      ? "Running low — restock soon"
+                      : ""}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { setRestockingBeanId(bean.id); setRestockValue(String(Math.max(0, bean.remainingGrams!))); }}
+                    className="text-[10px] text-primary/60 font-semibold hover:text-primary transition-colors"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
+            )}
+
           </article>
           );
         })}
       </div>
+
+      {/* Restock overlay */}
+      {restockingBeanId && (() => {
+        const bean = userBeans.find((b) => b.id === restockingBeanId);
+        return (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-background-dark/80 backdrop-blur-sm p-4">
+            <div className="w-full max-w-sm rounded-2xl border border-primary/20 bg-[#2a1d11] p-6 shadow-2xl">
+              <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-primary">scale</span>
+              </div>
+              <h2 className="text-xl font-bold text-slate-100 mb-1">Update Remaining Grams</h2>
+              <p className="text-sm text-slate-400 mb-4">
+                {bean ? `${bean.roaster} — ${bean.beanName}` : ""}
+              </p>
+              <input
+                type="number"
+                min="0"
+                value={restockValue}
+                onChange={(e) => setRestockValue(e.target.value)}
+                className="w-full h-12 rounded-xl border border-primary/20 bg-primary/5 px-3 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary/40 mb-5"
+                placeholder="Grams remaining"
+              />
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const grams = parseFloat(restockValue);
+                    if (!isNaN(grams) && grams >= 0) {
+                      await restockBean(restockingBeanId, grams);
+                      setRestockingBeanId(null);
+                    }
+                  }}
+                  className="w-full bg-primary text-background-dark font-bold py-3 rounded-xl hover:brightness-110 transition-all"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRestockingBeanId(null)}
+                  className="w-full border border-slate-600 text-slate-400 font-medium py-3 rounded-xl hover:text-slate-200 hover:border-slate-400 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Delete confirmation overlay */}
       {deletingBeanId && (() => {
@@ -449,6 +535,25 @@ export default function MyBeansPage() {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* Bag weight */}
+            <div className="flex flex-col gap-2">
+              <p className="text-primary text-xs font-bold uppercase tracking-wider">Bag Weight (g)</p>
+              <input
+                id="bag-weight"
+                type="number"
+                min="1"
+                placeholder="e.g. 250"
+                {...form.register("bagWeightGrams")}
+                className="h-12 w-full rounded-xl border border-primary/20 bg-primary/5 px-3 text-sm text-slate-100 outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-slate-600"
+              />
+              {form.formState.errors.bagWeightGrams && (
+                <p className="text-xs text-red-400">{form.formState.errors.bagWeightGrams.message}</p>
+              )}
+              <p className="text-[10px] text-slate-500 leading-tight">
+                Tracks how much coffee you have left as you brew.
+              </p>
             </div>
 
             {/* Submit */}
