@@ -207,7 +207,7 @@ export default function LogBrewPage() {
     return warnings;
   }, [selectedBean]);
 
-  const pourOverSectionRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
 
   const isPourOver = selectedMethodId === "pour_over";
   const canContinue =
@@ -228,7 +228,7 @@ export default function LogBrewPage() {
   }
 
   return (
-    <main className="relative px-6 pb-44 overflow-y-auto">
+    <main ref={mainRef} className="relative px-6 pb-56 overflow-y-auto">
       {/* Ambient glow blobs */}
       <div className="fixed top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
@@ -353,8 +353,9 @@ export default function LogBrewPage() {
                     setSelectedPourOverDeviceId("");
                   } else {
                     setTimeout(() => {
-                      pourOverSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                    }, 50);
+                      const el = mainRef.current;
+                      if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+                    }, 150);
                   }
                 }}
                 className={`relative rounded-xl overflow-hidden border-2 transition-all ${
@@ -391,7 +392,6 @@ export default function LogBrewPage() {
 
       {/* Pour Over Device Selection (conditional) */}
       <section
-        ref={pourOverSectionRef}
         className={`mb-8 transition-all duration-300 ease-out overflow-hidden ${
           isPourOver ? "max-h-64 opacity-100" : "max-h-0 opacity-0 mb-0"
         }`}
