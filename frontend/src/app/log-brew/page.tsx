@@ -226,7 +226,7 @@ export default function LogBrewPage() {
   }
 
   return (
-    <main className="relative px-6 pb-36 overflow-y-auto">
+    <main className="relative px-6 pb-44 overflow-y-auto">
       {/* Ambient glow blobs */}
       <div className="fixed top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
@@ -409,17 +409,6 @@ export default function LogBrewPage() {
         </div>
       </section>
 
-      {/* Next Step button */}
-      <button
-        type="button"
-        onClick={handleNext}
-        disabled={!canContinue || isLoading}
-        className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.01] transition-transform"
-      >
-        Next Step
-        <span className="material-symbols-outlined">arrow_forward</span>
-      </button>
-
       {/* No beans overlay */}
       {!hasBeans && !isLoading && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-background-dark/80 backdrop-blur-sm p-6">
@@ -442,6 +431,19 @@ export default function LogBrewPage() {
           </div>
         </div>
       )}
+
+      {/* Floating Next Step button */}
+      <div className="fixed bottom-24 left-4 right-4 z-30">
+        <button
+          type="button"
+          onClick={handleNext}
+          disabled={!canContinue || isLoading}
+          className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl shadow-xl shadow-primary/30 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+        >
+          Next Step
+          <span className="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </div>
     </main>
   );
 }

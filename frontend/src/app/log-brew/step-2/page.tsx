@@ -119,7 +119,7 @@ export default function LogBrewStepTwoPage() {
   }
 
   return (
-    <main className="relative flex flex-col min-h-full px-6 pb-28 overflow-y-auto">
+    <main className="relative flex flex-col min-h-full px-6 pb-40 overflow-y-auto">
       {/* Ambient glow blobs */}
       <div className="fixed top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
@@ -242,16 +242,18 @@ export default function LogBrewStepTwoPage() {
         </button>
       </div>
 
-      {/* Next button */}
-      <button
-        type="button"
-        onClick={handleNext}
-        disabled={!choice || !selectedMethodId}
-        className="w-full mt-8 bg-primary text-background-dark font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.01] transition-transform"
-      >
-        Next
-        <span className="material-symbols-outlined">arrow_forward</span>
-      </button>
+      {/* Floating Next button */}
+      <div className="fixed bottom-24 left-4 right-4 z-30">
+        <button
+          type="button"
+          onClick={handleNext}
+          disabled={!choice || !selectedMethodId}
+          className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl shadow-xl shadow-primary/30 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+        >
+          Next
+          <span className="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </div>
     </main>
   );
 }
