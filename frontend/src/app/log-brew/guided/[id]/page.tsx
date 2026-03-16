@@ -697,23 +697,41 @@ export default function GuidedRecipeDetailPage() {
           <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isBrewing ? "max-h-0 opacity-0" : "max-h-[1200px] opacity-100"}`}>
 
             {/* Recipe title */}
-            <h1 className="font-serif text-3xl font-bold text-slate-100 mb-4">{recipe.title}</h1>
+            <h1 className="font-serif text-2xl font-bold text-slate-100 mb-4">{recipe.title}</h1>
 
-            {/* Coach mode banner */}
+            {/* Coach mode banner with merged advice */}
             {isCoachMode && (
-              <div className="flex items-center gap-3 mb-5 p-3 rounded-xl bg-primary/5 border border-primary/20">
-                <Image src="/coach/recipe_debrief.png" alt="Coach" width={48} height={48} className="w-12 h-12 object-contain shrink-0" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">Coach&apos;s Adjusted Recipe</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Parameters adjusted based on your last brew.</p>
+              <div className="mb-5 p-3 rounded-xl bg-primary/5 border border-primary/20">
+                <div className="flex items-center gap-3">
+                  <Image src="/coach/recipe_debrief.png" alt="Coach" width={48} height={48} className="w-12 h-12 object-contain shrink-0" />
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">Coach&apos;s Adjusted Recipe</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Parameters adjusted based on your last brew.</p>
+                  </div>
                 </div>
+                {coachChanges && coachChanges.filter((c) => c.suggestion).length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-primary/10 space-y-2">
+                    {coachChanges.filter((c) => c.suggestion).map((change, i) => (
+                      <div key={i} className="flex items-center gap-2.5">
+                        <Image
+                          src={coachAvatarForParam(change.param)}
+                          alt="Coach"
+                          width={32}
+                          height={32}
+                          className="w-8 h-8 object-contain shrink-0"
+                        />
+                        <p className="text-xs text-slate-300 leading-relaxed">{change.suggestion}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {/* Method image + Brew params side by side */}
             <div className="flex gap-4 mb-6">
               {/* Method image */}
-              <div className="w-2/5 shrink-0">
+              <div className="w-1/3 shrink-0">
                 <div className="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-background-dark border border-primary/10">
                   <Image
                     src={`/methods/${methodImage(recipe.method)}`}
@@ -724,8 +742,8 @@ export default function GuidedRecipeDetailPage() {
                 </div>
               </div>
 
-              {/* Params stacked vertically */}
-              <div className="flex-1 flex flex-col justify-center divide-y divide-white/5">
+              {/* Params in 2-column grid */}
+              <div className="flex-1 grid grid-cols-2 gap-x-3 gap-y-2 content-center">
                 {[
                   { icon: "scale", label: "Coffee", paramKey: "coffeeGrams", value: `${effectiveParams?.coffee_g ?? recipe.coffee_g}g`, originalValue: `${recipe.coffee_g}g` },
                   { icon: "water_drop", label: "Water", paramKey: null, value: `${effectiveParams?.water_ml ?? recipe.water_ml}ml`, originalValue: null },
@@ -735,15 +753,15 @@ export default function GuidedRecipeDetailPage() {
                 ].map(({ icon, label, paramKey, value, originalValue }) => {
                   const hasChange = paramKey ? coachChangeMap.has(paramKey) : false;
                   return (
-                    <div key={label} className={`flex items-center gap-2.5 py-2.5 ${hasChange ? "bg-primary/5 -mx-2 px-2 rounded-lg" : ""}`}>
-                      <div className={`size-7 rounded-full flex items-center justify-center shrink-0 ${hasChange ? "bg-primary/20" : "bg-white/10"}`}>
-                        <span className={`material-symbols-outlined text-sm ${hasChange ? "text-primary" : "text-slate-400"}`}>{icon}</span>
+                    <div key={label} className={`flex items-center gap-2 py-1.5 ${hasChange ? "bg-primary/5 px-1.5 rounded-lg" : ""}`}>
+                      <div className={`size-6 rounded-full flex items-center justify-center shrink-0 ${hasChange ? "bg-primary/20" : "bg-white/10"}`}>
+                        <span className={`material-symbols-outlined ${hasChange ? "text-primary" : "text-slate-400"}`} style={{ fontSize: "14px" }}>{icon}</span>
                       </div>
                       <div className="min-w-0">
-                        <p className={`text-[10px] font-bold uppercase tracking-wider ${hasChange ? "text-primary/70" : "text-slate-500"}`}>{label}</p>
-                        <p className="text-sm font-bold text-slate-100">
+                        <p className={`text-[9px] font-bold uppercase tracking-wider ${hasChange ? "text-primary/70" : "text-slate-500"}`}>{label}</p>
+                        <p className="text-xs font-bold text-slate-100">
                           {hasChange && originalValue && originalValue !== value && (
-                            <span className="line-through text-slate-500 text-xs mr-1.5">{originalValue}</span>
+                            <span className="line-through text-slate-500 text-[10px] mr-1">{originalValue}</span>
                           )}
                           {value}
                         </p>
@@ -753,27 +771,6 @@ export default function GuidedRecipeDetailPage() {
                 })}
               </div>
             </div>
-
-            {/* Coach changes with large avatars */}
-            {isCoachMode && coachChanges && coachChanges.length > 0 && (
-              <div className="mb-6">
-                <p className="text-xs font-bold uppercase tracking-wider text-primary mb-3">Coach&apos;s Advice</p>
-                <div className="space-y-3">
-                  {coachChanges.filter((c) => c.suggestion).map((change, i) => (
-                    <div key={i} className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
-                      <Image
-                        src={coachAvatarForParam(change.param)}
-                        alt="Coach"
-                        width={48}
-                        height={48}
-                        className="w-12 h-12 object-contain shrink-0"
-                      />
-                      <p className="text-sm text-slate-300 leading-relaxed">{change.suggestion}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* === STEPS — always visible === */}
@@ -877,7 +874,7 @@ export default function GuidedRecipeDetailPage() {
 
       {/* ── Bottom action button ── */}
       <div className={`fixed z-40 left-0 right-0 transition-all duration-300 ease-in-out ${
-        isBrewing ? "bottom-6 px-4 flex flex-col items-center gap-2" : "bottom-20 px-4"
+        isBrewing ? "bottom-6 px-4 flex flex-col items-center gap-2" : "bottom-36 px-4"
       }`}>
         {isBrewing ? (
           <>

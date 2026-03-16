@@ -61,7 +61,7 @@ export function BottomNav() {
   const coachActive = isActive("/coach");
 
   return (
-    <nav className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-phone border-t border-primary/10 bg-background-dark/95 backdrop-blur-md px-4 pb-6 pt-3 z-50 transition-transform duration-300 ease-in-out ${isBrewingActive ? "translate-y-full" : "translate-y-0"}`}>
+    <nav className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-phone border-t border-primary/10 bg-background-dark/95 backdrop-blur-md px-4 pb-6 pt-3 z-50 transition-transform duration-300 ease-in-out ${isBrewingActive ? "translate-y-[calc(100%+2rem)]" : "translate-y-0"}`}>
       <div className="grid grid-cols-5 items-end">
         <div className="flex justify-center">
           <NavItem {...LEFT_ITEMS[0]} />
