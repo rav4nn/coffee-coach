@@ -46,6 +46,7 @@ export type GuidedRecipeStep = {
   time_seconds: number;
   instruction: string;
   duration_seconds: number | null;
+  is_brew_start?: boolean;
 };
 
 export type GuidedRecipePour = {

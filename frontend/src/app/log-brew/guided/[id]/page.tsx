@@ -18,6 +18,7 @@ type MergedStep = {
   instruction: string;
   duration_seconds: number | null;
   target_water_g: number | null;
+  is_brew_start?: boolean;
 };
 
 const GRIND_SIZES = [
@@ -172,6 +173,10 @@ export default function GuidedRecipeDetailPage() {
   const [stepStartAt, setStepStartAt] = useState<number>(Date.now());
   const [autoAdvancing, setAutoAdvancing] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  // Brew-context timer: tracks elapsedSeconds value when the is_brew_start step began
+  const [brewStartElapsed, setBrewStartElapsed] = useState<number | null>(null);
+  // Manual brew timer for recipes with no timed steps: records elapsedSeconds when user pressed Start
+  const [manualBrewStartElapsed, setManualBrewStartElapsed] = useState<number | null>(null);
 
   // Confirm phase state
   const [confirmCoffeeG, setConfirmCoffeeG] = useState("");
@@ -231,6 +236,12 @@ export default function GuidedRecipeDetailPage() {
             const diff = Math.max(0, Math.floor((Date.now() - new Date(existingSession.started_at).getTime()) / 1000));
             setElapsedSeconds(diff);
             setCurrentIndex(completedCount);
+            // Restore brew start elapsed if we've passed the is_brew_start step
+            const brewStartIdx = data.steps?.findIndex((s) => s.is_brew_start) ?? -1;
+            if (brewStartIdx >= 0 && completedCount > brewStartIdx) {
+              const brewStartStep = data.steps![brewStartIdx];
+              setBrewStartElapsed(brewStartStep.time_seconds);
+            }
             setBrewingActive(true);
             setPhase("brewing");
           }
@@ -258,6 +269,7 @@ export default function GuidedRecipeDetailPage() {
       instruction: step.instruction,
       duration_seconds: step.duration_seconds ?? null,
       target_water_g: pourByTime.get(step.time_seconds) ?? null,
+      is_brew_start: step.is_brew_start ?? false,
     }));
   }, [recipe]);
 
@@ -296,11 +308,18 @@ export default function GuidedRecipeDetailPage() {
     brew_time_seconds: recipe.brew_time_seconds,
   } : null);
 
-  // Total of only timed steps — used for the brew timer progress bar
+  // Total of only timed steps — used for the brew timer progress bar and default save value
   const totalTimerSeconds = useMemo(
     () => mergedSteps.reduce((sum, s) => sum + (s.duration_seconds ?? 0), 0),
     [mergedSteps],
   );
+
+  const isColdBrew = recipe?.method === "cold_brew";
+  const hasTimedSteps = totalTimerSeconds > 0;
+  // Brew elapsed: counts from when the is_brew_start step was reached (keeps running through gaps)
+  const brewElapsed = brewStartElapsed !== null ? elapsedSeconds - brewStartElapsed : 0;
+  // Manual elapsed: for no-timed-step recipes, counts from when the user pressed the manual Start
+  const manualElapsed = manualBrewStartElapsed !== null ? elapsedSeconds - manualBrewStartElapsed : 0;
 
   const currentStep = mergedSteps[currentIndex] ?? null;
 
@@ -353,6 +372,11 @@ export default function GuidedRecipeDetailPage() {
   useEffect(() => {
     setStepStartAt(Date.now());
     if (phase === "brewing") {
+      // Start brew progress timer when the is_brew_start step is reached
+      const step = mergedSteps[currentIndex];
+      if (step?.is_brew_start && brewStartElapsed === null) {
+        setBrewStartElapsed(elapsedSeconds);
+      }
       setTimeout(() => {
         currentStepRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 100);
@@ -385,6 +409,8 @@ export default function GuidedRecipeDetailPage() {
     setCurrentIndex(0);
     setElapsedSeconds(0);
     setStepStartAt(Date.now());
+    setBrewStartElapsed(null);
+    setManualBrewStartElapsed(null);
     setBrewingActive(true);
     setPhase("brewing");
   }
@@ -416,7 +442,13 @@ export default function GuidedRecipeDetailPage() {
         const grind = GRIND_SIZES.find((g) => g.toLowerCase() === grindVal?.toLowerCase()) ?? "Medium";
         setConfirmGrindSize(grind);
       }
-      setConfirmBrewTime(formatTimer(elapsedSeconds));
+      // Default brew time: sum of timed steps, or manual timer if used, or total elapsed
+      const defaultBrewSecs = totalTimerSeconds > 0
+        ? totalTimerSeconds
+        : manualBrewStartElapsed !== null
+          ? elapsedSeconds - manualBrewStartElapsed
+          : elapsedSeconds;
+      setConfirmBrewTime(formatTimer(defaultBrewSecs));
       setConfirmNotes("");
       setSaveError(null);
       setPhase("confirm");
@@ -682,7 +714,7 @@ export default function GuidedRecipeDetailPage() {
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Total Brew Time</label>
-                  <BrewTimePicker value={confirmBrewTime} onChange={setConfirmBrewTime} />
+                  <BrewTimePicker value={confirmBrewTime} onChange={setConfirmBrewTime} coldBrew={isColdBrew} />
                   {coachChangeMap.has("brewTime") && (
                     <CoachHintInline label={coachChangeMap.get("brewTime")!.suggestion} param="brewTime" />
                   )}
@@ -730,9 +762,11 @@ export default function GuidedRecipeDetailPage() {
   // ─── Main page ─────────────────────────────────────────────────────────────
 
   const isBrewing = phase === "brewing";
-  const progressPct = totalTimerSeconds > 0
-    ? Math.min(100, (elapsedSeconds / totalTimerSeconds) * 100)
-    : 0;
+  const progressPct = hasTimedSteps
+    ? Math.min(100, (brewElapsed / totalTimerSeconds) * 100)
+    : manualBrewStartElapsed !== null
+      ? Math.min(100, (manualElapsed / 300) * 100) // 5-min soft cap for visual fill
+      : 0;
 
   return (
     <>
@@ -751,21 +785,38 @@ export default function GuidedRecipeDetailPage() {
           <div className="size-10" />
         </div>
 
-        {/* Brewing progress bar — slides in when brewing starts */}
-        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isBrewing ? "max-h-16 opacity-100 pb-3 px-4" : "max-h-0 opacity-0"}`}>
-          <div className="flex justify-between items-center mb-1.5">
-            <p className="text-xs font-medium text-slate-400">Brewing Progress</p>
-            <p className="text-xs font-bold text-primary">
-              {formatTimer(elapsedSeconds)} / {formatTimer(totalTimerSeconds)}
-            </p>
+        {/* Brewing progress bar — hidden for cold brew, otherwise slides in when brewing starts */}
+        {!isColdBrew && (
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isBrewing ? "max-h-16 opacity-100 pb-3 px-4" : "max-h-0 opacity-0"}`}>
+            <div className="flex justify-between items-center mb-1.5">
+              <p className="text-xs font-medium text-slate-400">Brewing Progress</p>
+              {hasTimedSteps ? (
+                <p className="text-xs font-bold text-primary">
+                  {formatTimer(brewElapsed)} / {formatTimer(totalTimerSeconds)}
+                </p>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <p className="text-xs font-bold text-primary">{formatTimer(manualElapsed)}</p>
+                  {manualBrewStartElapsed === null && (
+                    <button
+                      type="button"
+                      onClick={() => setManualBrewStartElapsed(elapsedSeconds)}
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
+                    >
+                      Start
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="h-2 w-full rounded-full bg-primary/20 overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-1000"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
           </div>
-          <div className="h-2 w-full rounded-full bg-primary/20 overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-1000"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-        </div>
+        )}
       </header>
 
       {/* ── Scrollable content ── */}

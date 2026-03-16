@@ -27,11 +27,11 @@ function formatBrewTimeInput(raw: string): string {
 }
 
 function isValidBrewTime(val: string): boolean {
-  return /^\d{1,2}:\d{2}$/.test(val);
+  return /^\d+:\d{2}$/.test(val);
 }
 
 function normalizeBrewTime(val: string): string {
-  const match = val.match(/^(\d{1,2}):(\d{2})$/);
+  const match = val.match(/^(\d+):(\d{2})$/);
   if (!match) return "00:00";
   const mins = parseInt(match[1], 10);
   const secs = Math.min(59, parseInt(match[2], 10));
@@ -180,12 +180,12 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
               )}
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
-                  Brew Time
+                  {isColdBrew ? "Brew Time (h:mm)" : "Brew Time"}
                 </label>
                 <input
                   type="text"
                   inputMode="numeric"
-                  placeholder="mm:ss"
+                  placeholder={isColdBrew ? "h:mm" : "mm:ss"}
                   value={brewTimeDisplay}
                   onChange={handleBrewTimeChange}
                   className={inputClass}
