@@ -1,11 +1,11 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Image from "next/image";
 
-import { patchUserProfileApi } from "@/lib/api";
+import { getGrindersApi, patchUserProfileApi } from "@/lib/api";
 
 type MethodCardId =
   | "pour_over"
@@ -34,6 +34,18 @@ export default function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [ageError, setAgeError] = useState<string | null>(null);
+
+  // Grinder state
+  const [grinderList, setGrinderList] = useState<string[]>([]);
+  const [grinderName, setGrinderName] = useState<string | null>(null);
+  const [showGrinderPicker, setShowGrinderPicker] = useState(false);
+  const [customGrinderMode, setCustomGrinderMode] = useState(false);
+  const [customGrinderInput, setCustomGrinderInput] = useState("");
+  const [grinderError, setGrinderError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getGrindersApi().then(setGrinderList).catch(() => {});
+  }, []);
 
   const toggleEquipment = (id: MethodCardId) => {
     setEquipment((prev) =>
@@ -65,7 +77,7 @@ export default function OnboardingPage() {
     setSaving(true);
     setError(null);
     try {
-      await patchUserProfileApi({ name: name.trim(), age: ageNum, primary_equipment: equipment });
+      await patchUserProfileApi({ name: name.trim(), age: ageNum, primary_equipment: equipment, grinder_name: grinderName });
       await update({ profile_complete: true });
       window.location.href = "/";
     } catch (err) {
@@ -147,7 +159,6 @@ export default function OnboardingPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-slate-100 text-sm font-semibold uppercase tracking-wider ml-1">Primary Equipment</span>
-            <span className="text-xs text-primary/60 font-medium">Optional</span>
           </div>
           <div className="grid grid-cols-3 gap-3">
             {BREW_METHODS.map((method) => {
@@ -169,6 +180,106 @@ export default function OnboardingPage() {
               );
             })}
           </div>
+        </div>
+
+        {/* Hand Grinder */}
+        <div className="space-y-3">
+          <span className="text-slate-100 text-sm font-semibold uppercase tracking-wider ml-1">Hand Grinder</span>
+
+          {grinderName ? (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/30">
+              <span className="material-symbols-outlined text-primary">coffee</span>
+              <span className="flex-1 text-sm font-semibold text-slate-100 truncate">{grinderName}</span>
+              <button
+                type="button"
+                onClick={() => { setGrinderName(null); setShowGrinderPicker(false); setCustomGrinderMode(false); setCustomGrinderInput(""); }}
+                className="text-xs text-primary/70 hover:text-primary font-medium"
+              >
+                Remove
+              </button>
+            </div>
+          ) : !showGrinderPicker ? (
+            <button
+              type="button"
+              onClick={() => setShowGrinderPicker(true)}
+              className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-primary/20 text-primary/60 hover:border-primary/40 hover:text-primary/80 transition-colors"
+            >
+              <span className="material-symbols-outlined text-xl">add</span>
+              <span className="text-sm font-medium">Add a Grinder</span>
+            </button>
+          ) : (
+            <div className="space-y-3">
+              {!customGrinderMode ? (
+                <>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                    {grinderList.map((g) => (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => { setGrinderName(g); setShowGrinderPicker(false); }}
+                        className="p-2.5 rounded-xl bg-primary/5 border border-white/5 text-xs font-medium text-slate-300 text-left hover:border-primary/30 transition-colors truncate"
+                      >
+                        {g}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomGrinderMode(true)}
+                    className="text-xs text-primary font-semibold hover:underline"
+                  >
+                    My grinder isn&apos;t listed — add custom
+                  </button>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <input
+                    className="w-full rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50 border border-primary/20 bg-primary/5 h-12 placeholder:text-primary/30 px-4 text-sm transition-all"
+                    placeholder="Enter grinder name"
+                    type="text"
+                    maxLength={20}
+                    value={customGrinderInput}
+                    onChange={(e) => { setCustomGrinderInput(e.target.value); setGrinderError(null); }}
+                  />
+                  {grinderError && <p className="text-rose-400 text-xs ml-1">{grinderError}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { setCustomGrinderMode(false); setCustomGrinderInput(""); setGrinderError(null); }}
+                      className="flex-1 h-10 rounded-xl border border-primary/20 text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const trimmed = customGrinderInput.trim();
+                        if (!trimmed || !/^[A-Za-z0-9]+(?:\s[A-Za-z0-9]+)*$/.test(trimmed)) {
+                          setGrinderError("Letters, numbers, and spaces only (max 20 chars).");
+                          return;
+                        }
+                        setGrinderName(trimmed);
+                        setShowGrinderPicker(false);
+                        setCustomGrinderMode(false);
+                        setCustomGrinderInput("");
+                        setGrinderError(null);
+                      }}
+                      className="flex-1 h-10 rounded-xl bg-primary text-background-dark text-sm font-bold"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => { setShowGrinderPicker(false); setCustomGrinderMode(false); setCustomGrinderInput(""); }}
+                className="text-xs text-slate-500 hover:text-slate-300 font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Error */}

@@ -110,6 +110,7 @@ export default function BrewCoachPage() {
           waterTempC: brew.waterTempC,
           grindSize: brew.grindSize,
           brewTime: brew.brewTime,
+          ...(brew.grinderClicks ? { grinderClicks: brew.grinderClicks, grinderName: brew.grinderName ?? undefined } : {}),
         },
         recent_brews: recentBrewsForTrend,
       });
@@ -245,7 +246,9 @@ export default function BrewCoachPage() {
             </div>
             <div className="bg-background-dark/40 rounded-lg py-2">
               <p className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Grind</p>
-              <p className="text-xs font-bold text-slate-200 mt-0.5">{brew.grindSize}</p>
+              <p className="text-xs font-bold text-slate-200 mt-0.5">
+                {brew.grinderClicks ? `${brew.grinderClicks} clicks` : brew.grindSize}
+              </p>
             </div>
           </div>
           {brew.brewTime && (

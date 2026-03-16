@@ -264,6 +264,8 @@ export type CoachingPayloadApi = {
     waterTempC: number | null;
     grindSize: string;
     brewTime: string;
+    grinderClicks?: number;
+    grinderName?: string;
   };
   recent_brews?: Array<{
     rating: number | null;
@@ -291,7 +293,16 @@ export type UserProfileUpdatePayload = {
   age: number;
   avatar?: string;
   primary_equipment: string[];
+  grinder_name?: string | null;
 };
+
+export async function getGrindersApi() {
+  const response = await fetch("/api/grinders", requestInit());
+  if (!response.ok) {
+    throw new Error("Failed to fetch grinders");
+  }
+  return (await response.json()) as string[];
+}
 
 export async function patchUserProfileApi(payload: UserProfileUpdatePayload) {
   const response = await fetch(

@@ -32,6 +32,9 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
   const [waterMl, setWaterMl] = useState("");
   const [waterTempC, setWaterTempC] = useState("");
   const [grindSize, setGrindSize] = useState<FreestyleBrewEntry["grindSize"]>("Medium");
+  const [grinderName, setGrinderName] = useState<string | null>(null);
+  const [grinderClicks, setGrinderClicks] = useState("");
+  const [useClicks, setUseClicks] = useState(false);
   const [brewTime, setBrewTime] = useState("00:00");
   const [notes, setNotes] = useState("");
   const [tastingNotes, setTastingNotes] = useState<string[]>([]);
@@ -46,6 +49,9 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
     setWaterMl(entry.waterMl ? String(entry.waterMl) : "");
     setWaterTempC(entry.waterTempC ? String(entry.waterTempC) : "");
     setGrindSize(entry.grindSize ?? "Medium");
+    setGrinderName(entry.grinderName ?? null);
+    setGrinderClicks(entry.grinderClicks ? String(entry.grinderClicks) : "");
+    setUseClicks(!!entry.grinderName && !!entry.grinderClicks);
     setBrewTime(entry.brewTime ?? "00:00");
     setNotes(entry.notes ?? "");
     setTastingNotes(entry.tastingNotes ?? []);
@@ -61,7 +67,9 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
         coffeeGrams: coffeeGrams ? parseFloat(coffeeGrams) : entry.coffeeGrams,
         waterMl: waterMl ? parseFloat(waterMl) : entry.waterMl,
         waterTempC: isColdBrew ? null : (waterTempC ? parseFloat(waterTempC) : entry.waterTempC),
-        grindSize,
+        grindSize: useClicks ? entry.grindSize : grindSize,
+        grinderName: useClicks ? grinderName : null,
+        grinderClicks: useClicks && grinderClicks ? parseInt(grinderClicks, 10) : null,
         brewTime,
         notes: notes.trim() || null,
         tastingNotes: tastingNotes.length > 0 ? tastingNotes : null,
@@ -117,20 +125,43 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
           {/* Grind + Temp side by side */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                Grind Size
-              </label>
-              <select
-                value={grindSize}
-                onChange={(e) => setGrindSize(e.target.value as FreestyleBrewEntry["grindSize"])}
-                className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
-              >
-                {GRIND_SIZES.map((s) => (
-                  <option key={s} value={s} className="bg-[#1a0f00]">
-                    {s}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  {useClicks ? "Clicks" : "Grind Size"}
+                </label>
+                {grinderName && (
+                  <button
+                    type="button"
+                    onClick={() => setUseClicks((v) => !v)}
+                    className="text-[9px] font-semibold text-primary/60 hover:text-primary uppercase tracking-wider"
+                  >
+                    {useClicks ? "Size" : "Clicks"}
+                  </button>
+                )}
+              </div>
+              {useClicks && grinderName ? (
+                <input
+                  type="number"
+                  step="1"
+                  min="1"
+                  placeholder="Clicks"
+                  value={grinderClicks}
+                  onChange={(e) => setGrinderClicks(e.target.value)}
+                  className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
+                />
+              ) : (
+                <select
+                  value={grindSize}
+                  onChange={(e) => setGrindSize(e.target.value as FreestyleBrewEntry["grindSize"])}
+                  className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
+                >
+                  {GRIND_SIZES.map((s) => (
+                    <option key={s} value={s} className="bg-[#1a0f00]">
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
             {!isColdBrew && (
               <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -71,6 +71,12 @@ export default function LogBrewStepTwoPage() {
   const setCoachMode = useLogBrewStore((state) => state.setCoachMode);
 
   const entries = useBrewHistoryStore((state) => state.entries);
+  const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
+
+  // Ensure brew history is loaded (needed for coach card on fresh page load)
+  useEffect(() => {
+    if (entries.length === 0) fetchEntries();
+  }, [entries.length, fetchEntries]);
 
   const effectiveMethodId = useMemo(() => {
     if (selectedMethodId === "pour_over") {

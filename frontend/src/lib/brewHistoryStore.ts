@@ -17,6 +17,8 @@ export type FreestyleBrewEntry = {
   waterMl: number;
   waterTempC: number | null;
   grindSize: "Extra Fine" | "Fine" | "Medium-Fine" | "Medium" | "Medium-Coarse" | "Coarse";
+  grinderName: string | null;
+  grinderClicks: number | null;
   brewTime: string;
   notes: string | null;
   tastingNotes: string[] | null;
@@ -48,6 +50,8 @@ function toEntry(raw: Record<string, unknown>): FreestyleBrewEntry {
     waterMl: (raw.water_ml as number) ?? 0,
     waterTempC: (raw.water_temp_c as number | null) ?? null,
     grindSize: (raw.grind_size as FreestyleBrewEntry["grindSize"]) ?? "Medium",
+    grinderName: (raw.grinder_name as string | null) ?? null,
+    grinderClicks: (raw.grinder_clicks as number | null) ?? null,
     brewTime: (raw.brew_time as string) ?? "00:00",
     notes: (raw.notes as string | null) ?? null,
     tastingNotes: (raw.tasting_notes as string[] | null) ?? null,
@@ -88,6 +92,8 @@ export const useBrewHistoryStore = create<BrewHistoryStore>()((set) => ({
         water_ml: entry.waterMl,
         water_temp_c: entry.waterTempC,
         grind_size: entry.grindSize,
+        grinder_name: entry.grinderName,
+        grinder_clicks: entry.grinderClicks,
         brew_time: entry.brewTime,
         notes: entry.notes,
         tasting_notes: entry.tastingNotes ?? null,
@@ -111,6 +117,8 @@ export const useBrewHistoryStore = create<BrewHistoryStore>()((set) => ({
     if (patch.waterMl !== undefined) apiPatch.water_ml = patch.waterMl;
     if (patch.waterTempC !== undefined) apiPatch.water_temp_c = patch.waterTempC;
     if (patch.grindSize !== undefined) apiPatch.grind_size = patch.grindSize;
+    if (patch.grinderName !== undefined) apiPatch.grinder_name = patch.grinderName;
+    if (patch.grinderClicks !== undefined) apiPatch.grinder_clicks = patch.grinderClicks;
     if (patch.brewTime !== undefined) apiPatch.brew_time = patch.brewTime;
     if (patch.notes !== undefined) apiPatch.notes = patch.notes;
     if (patch.tastingNotes !== undefined) apiPatch.tasting_notes = patch.tastingNotes;

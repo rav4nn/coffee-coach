@@ -123,7 +123,7 @@ export function ProfileDrawer({ open, onClose }: ProfileDrawerProps) {
                 className="flex items-center gap-4 w-full px-4 py-4 rounded-xl hover:bg-primary/5 transition-colors group text-left"
               >
                 <span className="material-symbols-outlined text-slate-500 group-hover:text-primary">person</span>
-                <span className="text-base font-medium text-slate-300 group-hover:text-slate-100">Account Info</span>
+                <span className="text-base font-medium text-slate-300 group-hover:text-slate-100">Brewer Equipment</span>
                 <span className="material-symbols-outlined ml-auto text-slate-500 text-sm">chevron_right</span>
               </button>
             </li>

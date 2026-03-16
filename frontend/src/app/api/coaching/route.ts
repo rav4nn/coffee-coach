@@ -12,6 +12,8 @@ type CoachingPayload = {
     waterTempC: number | null;
     grindSize: string;
     brewTime: string;
+    grinderClicks?: number;
+    grinderName?: string;
   };
   recent_brews?: Array<{
     rating: number | null;
@@ -65,6 +67,13 @@ function computeNewValue(
 
   switch (param) {
     case "grindSize": {
+      // If user has grinder clicks, compute click-based adjustment
+      if (currentParams.grinderClicks != null && currentParams.grinderClicks > 0) {
+        const prev = currentParams.grinderClicks;
+        const delta = direction === "finer" ? -2 : 2;
+        const next = Math.max(1, prev + delta);
+        return { previousValue: prev, newValue: next };
+      }
       const prev = currentParams.grindSize;
       const next = shiftGrind(prev, direction as "finer" | "coarser");
       return { previousValue: prev, newValue: next };
@@ -302,10 +311,17 @@ export async function POST(request: Request) {
 
   // Compute actual new values if current params are available
   if (payload.current_params) {
+    const hasClicks = payload.current_params.grinderClicks != null && payload.current_params.grinderClicks > 0;
+    const grinderLabel = payload.current_params.grinderName ?? "your grinder";
     changes = changes.map((change) => {
       const computed = computeNewValue(change.param, change.direction, payload.current_params);
       if (computed) {
-        return { ...change, previousValue: computed.previousValue, newValue: computed.newValue };
+        let suggestion = change.suggestion;
+        // Override grind suggestion with clicks-specific text
+        if (change.param === "grindSize" && hasClicks) {
+          suggestion = `try ${computed.newValue} clicks instead of ${computed.previousValue} on your ${grinderLabel}`;
+        }
+        return { ...change, suggestion, previousValue: computed.previousValue, newValue: computed.newValue };
       }
       return change;
     });

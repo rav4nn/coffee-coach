@@ -112,10 +112,49 @@ export default function GuidedRecipeDetailPage() {
   const selectedBeanId = useLogBrewStore((state) => state.selectedBeanId);
   const selectedMethodId = useLogBrewStore((state) => state.selectedMethodId);
   const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
-  const coachBrewRef = useLogBrewStore((state) => state.coachBrewRef);
-  const coachChanges = useLogBrewStore((state) => state.coachChanges);
+  const explicitCoachBrewRef = useLogBrewStore((state) => state.coachBrewRef);
+  const explicitCoachChanges = useLogBrewStore((state) => state.coachChanges);
   const clearCoachMode = useLogBrewStore((state) => state.clearCoachMode);
-  const isCoachMode = !!coachBrewRef && coachChanges !== null;
+  const brewEntries = useBrewHistoryStore((state) => state.entries);
+
+  // Ensure brew history is loaded for auto-detect coach matching
+  useEffect(() => {
+    if (brewEntries.length === 0) fetchEntries();
+  }, [brewEntries.length, fetchEntries]);
+
+  // Fetch user grinder for confirm phase
+  useEffect(() => {
+    fetch("/api/users/me", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((user) => {
+        if (user.grinder_name) {
+          setConfirmGrinderName(user.grinder_name as string);
+          setConfirmUseClicks(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Auto-detect: find a coached brew for this exact recipe + bean combo
+  const autoDetectedCoach = useMemo(() => {
+    if (!selectedBeanId) return null;
+    const sorted = [...brewEntries].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return sorted.find(
+      (e) =>
+        e.recipeId === params.id &&
+        e.beanId === selectedBeanId &&
+        !!e.coachingFeedback &&
+        e.coachingChanges &&
+        e.coachingChanges.length > 0,
+    ) ?? null;
+  }, [brewEntries, params.id, selectedBeanId]);
+
+  // Coach mode is active only when recipe + bean match
+  const explicitMatchesRecipe = !!explicitCoachBrewRef && explicitCoachChanges !== null && explicitCoachBrewRef.recipeId === params.id && explicitCoachBrewRef.beanId === selectedBeanId;
+
+  const coachBrewRef = explicitMatchesRecipe ? explicitCoachBrewRef : autoDetectedCoach;
+  const coachChanges = explicitMatchesRecipe ? explicitCoachChanges : (autoDetectedCoach?.coachingChanges ?? null);
+  const isCoachMode = !!coachBrewRef && coachChanges !== null && coachChanges.length > 0;
 
   const [recipe, setRecipe] = useState<GuidedRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -132,6 +171,9 @@ export default function GuidedRecipeDetailPage() {
   const [confirmWaterMl, setConfirmWaterMl] = useState("");
   const [confirmWaterTempC, setConfirmWaterTempC] = useState("");
   const [confirmGrindSize, setConfirmGrindSize] = useState<typeof GRIND_SIZES[number]>("Medium");
+  const [confirmUseClicks, setConfirmUseClicks] = useState(false);
+  const [confirmGrinderName, setConfirmGrinderName] = useState<string | null>(null);
+  const [confirmGrinderClicks, setConfirmGrinderClicks] = useState("");
   const [confirmBrewTime, setConfirmBrewTime] = useState("00:00");
   const [confirmNotes, setConfirmNotes] = useState("");
   const [confirmStepTimes, setConfirmStepTimes] = useState<string[]>([]);
@@ -406,7 +448,9 @@ export default function GuidedRecipeDetailPage() {
         coffee_grams: parseFloat(confirmCoffeeG) || recipe.coffee_g,
         water_ml: parseFloat(confirmWaterMl) || recipe.water_ml,
         water_temp_c: confirmWaterTempC ? parseFloat(confirmWaterTempC) : (recipe.water_temp_c ?? null),
-        grind_size: confirmGrindSize,
+        grind_size: confirmUseClicks ? recipe.grind_size : confirmGrindSize,
+        grinder_name: confirmUseClicks && confirmGrinderName ? confirmGrinderName : null,
+        grinder_clicks: confirmUseClicks && confirmGrinderClicks ? parseInt(confirmGrinderClicks, 10) : null,
         brew_time: confirmBrewTime,
         notes: confirmNotes.trim() || null,
         total_brew_time_seconds: parseTimeToSeconds(confirmBrewTime),
@@ -586,16 +630,44 @@ export default function GuidedRecipeDetailPage() {
                 )}
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Grind Size</label>
-                  <select
-                    value={confirmGrindSize}
-                    onChange={(e) => setConfirmGrindSize(e.target.value as typeof GRIND_SIZES[number])}
-                    className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
-                  >
-                    {GRIND_SIZES.map((s) => (
-                      <option key={s} value={s} className="bg-[#1a0f00]">{s}</option>
-                    ))}
-                  </select>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      {confirmUseClicks ? "Clicks" : "Grind Size"}
+                    </label>
+                    {confirmGrinderName && (
+                      <button
+                        type="button"
+                        onClick={() => setConfirmUseClicks((v) => !v)}
+                        className="text-[9px] font-semibold text-primary/60 hover:text-primary uppercase tracking-wider"
+                      >
+                        {confirmUseClicks ? "Use size" : "Use clicks"}
+                      </button>
+                    )}
+                  </div>
+                  {confirmUseClicks && confirmGrinderName ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        step="1"
+                        min="1"
+                        placeholder="Clicks"
+                        value={confirmGrinderClicks}
+                        onChange={(e) => setConfirmGrinderClicks(e.target.value)}
+                        className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
+                      />
+                      <span className="text-[10px] text-slate-500 shrink-0">{confirmGrinderName}</span>
+                    </div>
+                  ) : (
+                    <select
+                      value={confirmGrindSize}
+                      onChange={(e) => setConfirmGrindSize(e.target.value as typeof GRIND_SIZES[number])}
+                      className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
+                    >
+                      {GRIND_SIZES.map((s) => (
+                        <option key={s} value={s} className="bg-[#1a0f00]">{s}</option>
+                      ))}
+                    </select>
+                  )}
                   {coachChangeMap.has("grindSize") && (
                     <CoachHintInline label={coachChangeMap.get("grindSize")!.suggestion} param="grindSize" />
                   )}
@@ -701,30 +773,15 @@ export default function GuidedRecipeDetailPage() {
 
             {/* Coach mode banner with merged advice */}
             {isCoachMode && (
-              <div className="mb-5 p-3 rounded-xl bg-primary/5 border border-primary/20">
-                <div className="flex items-center gap-3">
-                  <Image src="/coach/recipe_debrief.png" alt="Coach" width={48} height={48} className="w-12 h-12 object-contain shrink-0" />
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">Coach&apos;s Adjusted Recipe</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Parameters adjusted based on your last brew.</p>
-                  </div>
-                </div>
+              <div className="mb-5 p-4 rounded-xl bg-primary/5 border border-primary/20 flex flex-col items-center text-center">
+                <Image src="/coach/recipe_debrief.png" alt="Coach" width={80} height={80} className="w-20 h-20 object-contain mb-3" />
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Coach&apos;s Adjusted Recipe</p>
                 {coachChanges && coachChanges.filter((c) => c.suggestion).length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-primary/10 space-y-2">
-                    {coachChanges.filter((c) => c.suggestion).map((change, i) => (
-                      <div key={i} className="flex items-center gap-2.5">
-                        <Image
-                          src={coachAvatarForParam(change.param)}
-                          alt="Coach"
-                          width={32}
-                          height={32}
-                          className="w-8 h-8 object-contain shrink-0"
-                        />
-                        <p className="text-xs text-slate-300 leading-relaxed">{change.suggestion}</p>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-sm text-slate-200 leading-relaxed mb-1">
+                    Coach asked you to {coachChanges.filter((c) => c.suggestion).map((c) => c.suggestion?.toLowerCase()).join(", ")}.
+                  </p>
                 )}
+                <p className="text-xs text-slate-400">Parameters have been adjusted based on your last brew.</p>
               </div>
             )}
 

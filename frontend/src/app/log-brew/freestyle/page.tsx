@@ -46,6 +46,7 @@ const freestyleSchema = z.object({
   waterMl: z.coerce.number().positive("Enter water amount"),
   waterTempC: z.coerce.number().positive("Enter water temperature").optional(),
   grindSize: z.enum(grindSizeOptions),
+  grinderClicks: z.coerce.number().int().positive("Enter click count").optional(),
   brewTime: z
     .string()
     .regex(/^\d{2}:\d{2}$/, "Use mm:ss format"),
@@ -66,6 +67,22 @@ export default function FreestyleLogPage() {
   const clearCoachMode = useLogBrewStore((state) => state.clearCoachMode);
 
   const isCoachMode = !!coachBrewRef && coachChanges !== null;
+
+  // Grinder state — auto-detect from user profile
+  const [userGrinderName, setUserGrinderName] = useState<string | null>(null);
+  const [useClicks, setUseClicks] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/users/me", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((user) => {
+        if (user.grinder_name) {
+          setUserGrinderName(user.grinder_name as string);
+          setUseClicks(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const effectiveMethodId = useMemo(() => {
     if (selectedMethodId === "pour_over") {
@@ -181,7 +198,9 @@ export default function FreestyleLogPage() {
         coffeeGrams: values.coffeeGrams,
         waterMl: values.waterMl,
         waterTempC: isColdBrew ? null : (values.waterTempC ?? null),
-        grindSize: values.grindSize,
+        grindSize: useClicks ? "Medium" as const : values.grindSize,
+        grinderName: useClicks && userGrinderName ? userGrinderName : null,
+        grinderClicks: useClicks && values.grinderClicks ? values.grinderClicks : null,
         brewTime: values.brewTime,
         notes: values.notes?.trim() ? values.notes.trim() : null,
         tastingNotes: tastingNotes.length > 0 ? tastingNotes : null,
@@ -253,31 +272,61 @@ export default function FreestyleLogPage() {
         ) : null}
 
         <div className="space-y-2">
-          <Label htmlFor="grind-size">Grind Size</Label>
-          <select
-            id="grind-size"
-            {...form.register("grindSize")}
-            className="h-10 w-full rounded-xl border border-mocha/20 bg-steam px-3 text-sm text-espresso outline-none focus:ring-2 focus:ring-mocha/40"
-          >
-            {grindSizeOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-          {errors.grindSize ? <p className="text-xs text-red-700">{errors.grindSize.message}</p> : null}
-          {coachChangeMap.has("grindSize") ? (
+          <div className="flex items-center justify-between">
+            <Label htmlFor="grind-size">Grind</Label>
+            {userGrinderName && (
+              <button
+                type="button"
+                onClick={() => setUseClicks((v) => !v)}
+                className="text-[10px] font-semibold uppercase tracking-wider text-mocha/60 hover:text-mocha transition-colors"
+              >
+                {useClicks ? "Use grind size" : "Use clicks"}
+              </button>
+            )}
+          </div>
+          {useClicks && userGrinderName ? (
+            <>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="grinder-clicks"
+                  type="number"
+                  step="1"
+                  min="1"
+                  placeholder="Clicks"
+                  {...form.register("grinderClicks")}
+                  className="flex-1"
+                />
+                <span className="text-xs text-mocha/60 shrink-0">on {userGrinderName}</span>
+              </div>
+              {errors.grinderClicks ? <p className="text-xs text-red-700">{errors.grinderClicks.message}</p> : null}
+            </>
+          ) : (
+            <>
+              <select
+                id="grind-size"
+                {...form.register("grindSize")}
+                className="h-10 w-full rounded-xl border border-mocha/20 bg-steam px-3 text-sm text-espresso outline-none focus:ring-2 focus:ring-mocha/40"
+              >
+                {grindSizeOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              {errors.grindSize ? <p className="text-xs text-red-700">{errors.grindSize.message}</p> : null}
+              {grindPreFilled && !errors.grindSize && (
+                <p className="text-xs text-mocha/60 flex items-center gap-1 mt-0.5">
+                  <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>history</span>
+                  Pre-filled from your last brew with this bean
+                </p>
+              )}
+            </>
+          )}
+          {coachChangeMap.has("grindSize") && (
             <CoachHint
               change={coachChangeMap.get("grindSize")!}
               originalValue={coachBrewRef?.grindSize}
             />
-          ) : (
-            grindPreFilled && !errors.grindSize && (
-              <p className="text-xs text-mocha/60 flex items-center gap-1 mt-0.5">
-                <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>history</span>
-                Pre-filled from your last brew with this bean
-              </p>
-            )
           )}
         </div>
 

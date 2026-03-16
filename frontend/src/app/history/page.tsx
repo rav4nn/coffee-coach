@@ -136,7 +136,9 @@ function BrewCard({ entry, beanName, isOpen, onToggle, onEdit }: BrewCardProps) 
             </div>
             <div className="bg-primary/10 rounded-xl py-2 px-1">
               <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Grind</p>
-              <p className="text-sm font-bold text-slate-100 mt-0.5">{entry.grindSize}</p>
+              <p className="text-sm font-bold text-slate-100 mt-0.5">
+                {entry.grinderClicks ? `${entry.grinderClicks} clicks` : entry.grindSize}
+              </p>
             </div>
             <div className="bg-primary/10 rounded-xl py-2 px-1">
               <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Temp</p>
