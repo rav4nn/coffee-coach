@@ -9,8 +9,6 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { BrewTimePicker } from "@/components/BrewTimePicker";
 import { useBrewHistoryStore, type FreestyleBrewEntry, type CoachingChange } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 
@@ -39,6 +37,25 @@ function CoachHint({ change, originalValue }: { change: CoachingChange; original
       </p>
     </div>
   );
+}
+
+/** Auto-format a brew time input: as user types digits, format as mm:ss */
+function formatBrewTimeInput(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, digits.length - 2)}:${digits.slice(-2)}`;
+}
+
+function isValidBrewTime(val: string): boolean {
+  return /^\d{1,2}:\d{2}$/.test(val);
+}
+
+function normalizeBrewTime(val: string): string {
+  const match = val.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return "00:00";
+  const mins = parseInt(match[1], 10);
+  const secs = Math.min(59, parseInt(match[2], 10));
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 }
 
 const freestyleSchema = z.object({
@@ -105,7 +122,6 @@ export default function FreestyleLogPage() {
       notes: "",
     };
 
-    // Apply computed values from coach, with grind shift as fallback
     for (const change of coachChanges!) {
       if (change.newValue != null) {
         if (change.param === "coffeeGrams") defaults.coffeeGrams = change.newValue as number;
@@ -113,7 +129,6 @@ export default function FreestyleLogPage() {
         if (change.param === "grindSize") defaults.grindSize = change.newValue as typeof defaults.grindSize;
         if (change.param === "brewTime") defaults.brewTime = change.newValue as string;
       } else if (change.param === "grindSize" && (change.direction === "finer" || change.direction === "coarser")) {
-        // Fallback for old coaching changes without computed values
         defaults.grindSize = shiftGrind(defaults.grindSize, change.direction) as typeof defaults.grindSize;
       }
     }
@@ -121,7 +136,6 @@ export default function FreestyleLogPage() {
     return defaults;
   }, [isCoachMode, coachBrewRef, coachChanges]);
 
-  // Build a map of which params have coach changes for easy lookup
   const coachChangeMap = useMemo(() => {
     if (!coachChanges) return new Map<string, CoachingChange>();
     const map = new Map<string, CoachingChange>();
@@ -132,7 +146,7 @@ export default function FreestyleLogPage() {
   }, [coachChanges]);
 
   const lastGrindForBean = useMemo(() => {
-    if (isCoachMode) return null; // Skip when in coach mode
+    if (isCoachMode) return null;
     if (!selectedBeanId) return null;
     const sorted = [...brewEntries]
       .filter((e): e is FreestyleBrewEntry & { grindSize: NonNullable<FreestyleBrewEntry["grindSize"]> } =>
@@ -163,16 +177,27 @@ export default function FreestyleLogPage() {
     }
   }, [lastGrindForBean, setValue, isCoachMode]);
 
+  // Brew time — local display value for auto-formatting
+  const [brewTimeDisplay, setBrewTimeDisplay] = useState(form.getValues("brewTime") ?? "00:00");
+
   const [tastingNotes, setTastingNotes] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const errors = form.formState.errors;
 
+  function handleBrewTimeChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const formatted = formatBrewTimeInput(e.target.value);
+    setBrewTimeDisplay(formatted);
+    if (isValidBrewTime(formatted)) {
+      const normalized = normalizeBrewTime(formatted);
+      form.setValue("brewTime", normalized, { shouldValidate: true });
+    }
+  }
+
   async function onSubmit(values: FreestyleForm) {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      // Compute coach adherence if in coach mode
       let coachFollowed: boolean | null = null;
       let coachSourceBrewId: string | null = null;
       if (isCoachMode && coachBrewRef && coachChanges) {
@@ -238,70 +263,116 @@ export default function FreestyleLogPage() {
         )}
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 rounded-3xl border border-mocha/10 bg-steam p-4 shadow-card">
-        <div className="space-y-2">
-          <Label htmlFor="coffee-grams">Coffee (g)</Label>
-          <Input id="coffee-grams" type="number" step="0.1" {...form.register("coffeeGrams")} />
-          {errors.coffeeGrams ? <p className="text-xs text-red-700">{errors.coffeeGrams.message}</p> : null}
-          {coachChangeMap.has("coffeeGrams") && (
-            <CoachHint
-              change={coachChangeMap.get("coffeeGrams")!}
-              originalValue={coachBrewRef ? `${coachBrewRef.coffeeGrams}g` : undefined}
-            />
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="water-ml">Water (ml)</Label>
-          <Input id="water-ml" type="number" step="1" {...form.register("waterMl")} />
-          {errors.waterMl ? <p className="text-xs text-red-700">{errors.waterMl.message}</p> : null}
-        </div>
-
-        {!isColdBrew ? (
-          <div className="space-y-2">
-            <Label htmlFor="water-temp">Water Temperature (°C)</Label>
-            <Input id="water-temp" type="number" step="1" {...form.register("waterTempC")} />
-            {errors.waterTempC ? <p className="text-xs text-red-700">{errors.waterTempC.message}</p> : null}
-            {coachChangeMap.has("waterTempC") && (
-              <CoachHint
-                change={coachChangeMap.get("waterTempC")!}
-                originalValue={coachBrewRef?.waterTempC ? `${coachBrewRef.waterTempC}°C` : undefined}
-              />
-            )}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        {/* ── Brewing Essentials ──────────────────────────────────── */}
+        <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="material-symbols-outlined text-primary text-lg">coffee_maker</span>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Brewing Essentials</h2>
           </div>
-        ) : null}
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="grind-size">Grind</Label>
+          {/* Row 1: Coffee + Water */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="coffee-grams" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Coffee (g)
+              </label>
+              <Input id="coffee-grams" type="number" step="0.1" {...form.register("coffeeGrams")} />
+              {errors.coffeeGrams ? <p className="text-xs text-red-700 mt-0.5">{errors.coffeeGrams.message}</p> : null}
+              {coachChangeMap.has("coffeeGrams") && (
+                <CoachHint
+                  change={coachChangeMap.get("coffeeGrams")!}
+                  originalValue={coachBrewRef ? `${coachBrewRef.coffeeGrams}g` : undefined}
+                />
+              )}
+            </div>
+            <div>
+              <label htmlFor="water-ml" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Water (ml)
+              </label>
+              <Input id="water-ml" type="number" step="1" {...form.register("waterMl")} />
+              {errors.waterMl ? <p className="text-xs text-red-700 mt-0.5">{errors.waterMl.message}</p> : null}
+            </div>
+          </div>
+
+          {/* Row 2: Water Temp + Brew Time */}
+          <div className={`grid gap-3 ${isColdBrew ? "grid-cols-1" : "grid-cols-2"}`}>
+            {!isColdBrew && (
+              <div>
+                <label htmlFor="water-temp" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                  Temp (°C)
+                </label>
+                <Input id="water-temp" type="number" step="1" {...form.register("waterTempC")} />
+                {errors.waterTempC ? <p className="text-xs text-red-700 mt-0.5">{errors.waterTempC.message}</p> : null}
+                {coachChangeMap.has("waterTempC") && (
+                  <CoachHint
+                    change={coachChangeMap.get("waterTempC")!}
+                    originalValue={coachBrewRef?.waterTempC ? `${coachBrewRef.waterTempC}°C` : undefined}
+                  />
+                )}
+              </div>
+            )}
+            <div>
+              <label htmlFor="brew-time" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Brew Time
+              </label>
+              <Input
+                id="brew-time"
+                type="text"
+                inputMode="numeric"
+                placeholder="mm:ss"
+                value={brewTimeDisplay}
+                onChange={handleBrewTimeChange}
+              />
+              {errors.brewTime ? <p className="text-xs text-red-700 mt-0.5">{errors.brewTime.message}</p> : null}
+              {coachChangeMap.has("brewTime") && (
+                <CoachHint
+                  change={coachChangeMap.get("brewTime")!}
+                  originalValue={coachBrewRef?.brewTime}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Grind Setting ──────────────────────────────────────── */}
+        <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-lg">tune</span>
+              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Grind Setting</h2>
+            </div>
             {userGrinderName && (
               <button
                 type="button"
                 onClick={() => setUseClicks((v) => !v)}
-                className="text-[10px] font-semibold uppercase tracking-wider text-mocha/60 hover:text-mocha transition-colors"
+                className="text-[10px] font-semibold uppercase tracking-wider text-primary/70 hover:text-primary transition-colors"
               >
                 {useClicks ? "Use grind size" : "Use clicks"}
               </button>
             )}
           </div>
+
           {useClicks && userGrinderName ? (
-            <>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="grinder-clicks"
-                  type="number"
-                  step="1"
-                  min="1"
-                  placeholder="Clicks"
-                  {...form.register("grinderClicks")}
-                  className="flex-1"
-                />
-                <span className="text-xs text-mocha/60 shrink-0">on {userGrinderName}</span>
-              </div>
-              {errors.grinderClicks ? <p className="text-xs text-red-700">{errors.grinderClicks.message}</p> : null}
-            </>
+            <div>
+              <label htmlFor="grinder-clicks" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Clicks on {userGrinderName}
+              </label>
+              <Input
+                id="grinder-clicks"
+                type="number"
+                step="1"
+                min="1"
+                placeholder="e.g. 24"
+                {...form.register("grinderClicks")}
+              />
+              {errors.grinderClicks ? <p className="text-xs text-red-700 mt-0.5">{errors.grinderClicks.message}</p> : null}
+            </div>
           ) : (
-            <>
+            <div>
+              <label htmlFor="grind-size" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Grind Size
+              </label>
               <select
                 id="grind-size"
                 {...form.register("grindSize")}
@@ -313,14 +384,14 @@ export default function FreestyleLogPage() {
                   </option>
                 ))}
               </select>
-              {errors.grindSize ? <p className="text-xs text-red-700">{errors.grindSize.message}</p> : null}
+              {errors.grindSize ? <p className="text-xs text-red-700 mt-0.5">{errors.grindSize.message}</p> : null}
               {grindPreFilled && !errors.grindSize && (
                 <p className="text-xs text-mocha/60 flex items-center gap-1 mt-0.5">
                   <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>history</span>
                   Pre-filled from your last brew with this bean
                 </p>
               )}
-            </>
+            </div>
           )}
           {coachChangeMap.has("grindSize") && (
             <CoachHint
@@ -330,24 +401,12 @@ export default function FreestyleLogPage() {
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label>Brew Time</Label>
-          <BrewTimePicker
-            value={form.watch("brewTime")}
-            onChange={(v) => form.setValue("brewTime", v, { shouldValidate: true })}
-          />
-          {errors.brewTime ? <p className="text-xs text-red-700">{errors.brewTime.message}</p> : null}
-          {coachChangeMap.has("brewTime") && (
-            <CoachHint
-              change={coachChangeMap.get("brewTime")!}
-              originalValue={coachBrewRef?.brewTime}
-            />
-          )}
-        </div>
-
-        {/* Tasting notes */}
-        <div className="space-y-2">
-          <Label>How did it taste? (Optional)</Label>
+        {/* ── Tasting Notes ──────────────────────────────────────── */}
+        <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="material-symbols-outlined text-primary text-lg">restaurant</span>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">How did it taste?</h2>
+          </div>
           <div className="flex flex-wrap gap-2">
             {(["Sweet", "Sour", "Bitter", "Bright", "Flat", "Roasty", "Floral", "Fruity", "Nutty", "Chocolatey"] as const).map((chip) => {
               const selected = tastingNotes.includes(chip);
@@ -375,11 +434,15 @@ export default function FreestyleLogPage() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="notes">Notes (Optional)</Label>
+        {/* ── Notes ──────────────────────────────────────────────── */}
+        <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-2">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="material-symbols-outlined text-primary text-lg">edit_note</span>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Notes</h2>
+          </div>
           <textarea
             id="notes"
-            rows={4}
+            rows={3}
             {...form.register("notes")}
             className="w-full rounded-xl border border-mocha/20 bg-steam px-3 py-2 text-sm text-espresso outline-none focus:ring-2 focus:ring-mocha/40"
             placeholder="Any quick observations about this brew..."

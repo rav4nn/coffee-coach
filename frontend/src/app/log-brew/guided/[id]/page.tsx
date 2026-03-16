@@ -66,11 +66,11 @@ function methodImage(method: string): string {
 }
 
 function coachAvatarForParam(param: string): string {
-  if (param === "grindSize") return "/coach/judging_the_grind.png";
-  if (param === "brewTime") return "/coach/timing_the_brew.png";
-  if (param === "coffeeGrams") return "/coach/cupping_evaluation.png";
-  if (param === "waterTempC") return "/coach/guiding_the_pour.png";
-  return "/coach/recipe_debrief.png";
+  if (param === "grindSize") return "/coach/img3_holding_whistle.png";
+  if (param === "brewTime") return "/coach/img2_reading_book.png";
+  if (param === "coffeeGrams") return "/coach/img2_painting.png";
+  if (param === "waterTempC") return "/coach/img3_waving.png";
+  return "/coach/img3_thumbs_whistle.png";
 }
 
 function methodDisplayName(method: string): string {
@@ -89,7 +89,7 @@ function CoachHintInline({ label, param }: { label: string; param?: string }) {
   return (
     <div className="flex items-center gap-3 mt-2 px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/20">
       <Image
-        src={param ? coachAvatarForParam(param) : "/coach/recipe_debrief.png"}
+        src={param ? coachAvatarForParam(param) : "/coach/img3_thumbs_whistle.png"}
         alt="Coach"
         width={40}
         height={40}
@@ -762,7 +762,7 @@ export default function GuidedRecipeDetailPage() {
       </header>
 
       {/* ── Scrollable content ── */}
-      <main ref={scrollContainerRef} className="flex-1 overflow-y-auto pb-36">
+      <main ref={scrollContainerRef} className="flex-1 overflow-y-auto pb-56">
         <div className="p-4">
 
           {/* === COLLAPSIBLE: Recipe info + Image + Brew params === */}
@@ -774,7 +774,7 @@ export default function GuidedRecipeDetailPage() {
             {/* Coach mode banner with merged advice */}
             {isCoachMode && (
               <div className="mb-5 p-4 rounded-xl bg-primary/5 border border-primary/20 flex flex-col items-center text-center">
-                <Image src="/coach/recipe_debrief.png" alt="Coach" width={80} height={80} className="w-20 h-20 object-contain mb-3" />
+                <Image src="/coach/img3_thumbs_whistle.png" alt="Coach" width={80} height={80} className="w-20 h-20 object-contain mb-3" />
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Coach&apos;s Adjusted Recipe</p>
                 {coachChanges && coachChanges.filter((c) => c.suggestion).length > 0 && (
                   <p className="text-sm text-slate-200 leading-relaxed mb-1">
