@@ -110,8 +110,12 @@ export default function LogBrewStepTwoPage() {
     }
 
     if (choice === "coach" && coachedBrew) {
-      setCoachMode(coachedBrew, coachedBrew.coachingChanges ?? []);
-      router.push("/log-brew/freestyle");
+      setCoachMode(coachedBrew, coachedBrew.coachingChanges ?? [], coachedBrew.recipeId);
+      if (coachedBrew.recipeId && coachedBrew.brewType === "guided") {
+        router.push(`/log-brew/guided/${coachedBrew.recipeId}`);
+      } else {
+        router.push("/log-brew/freestyle");
+      }
       return;
     }
 

@@ -236,6 +236,14 @@ export type CoachingChangeApi = {
   param: "grindSize" | "brewTime" | "coffeeGrams" | "waterTempC";
   direction: "finer" | "coarser" | "increase" | "decrease";
   suggestion: string;
+  previousValue?: string | number;
+  newValue?: string | number;
+};
+
+export type CoachingEscalation = {
+  type: "recipe" | "method" | "beans";
+  message: string;
+  suggested_recipe_id?: string;
 };
 
 export type CoachingResponseApi = {
@@ -243,13 +251,28 @@ export type CoachingResponseApi = {
   changes?: CoachingChangeApi[];
   freshness_caveat?: string;
   trend?: "improving" | "worsening" | "oscillating" | "plateau" | string;
+  escalation?: CoachingEscalation;
 };
 
-export async function postCoachingApi(payload: {
+export type CoachingPayloadApi = {
   brew_id: string;
   symptom?: string;
   goals?: string[];
-}) {
+  current_params?: {
+    coffeeGrams: number;
+    waterMl: number;
+    waterTempC: number | null;
+    grindSize: string;
+    brewTime: string;
+  };
+  recent_brews?: Array<{
+    rating: number | null;
+    coaching_changes: CoachingChangeApi[] | null;
+    coach_followed: boolean | null;
+  }>;
+};
+
+export async function postCoachingApi(payload: CoachingPayloadApi) {
   const response = await fetch(
     "/api/coaching",
     requestInit({

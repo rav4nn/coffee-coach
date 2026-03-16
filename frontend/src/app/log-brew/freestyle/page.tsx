@@ -88,9 +88,15 @@ export default function FreestyleLogPage() {
       notes: "",
     };
 
-    // Apply grind shifts
+    // Apply computed values from coach, with grind shift as fallback
     for (const change of coachChanges!) {
-      if (change.param === "grindSize" && (change.direction === "finer" || change.direction === "coarser")) {
+      if (change.newValue != null) {
+        if (change.param === "coffeeGrams") defaults.coffeeGrams = change.newValue as number;
+        if (change.param === "waterTempC") defaults.waterTempC = change.newValue as number;
+        if (change.param === "grindSize") defaults.grindSize = change.newValue as typeof defaults.grindSize;
+        if (change.param === "brewTime") defaults.brewTime = change.newValue as string;
+      } else if (change.param === "grindSize" && (change.direction === "finer" || change.direction === "coarser")) {
+        // Fallback for old coaching changes without computed values
         defaults.grindSize = shiftGrind(defaults.grindSize, change.direction) as typeof defaults.grindSize;
       }
     }
@@ -149,6 +155,26 @@ export default function FreestyleLogPage() {
     setSubmitting(true);
     setSubmitError(null);
     try {
+      // Compute coach adherence if in coach mode
+      let coachFollowed: boolean | null = null;
+      let coachSourceBrewId: string | null = null;
+      if (isCoachMode && coachBrewRef && coachChanges) {
+        coachSourceBrewId = coachBrewRef.id;
+        coachFollowed = true;
+        for (const change of coachChanges) {
+          if (change.newValue == null) continue;
+          if (change.param === "grindSize" && values.grindSize !== change.newValue) {
+            coachFollowed = false;
+          }
+          if (change.param === "coffeeGrams" && Math.abs(values.coffeeGrams - (change.newValue as number)) > (change.newValue as number) * 0.1) {
+            coachFollowed = false;
+          }
+          if (change.param === "waterTempC" && values.waterTempC != null && Math.abs(values.waterTempC - (change.newValue as number)) > (change.newValue as number) * 0.1) {
+            coachFollowed = false;
+          }
+        }
+      }
+
       await addEntry({
         beanId: selectedBeanId,
         methodId: effectiveMethodId,
@@ -159,6 +185,8 @@ export default function FreestyleLogPage() {
         brewTime: values.brewTime,
         notes: values.notes?.trim() ? values.notes.trim() : null,
         tastingNotes: tastingNotes.length > 0 ? tastingNotes : null,
+        coachSourceBrewId,
+        coachFollowed,
       });
       clearCoachMode();
       const newId = useBrewHistoryStore.getState().entries[0]?.id ?? "";

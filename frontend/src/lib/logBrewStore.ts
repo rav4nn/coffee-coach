@@ -15,7 +15,8 @@ type LogBrewSelectionStore = {
   // Coach mode — not persisted
   coachBrewRef: FreestyleBrewEntry | null;
   coachChanges: CoachingChange[] | null;
-  setCoachMode: (brew: FreestyleBrewEntry, changes: CoachingChange[]) => void;
+  coachRecipeId: string | null;
+  setCoachMode: (brew: FreestyleBrewEntry, changes: CoachingChange[], recipeId?: string | null) => void;
   clearCoachMode: () => void;
 };
 
@@ -33,10 +34,11 @@ export const useLogBrewStore = create<LogBrewSelectionStore>()(
         }),
       coachBrewRef: null,
       coachChanges: null,
-      setCoachMode: (brew, changes) =>
-        set({ coachBrewRef: brew, coachChanges: changes }),
+      coachRecipeId: null,
+      setCoachMode: (brew, changes, recipeId) =>
+        set({ coachBrewRef: brew, coachChanges: changes, coachRecipeId: recipeId ?? null }),
       clearCoachMode: () =>
-        set({ coachBrewRef: null, coachChanges: null }),
+        set({ coachBrewRef: null, coachChanges: null, coachRecipeId: null }),
     }),
     {
       name: "coffee-coach-log-brew-selection",

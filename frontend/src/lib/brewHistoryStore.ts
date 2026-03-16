@@ -20,6 +20,10 @@ export type FreestyleBrewEntry = {
   brewTime: string;
   notes: string | null;
   tastingNotes: string[] | null;
+  recipeId?: string | null;
+  brewType?: "freestyle" | "guided" | null;
+  coachSourceBrewId?: string | null;
+  coachFollowed?: boolean | null;
 };
 
 type BrewHistoryStore = {
@@ -47,6 +51,10 @@ function toEntry(raw: Record<string, unknown>): FreestyleBrewEntry {
     brewTime: (raw.brew_time as string) ?? "00:00",
     notes: (raw.notes as string | null) ?? null,
     tastingNotes: (raw.tasting_notes as string[] | null) ?? null,
+    recipeId: (raw.recipe_id as string | null) ?? null,
+    brewType: (raw.brew_type as "freestyle" | "guided" | null) ?? null,
+    coachSourceBrewId: (raw.coach_source_brew_id as string | null) ?? null,
+    coachFollowed: (raw.coach_followed as boolean | null) ?? null,
   };
 }
 
@@ -73,7 +81,7 @@ export const useBrewHistoryStore = create<BrewHistoryStore>()((set) => ({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        brew_type: "freestyle",
+        brew_type: entry.brewType ?? "freestyle",
         bean_id: entry.beanId,
         method_id: entry.methodId,
         coffee_grams: entry.coffeeGrams,
@@ -83,6 +91,8 @@ export const useBrewHistoryStore = create<BrewHistoryStore>()((set) => ({
         brew_time: entry.brewTime,
         notes: entry.notes,
         tasting_notes: entry.tastingNotes ?? null,
+        ...(entry.coachSourceBrewId ? { coach_source_brew_id: entry.coachSourceBrewId } : {}),
+        ...(entry.coachFollowed != null ? { coach_followed: entry.coachFollowed } : {}),
       }),
     });
     if (!res.ok) throw new Error("Failed to save brew");

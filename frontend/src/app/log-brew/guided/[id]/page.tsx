@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
-import { getRecipeByIdApi, postBrewApi, type GuidedRecipe } from "@/lib/api";
+import { getRecipeByIdApi, postBrewApi, type GuidedRecipe, type CoachingChangeApi } from "@/lib/api";
 import { useBrewSessionStore } from "@/lib/brewSessionStore";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
@@ -53,6 +54,15 @@ function methodIcon(method: string): string {
   return "coffee";
 }
 
+function CoachHintInline({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-1 mt-1">
+      <Image src="/coach/img3_whistle_blowing.png" alt="" width={12} height={12} className="w-3 h-3 object-contain" />
+      <p className="text-[10px] text-primary">{label}</p>
+    </div>
+  );
+}
+
 export default function GuidedRecipeDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -65,6 +75,10 @@ export default function GuidedRecipeDetailPage() {
   const selectedBeanId = useLogBrewStore((state) => state.selectedBeanId);
   const selectedMethodId = useLogBrewStore((state) => state.selectedMethodId);
   const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
+  const coachBrewRef = useLogBrewStore((state) => state.coachBrewRef);
+  const coachChanges = useLogBrewStore((state) => state.coachChanges);
+  const clearCoachMode = useLogBrewStore((state) => state.clearCoachMode);
+  const isCoachMode = !!coachBrewRef && coachChanges !== null;
 
   const [recipe, setRecipe] = useState<GuidedRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -117,10 +131,12 @@ export default function GuidedRecipeDetailPage() {
               formatTimer(step.actual_duration_seconds ?? step.expected_duration_seconds ?? 0)
             );
             setConfirmStepTimes(stepTimes);
-            setConfirmCoffeeG(String(data.coffee_g));
-            setConfirmWaterMl(String(data.water_ml));
-            setConfirmWaterTempC(String(data.water_temp_c ?? ""));
-            const grind = GRIND_SIZES.find((g) => g.toLowerCase() === data.grind_size?.toLowerCase()) ?? "Medium";
+            const ep = coachModifiedParams;
+            setConfirmCoffeeG(String(ep?.coffee_g ?? data.coffee_g));
+            setConfirmWaterMl(String(ep?.water_ml ?? data.water_ml));
+            setConfirmWaterTempC(String(ep?.water_temp_c ?? data.water_temp_c ?? ""));
+            const grindVal = ep?.grind_size ?? data.grind_size;
+            const grind = GRIND_SIZES.find((g) => g.toLowerCase() === grindVal?.toLowerCase()) ?? "Medium";
             setConfirmGrindSize(grind);
             setConfirmBrewTime(formatTimer(existingSession.total_brew_time_seconds));
             setPhase("confirm");
@@ -158,6 +174,41 @@ export default function GuidedRecipeDetailPage() {
       target_water_g: pourByTime.get(step.time_seconds) ?? null,
     }));
   }, [recipe]);
+
+  const coachModifiedParams = useMemo(() => {
+    if (!coachChanges || !recipe) return null;
+    const params = {
+      coffee_g: recipe.coffee_g,
+      water_ml: recipe.water_ml,
+      water_temp_c: recipe.water_temp_c,
+      grind_size: recipe.grind_size,
+      brew_time_seconds: recipe.brew_time_seconds,
+    };
+    for (const change of coachChanges) {
+      if (change.newValue != null) {
+        if (change.param === "coffeeGrams") params.coffee_g = change.newValue as number;
+        if (change.param === "waterTempC") params.water_temp_c = change.newValue as number;
+        if (change.param === "grindSize") params.grind_size = change.newValue as string;
+        if (change.param === "brewTime") params.brew_time_seconds = parseTimeToSeconds(change.newValue as string);
+      }
+    }
+    return params;
+  }, [coachChanges, recipe]);
+
+  const coachChangeMap = useMemo(() => {
+    if (!coachChanges) return new Map<string, CoachingChangeApi>();
+    const map = new Map<string, CoachingChangeApi>();
+    for (const c of coachChanges) map.set(c.param, c);
+    return map;
+  }, [coachChanges]);
+
+  const effectiveParams = coachModifiedParams ?? (recipe ? {
+    coffee_g: recipe.coffee_g,
+    water_ml: recipe.water_ml,
+    water_temp_c: recipe.water_temp_c,
+    grind_size: recipe.grind_size,
+    brew_time_seconds: recipe.brew_time_seconds,
+  } : null);
 
   // Total of only timed steps — used for the brew timer progress bar
   const totalTimerSeconds = useMemo(
@@ -271,10 +322,12 @@ export default function GuidedRecipeDetailPage() {
       );
       setConfirmStepTimes(stepTimes);
       if (recipe) {
-        setConfirmCoffeeG(String(recipe.coffee_g));
-        setConfirmWaterMl(String(recipe.water_ml));
-        setConfirmWaterTempC(String(recipe.water_temp_c ?? ""));
-        const grind = GRIND_SIZES.find((g) => g.toLowerCase() === recipe.grind_size?.toLowerCase()) ?? "Medium";
+        const ep = effectiveParams;
+        setConfirmCoffeeG(String(ep?.coffee_g ?? recipe.coffee_g));
+        setConfirmWaterMl(String(ep?.water_ml ?? recipe.water_ml));
+        setConfirmWaterTempC(String(ep?.water_temp_c ?? recipe.water_temp_c ?? ""));
+        const grindVal = ep?.grind_size ?? recipe.grind_size;
+        const grind = GRIND_SIZES.find((g) => g.toLowerCase() === grindVal?.toLowerCase()) ?? "Medium";
         setConfirmGrindSize(grind);
       }
       setConfirmBrewTime(formatTimer(elapsedSeconds));
@@ -292,6 +345,22 @@ export default function GuidedRecipeDetailPage() {
     setSaveError(null);
     try {
       const finalSession = useBrewSessionStore.getState().session;
+
+      let coachFollowed: boolean | null = null;
+      let coachSourceBrewId: string | null = null;
+      if (isCoachMode && coachBrewRef && coachModifiedParams) {
+        coachSourceBrewId = coachBrewRef.id;
+        const submittedCoffee = parseFloat(confirmCoffeeG) || recipe.coffee_g;
+        const submittedGrind = confirmGrindSize;
+        coachFollowed = true;
+        if (coachChangeMap.has("coffeeGrams") && Math.abs(submittedCoffee - coachModifiedParams.coffee_g) > coachModifiedParams.coffee_g * 0.1) {
+          coachFollowed = false;
+        }
+        if (coachChangeMap.has("grindSize") && submittedGrind.toLowerCase() !== coachModifiedParams.grind_size?.toLowerCase()) {
+          coachFollowed = false;
+        }
+      }
+
       const result = await postBrewApi({
         recipe_id: recipe.recipe_id,
         bean_id: selectedBeanId ?? null,
@@ -309,11 +378,14 @@ export default function GuidedRecipeDetailPage() {
           ...step,
           actual_duration_seconds: parseTimeToSeconds(confirmStepTimes[i] ?? "00:00") || step.actual_duration_seconds,
         })),
+        ...(coachSourceBrewId ? { coach_source_brew_id: coachSourceBrewId } : {}),
+        ...(coachFollowed !== null ? { coach_followed: coachFollowed } : {}),
       });
 
       const brewId = String((result as Record<string, unknown>).id ?? "");
       await fetchEntries();
       clearSession();
+      clearCoachMode();
       setCompletedBrewId(brewId || null);
       setPhase("complete");
     } catch {
@@ -444,6 +516,9 @@ export default function GuidedRecipeDetailPage() {
                       onChange={(e) => setConfirmCoffeeG(e.target.value)}
                       className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
                     />
+                    {coachChangeMap.has("coffeeGrams") && (
+                      <CoachHintInline label={coachChangeMap.get("coffeeGrams")!.suggestion} />
+                    )}
                   </div>
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Water (ml)</label>
@@ -467,6 +542,9 @@ export default function GuidedRecipeDetailPage() {
                       onChange={(e) => setConfirmWaterTempC(e.target.value)}
                       className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
                     />
+                    {coachChangeMap.has("waterTempC") && (
+                      <CoachHintInline label={coachChangeMap.get("waterTempC")!.suggestion} />
+                    )}
                   </div>
                 )}
 
@@ -481,11 +559,17 @@ export default function GuidedRecipeDetailPage() {
                       <option key={s} value={s} className="bg-[#1a0f00]">{s}</option>
                     ))}
                   </select>
+                  {coachChangeMap.has("grindSize") && (
+                    <CoachHintInline label={coachChangeMap.get("grindSize")!.suggestion} />
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Total Brew Time</label>
                   <BrewTimePicker value={confirmBrewTime} onChange={setConfirmBrewTime} />
+                  {coachChangeMap.has("brewTime") && (
+                    <CoachHintInline label={coachChangeMap.get("brewTime")!.suggestion} />
+                  )}
                 </div>
 
                 <div>
@@ -576,7 +660,15 @@ export default function GuidedRecipeDetailPage() {
         <div className="p-4">
 
           {/* === COLLAPSIBLE: Image placeholder + Brew params === */}
-          <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isBrewing ? "max-h-0 opacity-0" : "max-h-[700px] opacity-100"}`}>
+          <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isBrewing ? "max-h-0 opacity-0" : "max-h-[900px] opacity-100"}`}>
+
+            {/* Coach mode banner */}
+            {isCoachMode && (
+              <div className="flex items-center gap-2 mb-4 px-1">
+                <Image src="/coach/img3_whistle_blowing.png" alt="Coach" width={24} height={24} className="w-6 h-6 object-contain" />
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Coach&apos;s Adjusted Recipe</p>
+              </div>
+            )}
 
             {/* Method image placeholder */}
             <div className="relative overflow-hidden rounded-xl aspect-[16/9] mb-6 bg-gradient-to-br from-primary/20 via-primary/5 to-background-dark border border-primary/10 flex items-center justify-center">
@@ -597,28 +689,59 @@ export default function GuidedRecipeDetailPage() {
               <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-3">Brew Parameters</h3>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { icon: "scale", label: "Coffee", value: `${recipe.coffee_g}g` },
-                  { icon: "water_drop", label: "Water", value: `${recipe.water_ml}ml` },
-                  { icon: "thermostat", label: "Temp", value: `${recipe.water_temp_c}°C` },
-                  { icon: "shutter_speed", label: "Time", value: formatTimer(recipe.brew_time_seconds) },
-                ].map(({ icon, label, value }) => (
-                  <div key={label} className="bg-primary/10 p-4 rounded-xl border border-primary/10 flex flex-col gap-1">
-                    <div className="flex items-center gap-2 text-primary">
-                      <span className="material-symbols-outlined text-sm">{icon}</span>
-                      <span className="text-[10px] font-bold uppercase tracking-tighter">{label}</span>
+                  { icon: "scale", label: "Coffee", paramKey: "coffeeGrams", value: `${effectiveParams?.coffee_g ?? recipe.coffee_g}g`, originalValue: `${recipe.coffee_g}g` },
+                  { icon: "water_drop", label: "Water", paramKey: null, value: `${effectiveParams?.water_ml ?? recipe.water_ml}ml`, originalValue: null },
+                  { icon: "thermostat", label: "Temp", paramKey: "waterTempC", value: `${effectiveParams?.water_temp_c ?? recipe.water_temp_c}°C`, originalValue: `${recipe.water_temp_c}°C` },
+                  { icon: "shutter_speed", label: "Time", paramKey: "brewTime", value: formatTimer(effectiveParams?.brew_time_seconds ?? recipe.brew_time_seconds), originalValue: formatTimer(recipe.brew_time_seconds) },
+                ].map(({ icon, label, paramKey, value, originalValue }) => {
+                  const hasChange = paramKey ? coachChangeMap.has(paramKey) : false;
+                  return (
+                    <div key={label} className={`bg-primary/10 p-4 rounded-xl border flex flex-col gap-1 ${hasChange ? "border-primary/40" : "border-primary/10"}`}>
+                      <div className="flex items-center gap-2 text-primary">
+                        <span className="material-symbols-outlined text-sm">{icon}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tighter">{label}</span>
+                      </div>
+                      <p className="text-xl font-bold text-slate-100">
+                        {hasChange && originalValue && originalValue !== value && (
+                          <span className="line-through text-slate-500 text-xs mr-1">{originalValue}</span>
+                        )}
+                        {value}
+                      </p>
                     </div>
-                    <p className="text-xl font-bold text-slate-100">{value}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-              <div className="mt-3 bg-primary/10 p-4 rounded-xl border border-primary/10 flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">grain</span>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-tighter text-primary">Grind Size</p>
-                  <p className="text-sm font-bold text-slate-100">{recipe.grind_size}</p>
+              {(() => {
+                const hasGrindChange = coachChangeMap.has("grindSize");
+                const effectiveGrind = effectiveParams?.grind_size ?? recipe.grind_size;
+                return (
+                  <div className={`mt-3 bg-primary/10 p-4 rounded-xl border flex items-center gap-3 ${hasGrindChange ? "border-primary/40" : "border-primary/10"}`}>
+                    <span className="material-symbols-outlined text-primary">grain</span>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-tighter text-primary">Grind Size</p>
+                      <p className="text-sm font-bold text-slate-100">
+                        {hasGrindChange && recipe.grind_size !== effectiveGrind && (
+                          <span className="line-through text-slate-500 text-xs mr-1">{recipe.grind_size}</span>
+                        )}
+                        {effectiveGrind}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Coach qualitative suggestions */}
+            {isCoachMode && coachChanges?.some((c) => c.suggestion && c.newValue == null) && (
+              <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-start gap-3">
+                <Image src="/coach/img3_whistle_blowing.png" alt="Coach tip" width={20} height={20} className="w-5 h-5 object-contain mt-0.5 shrink-0" />
+                <div className="space-y-1">
+                  {coachChanges.filter((c) => c.suggestion && c.newValue == null).map((c, i) => (
+                    <p key={i} className="text-xs text-slate-300">{c.suggestion}</p>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* === STEPS — always visible === */}

@@ -84,11 +84,35 @@ export default function BrewCoachPage() {
     }
   }
 
+  // Gather recent brews for same bean+method (for trend detection)
+  const recentBrewsForTrend = useMemo(() => {
+    if (!brew) return [];
+    return entries
+      .filter((e) => e.beanId === brew.beanId && e.methodId === brew.methodId && e.id !== brew.id)
+      .slice(0, 4)
+      .map((e) => ({
+        rating: e.rating ?? null,
+        coaching_changes: e.coachingChanges ?? null,
+        coach_followed: (e as Record<string, unknown>).coachFollowed as boolean | null ?? null,
+      }));
+  }, [entries, brew]);
+
   async function requestCoaching(payload: { symptom?: string; goals?: string[] }) {
-    if (!brewId) return;
+    if (!brewId || !brew) return;
     setIsLoading(true);
     try {
-      const data = await postCoachingApi({ brew_id: brewId, ...payload });
+      const data = await postCoachingApi({
+        brew_id: brewId,
+        ...payload,
+        current_params: {
+          coffeeGrams: brew.coffeeGrams,
+          waterMl: brew.waterMl,
+          waterTempC: brew.waterTempC,
+          grindSize: brew.grindSize,
+          brewTime: brew.brewTime,
+        },
+        recent_brews: recentBrewsForTrend,
+      });
       setResponse(data);
       void updateEntry(brewId, {
         rating,
@@ -339,6 +363,39 @@ export default function BrewCoachPage() {
                   <p className="mt-2 text-xs text-slate-400">Freshness note: {response.freshness_caveat}</p>
                 )}
               </>
+            )}
+          </div>
+        )}
+
+        {/* Escalation warning */}
+        {response?.escalation && (
+          <div className="rounded-2xl bg-amber-500/10 border border-amber-500/20 p-4 space-y-3">
+            <div className="flex items-start gap-2.5">
+              <span className="material-symbols-outlined text-amber-400 text-base shrink-0 mt-0.5">lightbulb</span>
+              <div>
+                <p className="text-xs uppercase tracking-widest text-amber-400/80 font-semibold mb-1">Coach Suggestion</p>
+                <p className="text-sm text-amber-100 leading-relaxed">{response.escalation.message}</p>
+              </div>
+            </div>
+            {response.escalation.type === "recipe" && response.escalation.suggested_recipe_id && (
+              <button
+                type="button"
+                onClick={() => router.push(`/log-brew/guided/${response.escalation!.suggested_recipe_id}`)}
+                className="w-full h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-200 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-amber-500/30 transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">receipt_long</span>
+                Try Suggested Recipe
+              </button>
+            )}
+            {response.escalation.type === "beans" && (
+              <button
+                type="button"
+                onClick={() => router.push("/my-beans")}
+                className="w-full h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-200 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-amber-500/30 transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">eco</span>
+                Browse Your Beans
+              </button>
             )}
           </div>
         )}
