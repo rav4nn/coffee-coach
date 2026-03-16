@@ -435,7 +435,7 @@ export default function MyBeansPage() {
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetTrigger asChild>
           <button
-            className="fixed bottom-24 right-6 flex size-14 items-center justify-center rounded-full bg-primary text-background-dark shadow-xl hover:scale-105 transition-transform active:scale-95 z-20"
+            className="fixed bottom-36 right-6 flex size-14 items-center justify-center rounded-full bg-primary text-background-dark shadow-xl hover:scale-105 transition-transform active:scale-95 z-20"
             aria-label="Add beans"
           >
             <span className="material-symbols-outlined text-3xl">add</span>
