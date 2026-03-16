@@ -1,6 +1,5 @@
 import type { CoachingChangeApi } from "@/lib/api";
 
-const GRIND_SIZES = ["Extra Fine", "Fine", "Medium-Fine", "Medium", "Medium-Coarse", "Coarse"] as const;
 
 type CoachingPayload = {
   brew_id: string;
@@ -29,15 +28,6 @@ type CoachingChange = {
   previousValue?: string | number;
   newValue?: string | number;
 };
-
-// ─── Grind helpers ──────────────────────────────────────────────────────────
-
-function shiftGrind(current: string, direction: "finer" | "coarser"): string {
-  const idx = GRIND_SIZES.indexOf(current as typeof GRIND_SIZES[number]);
-  if (idx === -1) return current;
-  const newIdx = direction === "finer" ? Math.max(0, idx - 1) : Math.min(GRIND_SIZES.length - 1, idx + 1);
-  return GRIND_SIZES[newIdx];
-}
 
 // ─── Brew time helpers ──────────────────────────────────────────────────────
 
@@ -75,14 +65,14 @@ function computeNewValue(
         return { previousValue: prev, newValue: next };
       }
       const prev = currentParams.grindSize;
-      const next = shiftGrind(prev, direction as "finer" | "coarser");
-      return { previousValue: prev, newValue: next };
+      const annotation = direction === "finer" ? " (slightly finer)" : " (slightly coarser)";
+      return { previousValue: prev, newValue: prev + annotation };
     }
     case "coffeeGrams": {
       const prev = currentParams.coffeeGrams;
-      const delta = direction === "increase" ? 1 : -1;
-      const next = Math.max(1, +(prev + delta).toFixed(1));
-      return { previousValue: prev, newValue: next };
+      const pct = Math.max(1, Math.round(prev * 0.1));
+      const next = direction === "increase" ? prev + pct : Math.max(1, prev - pct);
+      return { previousValue: prev, newValue: Math.round(next) };
     }
     case "waterTempC": {
       const prev = currentParams.waterTempC;
@@ -94,8 +84,8 @@ function computeNewValue(
     case "brewTime": {
       const prev = currentParams.brewTime;
       const prevSecs = parseBrewTime(prev);
-      const delta = direction === "increase" ? 15 : -15;
-      const next = formatBrewTime(prevSecs + delta);
+      const pct = Math.max(1, Math.round(prevSecs * 0.1));
+      const next = formatBrewTime(direction === "increase" ? prevSecs + pct : Math.max(1, prevSecs - pct));
       return { previousValue: prev, newValue: next };
     }
     default:

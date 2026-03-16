@@ -34,6 +34,7 @@ type BrewHistoryStore = {
   fetchEntries: () => Promise<void>;
   addEntry: (entry: Omit<FreestyleBrewEntry, "id" | "createdAt">) => Promise<void>;
   updateEntry: (id: string, patch: Partial<FreestyleBrewEntry>) => Promise<void>;
+  deleteEntry: (id: string) => Promise<void>;
 };
 
 function toEntry(raw: Record<string, unknown>): FreestyleBrewEntry {
@@ -135,5 +136,11 @@ export const useBrewHistoryStore = create<BrewHistoryStore>()((set) => ({
     set((state) => ({
       entries: state.entries.map((e) => (e.id === id ? { ...e, ...patch } : e)),
     }));
+  },
+
+  deleteEntry: async (id) => {
+    const res = await fetch(`/api/brews/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Failed to delete brew");
+    set((state) => ({ entries: state.entries.filter((e) => e.id !== id) }));
   },
 }));

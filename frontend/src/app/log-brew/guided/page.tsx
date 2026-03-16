@@ -217,7 +217,7 @@ export default function GuidedRecipesPage() {
       </main>
 
       {/* Start Brew button */}
-      <div className="fixed bottom-36 left-0 w-full px-4 pb-4 bg-gradient-to-t from-background-dark via-background-dark/90 to-transparent pt-8">
+      <div className="fixed bottom-36 left-0 right-0 max-w-phone mx-auto px-4 pb-4 bg-gradient-to-t from-background-dark via-background-dark/90 to-transparent pt-8">
         <button
           type="button"
           disabled={!selectedRecipeId}

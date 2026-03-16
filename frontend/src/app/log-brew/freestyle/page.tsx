@@ -246,6 +246,14 @@ export default function FreestyleLogPage() {
     <main className="overflow-y-auto pb-28">
       {/* Header */}
       <div className="px-4 pt-4 pb-2">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="flex items-center justify-center size-10 -ml-2 mb-1 rounded-full hover:bg-primary/10 transition-colors"
+          aria-label="Go back"
+        >
+          <span className="material-symbols-outlined text-slate-100">arrow_back</span>
+        </button>
         {isCoachMode ? (
           <>
             <div className="flex items-center gap-2">

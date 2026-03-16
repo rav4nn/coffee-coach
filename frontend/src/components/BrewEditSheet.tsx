@@ -49,6 +49,7 @@ const inputClass =
 
 export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps) {
   const updateEntry = useBrewHistoryStore((s) => s.updateEntry);
+  const deleteEntry = useBrewHistoryStore((s) => s.deleteEntry);
 
   const [coffeeGrams, setCoffeeGrams] = useState("");
   const [waterMl, setWaterMl] = useState("");
@@ -63,6 +64,8 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
   const [tastingNotes, setTastingNotes] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const isColdBrew = entry?.methodId === "cold_brew";
 
@@ -81,6 +84,7 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
     setNotes(entry.notes ?? "");
     setTastingNotes(entry.tastingNotes ?? []);
     setError(null);
+    setConfirmDelete(false);
   }, [entry?.id]);
 
   function handleBrewTimeChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -88,6 +92,20 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
     setBrewTimeDisplay(formatted);
     if (isValidBrewTime(formatted)) {
       setBrewTime(normalizeBrewTime(formatted));
+    }
+  }
+
+  async function handleDelete() {
+    if (!entry) return;
+    setDeleting(true);
+    try {
+      await deleteEntry(entry.id);
+      onOpenChange(false);
+    } catch {
+      setError("Failed to delete brew. Please try again.");
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
     }
   }
 
@@ -121,10 +139,46 @@ export function BrewEditSheet({ entry, open, onOpenChange }: BrewEditSheetProps)
         className="rounded-t-3xl bg-[#1a0f00] border-t border-primary/20 overflow-y-auto max-h-[85dvh] px-5 pb-8"
       >
         <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-5 mt-2" />
-        <SheetTitle className="text-xs font-bold uppercase tracking-widest text-primary/70 mb-1">
-          Edit Brew
-        </SheetTitle>
+        <div className="flex items-start justify-between mb-1">
+          <SheetTitle className="text-xs font-bold uppercase tracking-widest text-primary/70">
+            Edit Brew
+          </SheetTitle>
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            className="flex items-center gap-1 text-xs font-medium text-red-400/70 hover:text-red-400 transition-colors"
+            aria-label="Delete brew"
+          >
+            <span className="material-symbols-outlined text-base">delete</span>
+            Delete
+          </button>
+        </div>
         <p className="text-xl font-bold text-slate-100 mb-5">Update Brew Parameters</p>
+
+        {/* Delete confirmation */}
+        {confirmDelete && (
+          <div className="mb-5 rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
+            <p className="text-sm font-semibold text-red-300 mb-1">Delete this brew?</p>
+            <p className="text-xs text-slate-400 mb-4">This will permanently remove the brew log and any coaching data associated with it.</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 active:scale-[0.98] transition-all disabled:opacity-50"
+              >
+                {deleting ? "Deleting…" : "Yes, Delete"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="flex-1 py-2.5 rounded-xl bg-white/10 text-slate-300 text-sm font-medium hover:bg-white/15 active:scale-[0.98] transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-4">
           {/* ── Brewing Essentials ───────────────────────────── */}

@@ -439,7 +439,7 @@ export default function LogBrewPage() {
       )}
 
       {/* Floating Next Step button */}
-      <div className="fixed bottom-36 left-4 right-4 z-30">
+      <div className="fixed bottom-36 left-0 right-0 z-30 px-4 max-w-phone mx-auto">
         <button
           type="button"
           onClick={handleNext}

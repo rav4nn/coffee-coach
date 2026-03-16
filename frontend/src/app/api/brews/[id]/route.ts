@@ -3,6 +3,19 @@ import { getAccessToken } from "@/lib/getAccessToken";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const h = request.headers.get("Authorization");
+  const token = h?.startsWith("Bearer ") ? h.slice(7) : await getAccessToken();
+  const res = await fetch(`${BACKEND_URL}/api/brews/${id}`, {
+    method: "DELETE",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  return new NextResponse(null, { status: res.status });
+}
+
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await request.json();

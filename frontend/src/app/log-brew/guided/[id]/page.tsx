@@ -275,23 +275,57 @@ export default function GuidedRecipeDetailPage() {
 
   const coachModifiedParams = useMemo(() => {
     if (!coachChanges || !recipe) return null;
-    const params = {
+    const p = {
       coffee_g: recipe.coffee_g,
       water_ml: recipe.water_ml,
       water_temp_c: recipe.water_temp_c,
       grind_size: recipe.grind_size,
       brew_time_seconds: recipe.brew_time_seconds,
+      grinder_clicks: null as number | null,
     };
     for (const change of coachChanges) {
       if (change.newValue != null) {
-        if (change.param === "coffeeGrams") params.coffee_g = change.newValue as number;
-        if (change.param === "waterTempC") params.water_temp_c = change.newValue as number;
-        if (change.param === "grindSize") params.grind_size = change.newValue as string;
-        if (change.param === "brewTime") params.brew_time_seconds = parseTimeToSeconds(change.newValue as string);
+        if (change.param === "coffeeGrams") p.coffee_g = change.newValue as number;
+        if (change.param === "waterTempC") p.water_temp_c = change.newValue as number;
+        if (change.param === "grindSize") {
+          if (typeof change.newValue === "number") {
+            p.grinder_clicks = change.newValue;
+          } else {
+            p.grind_size = change.newValue as string;
+          }
+        }
+        if (change.param === "brewTime") p.brew_time_seconds = parseTimeToSeconds(change.newValue as string);
+      } else {
+        // Fallback: compute adjustment from direction when newValue wasn't stored
+        if (change.param === "coffeeGrams") {
+          const pct = Math.max(1, Math.round(p.coffee_g * 0.1));
+          p.coffee_g = change.direction === "increase" ? p.coffee_g + pct : Math.max(1, p.coffee_g - pct);
+        }
+        if (change.param === "waterTempC" && p.water_temp_c != null) {
+          p.water_temp_c = change.direction === "increase"
+            ? Math.min(100, p.water_temp_c + 2)
+            : Math.max(1, p.water_temp_c - 2);
+        }
+        if (change.param === "brewTime") {
+          const pct = Math.max(1, Math.round(p.brew_time_seconds * 0.1));
+          p.brew_time_seconds = change.direction === "increase"
+            ? p.brew_time_seconds + pct
+            : Math.max(1, p.brew_time_seconds - pct);
+        }
+        if (change.param === "grindSize") {
+          const prevClicks = coachBrewRef?.grinderClicks;
+          if (prevClicks != null && prevClicks > 0) {
+            const delta = change.direction === "finer" ? -2 : 2;
+            p.grinder_clicks = Math.max(1, prevClicks + delta);
+          } else {
+            const annotation = change.direction === "finer" ? " (slightly finer)" : " (slightly coarser)";
+            p.grind_size = (p.grind_size ?? "") + annotation;
+          }
+        }
       }
     }
-    return params;
-  }, [coachChanges, recipe]);
+    return p;
+  }, [coachChanges, recipe, coachBrewRef]);
 
   const coachChangeMap = useMemo(() => {
     if (!coachChanges) return new Map<string, CoachingChangeApi>();
@@ -738,7 +772,7 @@ export default function GuidedRecipeDetailPage() {
         </main>
 
         {/* Sticky save button */}
-        <div className="fixed bottom-20 left-0 right-0 px-4 z-40">
+        <div className="fixed bottom-20 left-0 right-0 px-4 z-40 max-w-phone mx-auto">
           <button
             type="button"
             onClick={handleConfirmSave}
@@ -831,15 +865,24 @@ export default function GuidedRecipeDetailPage() {
 
             {/* Coach mode banner with merged advice */}
             {isCoachMode && (
-              <div className="mb-5 p-4 rounded-xl bg-primary/5 border border-primary/20 flex flex-col items-center text-center">
-                <Image src="/coach/img3_thumbs_whistle.png" alt="Coach" width={80} height={80} className="w-20 h-20 object-contain mb-3" />
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Coach&apos;s Adjusted Recipe</p>
-                {coachChanges && coachChanges.filter((c) => c.suggestion).length > 0 && (
-                  <p className="text-sm text-slate-200 leading-relaxed mb-1">
-                    Coach asked you to {coachChanges.filter((c) => c.suggestion).map((c) => c.suggestion?.toLowerCase()).join(", ")}.
-                  </p>
-                )}
-                <p className="text-xs text-slate-400">Parameters have been adjusted based on your last brew.</p>
+              <div className="mb-5 rounded-xl bg-primary/5 border border-primary/20 overflow-hidden flex items-stretch">
+                <div className="w-28 shrink-0 relative self-stretch">
+                  <Image
+                    src="/coach/img3_whistle_blowing.png"
+                    alt="Coach"
+                    fill
+                    className="object-cover object-top"
+                  />
+                </div>
+                <div className="flex-1 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Coach&apos;s Adjusted Recipe</p>
+                  {coachChanges && coachChanges.filter((c) => c.suggestion).length > 0 && (
+                    <p className="text-sm text-slate-200 leading-relaxed mb-1">
+                      Coach asked you to {coachChanges.filter((c) => c.suggestion).map((c) => c.suggestion?.toLowerCase()).join(", ")}.
+                    </p>
+                  )}
+                  <p className="text-xs text-slate-400">Parameters have been adjusted based on your last brew.</p>
+                </div>
               </div>
             )}
 
@@ -859,13 +902,27 @@ export default function GuidedRecipeDetailPage() {
 
               {/* Params in 2-column grid */}
               <div className="flex-1 grid grid-cols-2 gap-x-3 gap-y-2 content-center">
-                {[
-                  { icon: "scale", label: "Coffee", paramKey: "coffeeGrams", value: `${effectiveParams?.coffee_g ?? recipe.coffee_g}g`, originalValue: `${recipe.coffee_g}g` },
-                  { icon: "water_drop", label: "Water", paramKey: null, value: `${effectiveParams?.water_ml ?? recipe.water_ml}ml`, originalValue: null },
-                  { icon: "thermostat", label: "Temp", paramKey: "waterTempC", value: `${effectiveParams?.water_temp_c ?? recipe.water_temp_c ?? "—"}°C`, originalValue: recipe.water_temp_c ? `${recipe.water_temp_c}°C` : null },
-                  { icon: "timer", label: "Time", paramKey: "brewTime", value: formatTimer(effectiveParams?.brew_time_seconds ?? recipe.brew_time_seconds), originalValue: formatTimer(recipe.brew_time_seconds) },
-                  { icon: "grain", label: "Grind", paramKey: "grindSize", value: effectiveParams?.grind_size ?? recipe.grind_size ?? "—", originalValue: recipe.grind_size },
-                ].map(({ icon, label, paramKey, value, originalValue }) => {
+                {(() => {
+                  const grindChange = coachChangeMap.get("grindSize");
+                  const hasGrinderClicks = coachModifiedParams?.grinder_clicks != null;
+                  const grindValue = hasGrinderClicks
+                    ? `${coachModifiedParams!.grinder_clicks} clicks`
+                    : effectiveParams?.grind_size ?? recipe.grind_size ?? "—";
+                  const grindOriginalValue = hasGrinderClicks
+                    ? (grindChange?.previousValue != null
+                        ? `${grindChange.previousValue} clicks`
+                        : coachBrewRef?.grinderClicks != null
+                          ? `${coachBrewRef.grinderClicks} clicks`
+                          : recipe.grind_size)
+                    : recipe.grind_size;
+                  return [
+                    { icon: "scale", label: "Coffee", paramKey: "coffeeGrams", value: `${effectiveParams?.coffee_g ?? recipe.coffee_g}g`, originalValue: `${recipe.coffee_g}g` },
+                    { icon: "water_drop", label: "Water", paramKey: null, value: `${effectiveParams?.water_ml ?? recipe.water_ml}ml`, originalValue: null },
+                    { icon: "thermostat", label: "Temp", paramKey: "waterTempC", value: `${effectiveParams?.water_temp_c ?? recipe.water_temp_c ?? "—"}°C`, originalValue: recipe.water_temp_c ? `${recipe.water_temp_c}°C` : null },
+                    { icon: "timer", label: "Time", paramKey: "brewTime", value: formatTimer(effectiveParams?.brew_time_seconds ?? recipe.brew_time_seconds), originalValue: formatTimer(recipe.brew_time_seconds) },
+                    { icon: "grain", label: "Grind", paramKey: "grindSize", value: grindValue, originalValue: grindOriginalValue },
+                  ];
+                })().map(({ icon, label, paramKey, value, originalValue }) => {
                   const hasChange = paramKey ? coachChangeMap.has(paramKey) : false;
                   return (
                     <div key={label} className={`flex items-center gap-2 py-1.5 ${hasChange ? "bg-primary/5 px-1.5 rounded-lg" : ""}`}>
@@ -988,7 +1045,7 @@ export default function GuidedRecipeDetailPage() {
       </main>
 
       {/* ── Bottom action button ── */}
-      <div className={`fixed z-40 left-0 right-0 transition-all duration-300 ease-in-out ${
+      <div className={`fixed z-40 left-0 right-0 max-w-phone mx-auto transition-all duration-300 ease-in-out ${
         isBrewing ? "bottom-6 px-4 flex flex-col items-center gap-2" : "bottom-36 px-4"
       }`}>
         {isBrewing ? (
