@@ -14,7 +14,7 @@ const LEFT_ITEMS = [
 ];
 
 const RIGHT_ITEMS = [
-  { href: "/my-beans", label: "My Beans", renderIcon: () => <MyBeansIcon className="h-[18px] w-[18px]" /> },
+  { href: "/my-beans", label: "My Beans", renderIcon: () => <MyBeansIcon className="h-6 w-6" /> },
   { href: "/history", label: "Journal", icon: "menu_book" },
 ] as const;
 

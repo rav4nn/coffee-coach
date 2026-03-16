@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -207,6 +207,8 @@ export default function LogBrewPage() {
     return warnings;
   }, [selectedBean]);
 
+  const pourOverSectionRef = useRef<HTMLElement>(null);
+
   const isPourOver = selectedMethodId === "pour_over";
   const canContinue =
     Boolean(selectedBeanId) &&
@@ -347,7 +349,13 @@ export default function LogBrewPage() {
                 type="button"
                 onClick={() => {
                   setSelectedMethodId(method.method_id);
-                  if (method.method_id !== "pour_over") setSelectedPourOverDeviceId("");
+                  if (method.method_id !== "pour_over") {
+                    setSelectedPourOverDeviceId("");
+                  } else {
+                    setTimeout(() => {
+                      pourOverSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                    }, 50);
+                  }
                 }}
                 className={`relative rounded-xl overflow-hidden border-2 transition-all ${
                   active
@@ -383,6 +391,7 @@ export default function LogBrewPage() {
 
       {/* Pour Over Device Selection (conditional) */}
       <section
+        ref={pourOverSectionRef}
         className={`mb-8 transition-all duration-300 ease-out overflow-hidden ${
           isPourOver ? "max-h-64 opacity-100" : "max-h-0 opacity-0 mb-0"
         }`}

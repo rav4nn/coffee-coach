@@ -119,7 +119,7 @@ export default function LogBrewStepTwoPage() {
   }
 
   return (
-    <main className="relative flex flex-col min-h-full px-6 pb-40 overflow-y-auto">
+    <main className="relative flex flex-col min-h-full px-6 pb-56 overflow-y-auto">
       {/* Ambient glow blobs */}
       <div className="fixed top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
