@@ -143,8 +143,8 @@ export default function LogBrewStepTwoPage() {
       </div>
 
       {/* Title */}
-      <h1 className="text-3xl font-bold text-slate-100 mt-4 mb-2">Choose Your Logging Style</h1>
-      <p className="text-sm text-slate-400 mb-8">Pick how you want to continue this brew session.</p>
+      <h1 className="text-3xl font-bold text-slate-100 mt-2 mb-1">Choose Your Logging Style</h1>
+      <p className="text-sm text-slate-400 mb-4">Pick how you want to continue this brew session.</p>
 
       {/* Missing step 1 guard */}
       {!selectedMethodId && (
@@ -161,7 +161,7 @@ export default function LogBrewStepTwoPage() {
       )}
 
       {/* Option cards */}
-      <div className="flex flex-col gap-4 flex-1">
+      <div className="flex flex-col gap-3 flex-1">
         {/* Follow the Coach — conditional */}
         {coachedBrew && (
           <button
@@ -177,19 +177,19 @@ export default function LogBrewStepTwoPage() {
               <Image
                 src="/coach/img2_reading_book.png"
                 alt="Coach"
-                width={120}
-                height={120}
-                className="w-28 h-28 object-contain shrink-0"
+                width={80}
+                height={80}
+                className="w-20 h-20 object-contain shrink-0"
               />
-              <div className="flex-1 min-w-0 py-4 pr-4">
+              <div className="flex-1 min-w-0 py-3 pr-3">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">Recommended</p>
-                <h3 className="text-xl font-bold text-slate-100 leading-tight">Follow the Coach</h3>
-                <p className="text-xs text-slate-400 mt-1">Apply your coach&apos;s advice from your last {prettyMethodName(effectiveMethodId)} brew.</p>
+                <h3 className="text-base font-bold text-slate-100 leading-tight">Follow the Coach</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Apply your coach&apos;s advice from your last {prettyMethodName(effectiveMethodId)} brew.</p>
                 {coachedBrew.coachingFeedback && (
-                  <p className="text-xs text-primary/80 mt-2 italic line-clamp-2">&ldquo;{coachedBrew.coachingFeedback}&rdquo;</p>
+                  <p className="text-xs text-primary/80 mt-1 italic line-clamp-1">&ldquo;{coachedBrew.coachingFeedback}&rdquo;</p>
                 )}
                 {coachedBrew.coachingChanges && coachedBrew.coachingChanges.length > 0 && (
-                  <span className="inline-block mt-2 bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest border border-primary/20">
+                  <span className="inline-block mt-1 bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest border border-primary/20">
                     {coachedBrew.coachingChanges.length} {coachedBrew.coachingChanges.length === 1 ? "change" : "changes"}
                   </span>
                 )}
@@ -202,43 +202,45 @@ export default function LogBrewStepTwoPage() {
         <button
           type="button"
           onClick={() => setChoice("guided")}
-          className={`w-full flex flex-col p-4 rounded-xl border-2 text-left transition-all ${
+          className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
             choice === "guided"
               ? "border-primary bg-primary/10"
               : "border-transparent bg-primary/5 hover:border-primary/30"
           }`}
         >
-          <div className="flex items-start justify-between w-full mb-2">
-            <div className="p-2.5 bg-primary/20 rounded-lg">
-              <span className="material-symbols-outlined text-primary text-2xl">receipt_long</span>
-            </div>
-            {recipeMethodKey && (
-              <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-widest border border-primary/20">
-                {recipeCount} Recipes for {prettyMethodName(recipeMethodKey)}
-              </span>
-            )}
+          <div className="p-2 bg-primary/20 rounded-lg shrink-0">
+            <span className="material-symbols-outlined text-primary text-xl">receipt_long</span>
           </div>
-          <h3 className="text-lg font-bold text-slate-100 mb-1">Follow a Recipe</h3>
-          <p className="text-sm text-slate-400">We&apos;ll guide you step by step through every pour and wait time.</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2 mb-0.5">
+              <h3 className="text-base font-bold text-slate-100">Follow a Recipe</h3>
+              {recipeMethodKey && (
+                <span className="shrink-0 bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest border border-primary/20">
+                  {recipeCount} recipes
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-400">Step-by-step guide through every pour and wait.</p>
+          </div>
         </button>
 
         {/* Use My Own Recipe */}
         <button
           type="button"
           onClick={() => setChoice("freestyle")}
-          className={`w-full flex flex-col p-4 rounded-xl border-2 text-left transition-all ${
+          className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
             choice === "freestyle"
               ? "border-primary bg-primary/10"
               : "border-transparent bg-primary/5 hover:border-primary/30"
           }`}
         >
-          <div className="flex items-start justify-between w-full mb-2">
-            <div className="p-2.5 bg-primary/20 rounded-lg">
-              <span className="material-symbols-outlined text-primary text-2xl">edit_note</span>
-            </div>
+          <div className="p-2 bg-primary/20 rounded-lg shrink-0">
+            <span className="material-symbols-outlined text-primary text-xl">edit_note</span>
           </div>
-          <h3 className="text-lg font-bold text-slate-100 mb-1">Use My Own Recipe</h3>
-          <p className="text-sm text-slate-400">Feeling confident? Just log what you brew as you go.</p>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-bold text-slate-100 mb-0.5">Use My Own Recipe</h3>
+            <p className="text-xs text-slate-400">Feeling confident? Just log what you brew as you go.</p>
+          </div>
         </button>
       </div>
 

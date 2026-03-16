@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -207,8 +207,6 @@ export default function LogBrewPage() {
     return warnings;
   }, [selectedBean]);
 
-  const mainRef = useRef<HTMLElement>(null);
-
   const isPourOver = selectedMethodId === "pour_over";
   const canContinue =
     Boolean(selectedBeanId) &&
@@ -228,7 +226,7 @@ export default function LogBrewPage() {
   }
 
   return (
-    <main ref={mainRef} className="relative px-6 pb-56 overflow-y-auto">
+    <main className="relative px-6 pb-56 overflow-y-auto">
       {/* Ambient glow blobs */}
       <div className="fixed top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
@@ -353,8 +351,7 @@ export default function LogBrewPage() {
                     setSelectedPourOverDeviceId("");
                   } else {
                     setTimeout(() => {
-                      const el = mainRef.current;
-                      if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+                      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
                     }, 150);
                   }
                 }}
