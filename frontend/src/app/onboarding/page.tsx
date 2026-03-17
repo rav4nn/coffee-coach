@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Image from "next/image";
 
@@ -42,6 +42,7 @@ export default function OnboardingPage() {
   const [customGrinderMode, setCustomGrinderMode] = useState(false);
   const [customGrinderInput, setCustomGrinderInput] = useState("");
   const [grinderError, setGrinderError] = useState<string | null>(null);
+  const grinderSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getGrindersApi().then(setGrinderList).catch(() => {});
@@ -183,7 +184,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Hand Grinder */}
-        <div className="space-y-3">
+        <div ref={grinderSectionRef} className="space-y-3">
           <span className="text-slate-100 text-sm font-semibold uppercase tracking-wider ml-1">Hand Grinder</span>
 
           {grinderName ? (
@@ -201,7 +202,10 @@ export default function OnboardingPage() {
           ) : !showGrinderPicker ? (
             <button
               type="button"
-              onClick={() => setShowGrinderPicker(true)}
+              onClick={() => {
+                setShowGrinderPicker(true);
+                setTimeout(() => grinderSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+              }}
               className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-primary/20 text-primary/60 hover:border-primary/40 hover:text-primary/80 transition-colors"
             >
               <span className="material-symbols-outlined text-xl">add</span>
@@ -211,7 +215,7 @@ export default function OnboardingPage() {
             <div className="space-y-3">
               {!customGrinderMode ? (
                 <>
-                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                  <div className="grid grid-cols-2 gap-2">
                     {grinderList.map((g) => (
                       <button
                         key={g}
@@ -226,9 +230,9 @@ export default function OnboardingPage() {
                   <button
                     type="button"
                     onClick={() => setCustomGrinderMode(true)}
-                    className="text-xs text-primary font-semibold hover:underline"
+                    className="text-[10px] text-primary font-bold uppercase tracking-widest hover:underline"
                   >
-                    My grinder isn&apos;t listed — add custom
+                    Add Custom — My grinder isn&apos;t listed
                   </button>
                 </>
               ) : (
@@ -271,13 +275,6 @@ export default function OnboardingPage() {
                   </div>
                 </div>
               )}
-              <button
-                type="button"
-                onClick={() => { setShowGrinderPicker(false); setCustomGrinderMode(false); setCustomGrinderInput(""); }}
-                className="text-xs text-slate-500 hover:text-slate-300 font-medium"
-              >
-                Cancel
-              </button>
             </div>
           )}
         </div>

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { useBrewHistoryStore, type FreestyleBrewEntry } from "@/lib/brewHistoryStore";
 import { useBeansStore } from "@/lib/beansStore";
+import { useLogBrewStore } from "@/lib/logBrewStore";
 import { COACH_TIPS } from "@/lib/coachTips";
 
 function methodLabel(methodId: string | null | undefined) {
@@ -56,9 +57,12 @@ const METHOD_TIP_PREFIX: Record<string, string> = {
   south_indian_filter: "filter kaapi",
 };
 
-function getFilteredTips(equipment: string[]): string[] {
-  if (equipment.length === 0) return COACH_TIPS;
-  const prefixes = equipment.map((eq) => METHOD_TIP_PREFIX[eq] ?? eq.replace(/_/g, " ")).filter(Boolean);
+function getFilteredTips(equipment: string[], recentMethodId?: string | null): string[] {
+  const sources = [...equipment];
+  if (recentMethodId && !sources.includes(recentMethodId)) sources.push(recentMethodId);
+
+  if (sources.length === 0) return COACH_TIPS;
+  const prefixes = sources.map((eq) => METHOD_TIP_PREFIX[eq] ?? eq.replace(/_/g, " ")).filter(Boolean);
   const filtered = COACH_TIPS.filter((tip) => {
     const lower = tip.toLowerCase();
     return prefixes.some((p) => lower.includes(p));
@@ -171,31 +175,66 @@ function generateInsight(
   };
 }
 
-function CoachedBrewCard({ entry, beanName, onClick }: { entry: FreestyleBrewEntry; beanName: string; onClick: () => void }) {
+function CoachedBrewCard({
+  entry,
+  beanName,
+  onClick,
+  onBrewWithCoach,
+}: {
+  entry: FreestyleBrewEntry;
+  beanName: string;
+  onClick: () => void;
+  onBrewWithCoach: () => void;
+}) {
+  const changes = entry.coachingChanges ?? [];
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full rounded-xl border border-primary/15 bg-primary/5 p-4 text-left hover:border-primary/30 transition-colors"
-    >
-      <div className="flex gap-4 items-start">
-        <Image
-          src="/coach/img3_whistle_blowing.png"
-          alt="Coach"
-          width={64}
-          height={64}
-          className="w-16 h-16 object-contain shrink-0 drop-shadow-md"
-        />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm text-slate-200 leading-relaxed">{entry.coachingFeedback}</p>
-          <p className="text-[10px] text-slate-500 mt-2">
+    <div className="rounded-xl border border-primary/15 bg-primary/5 overflow-hidden">
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full p-4 text-left hover:bg-primary/[0.08] transition-colors"
+      >
+        {/* Top row: bean · ratio · date | rating */}
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <p className="text-xs text-slate-400 truncate">
             {beanName} · {ratio(entry.coffeeGrams, entry.waterMl)} · {formatDate(entry.createdAt)}
-            {typeof entry.rating === "number" && ` · ${entry.rating}/10`}
           </p>
+          {typeof entry.rating === "number" && (
+            <span className="shrink-0 flex items-center gap-0.5 text-xs font-bold text-primary bg-primary/15 px-2 py-0.5 rounded-full">
+              <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>star</span>
+              {entry.rating}/10
+            </span>
+          )}
         </div>
-        <span className="material-symbols-outlined text-primary/30 text-base shrink-0 mt-4">chevron_right</span>
-      </div>
-    </button>
+
+        {/* Coaching feedback */}
+        <p className="text-sm text-slate-200 leading-relaxed">{entry.coachingFeedback}</p>
+
+        {/* Parameter change badges */}
+        {changes.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2.5">
+            {changes.map((change, i) => (
+              <span
+                key={i}
+                className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary/80 font-semibold border border-primary/20"
+              >
+                {change.suggestion}
+              </span>
+            ))}
+          </div>
+        )}
+      </button>
+
+      {/* Brew with coach CTA */}
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onBrewWithCoach(); }}
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 border-t border-primary/15 bg-primary text-background-dark font-bold text-sm hover:brightness-110 transition-all"
+      >
+        <span className="material-symbols-outlined text-base">coffee_maker</span>
+        Brew with the coach&apos;s help?
+      </button>
+    </div>
   );
 }
 
@@ -206,6 +245,13 @@ function UncoachedBrewCard({ entry, beanName, onClick }: { entry: FreestyleBrewE
       onClick={onClick}
       className="w-full rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-left hover:border-amber-500/50 transition-colors"
     >
+      {/* Top row: bean · ratio · date */}
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <p className="text-xs text-slate-400 truncate">
+          {beanName} · {ratio(entry.coffeeGrams, entry.waterMl)} · {formatDate(entry.createdAt)}
+        </p>
+      </div>
+
       <div className="flex gap-4 items-start">
         <div className="relative shrink-0">
           <Image
@@ -219,9 +265,6 @@ function UncoachedBrewCard({ entry, beanName, onClick }: { entry: FreestyleBrewE
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-amber-200">Rate this brew and get coached!</p>
-          <p className="text-[10px] text-slate-500 mt-1.5">
-            {beanName} · {ratio(entry.coffeeGrams, entry.waterMl)} · {formatDate(entry.createdAt)}
-          </p>
           <span className="inline-block mt-2 text-[10px] px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 font-bold">
             Get Coached
           </span>
@@ -238,9 +281,12 @@ export default function CoachPage() {
   const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
   const beans = useBeansStore((state) => state.userBeans);
   const fetchBeans = useBeansStore((state) => state.fetchBeans);
+  const setCoachMode = useLogBrewStore((state) => state.setCoachMode);
+  const setStepOneSelection = useLogBrewStore((state) => state.setStepOneSelection);
 
   const [equipment, setEquipment] = useState<string[]>([]);
   const [initialFetchDone, setInitialFetchDone] = useState(false);
+  const [showBest, setShowBest] = useState(false);
 
   useEffect(() => {
     Promise.all([fetchEntries(), fetchBeans()]).finally(() => setInitialFetchDone(true));
@@ -257,6 +303,12 @@ export default function CoachPage() {
       .catch(() => {});
   }, []);
 
+  // Most recent method for tip filtering
+  const recentMethodId = useMemo(() => {
+    const sorted = [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return sorted[0]?.methodId ?? null;
+  }, [entries]);
+
   // Group brews by method, last 2 per method
   const brewsByMethod = useMemo(() => {
     const sorted = [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -269,7 +321,22 @@ export default function CoachPage() {
     return groups;
   }, [entries]);
 
-  const methodKeys = Object.keys(brewsByMethod);
+  // Best brews: rating >= 8, grouped by method
+  const bestBrewsByMethod = useMemo(() => {
+    const best = [...entries]
+      .filter((e) => typeof e.rating === "number" && e.rating >= 8)
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    const groups: Record<string, FreestyleBrewEntry[]> = {};
+    for (const entry of best) {
+      const key = entry.methodId ?? "unknown";
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(entry);
+    }
+    return groups;
+  }, [entries]);
+
+  const methodKeys = Object.keys(showBest ? bestBrewsByMethod : brewsByMethod);
+  const activeBrewGroups = showBest ? bestBrewsByMethod : brewsByMethod;
 
   const insight = useMemo(
     () => generateInsight(entries, equipment),
@@ -277,16 +344,32 @@ export default function CoachPage() {
     [entries.length, equipment.length],
   );
 
-  const filteredTips = useMemo(() => {
-    const tips = getFilteredTips(equipment);
+  const filteredTip = useMemo(() => {
+    const tips = getFilteredTips(equipment, recentMethodId);
     const shuffled = [...tips].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 2);
+    return shuffled[0] ?? null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [equipment.length]);
+  }, [equipment.length, recentMethodId]);
 
   function getBeanName(beanId: string | null) {
     if (!beanId) return "Unknown Bean";
     return beans.find((b) => b.id === beanId)?.beanName ?? "Unknown Bean";
+  }
+
+  function handleBrewWithCoach(entry: FreestyleBrewEntry) {
+    setCoachMode(entry, entry.coachingChanges ?? [], entry.recipeId);
+    if (entry.beanId && entry.methodId) {
+      setStepOneSelection({
+        beanId: entry.beanId,
+        methodId: entry.methodId,
+        pourOverDeviceId: null,
+      });
+    }
+    if (entry.recipeId && entry.brewType === "guided") {
+      router.push(`/log-brew/guided/${entry.recipeId}`);
+    } else {
+      router.push("/log-brew/freestyle");
+    }
   }
 
   if (!initialFetchDone && loading) {
@@ -304,100 +387,163 @@ export default function CoachPage() {
   return (
     <main className="overflow-y-auto pb-28">
       {/* Header */}
-      <div className="px-4 pt-4 pb-2">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Your Coach</p>
-        <h1 className="text-2xl font-bold text-slate-100">Coffee Coach</h1>
-      </div>
-
-      {/* The One Thing — proactive insight */}
-      <div className="px-4 py-3">
-        <div className="rounded-2xl bg-primary/10 border border-primary/20 p-5">
-          <div className="flex items-start gap-3">
-            <div className="w-18 h-18 shrink-0">
-              <Image
-                src={insight.avatar}
-                alt="Coffee Coach"
-                width={72}
-                height={72}
-                className="w-full h-full object-contain drop-shadow-md"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-bold text-slate-100">{insight.title}</h2>
-              <p className="text-sm text-slate-300 mt-1 leading-relaxed whitespace-pre-line">{insight.body}</p>
-            </div>
-          </div>
-          {entries.length === 0 && (
-            <Link
-              href="/log-brew"
-              className="mt-4 w-full bg-primary text-background-dark font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:brightness-110 transition-all"
-            >
-              <span className="material-symbols-outlined text-lg">add</span>
-              Log Your First Brew
-            </Link>
-          )}
+      <div className="px-4 pt-4 pb-2 flex items-end justify-between">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Your Coach</p>
+          <h1 className="text-2xl font-bold text-slate-100">Coffee Coach</h1>
         </div>
+        {entries.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowBest((v) => !v)}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+              showBest
+                ? "bg-primary text-background-dark border-primary"
+                : "bg-primary/10 border-primary/20 text-primary/80"
+            }`}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>emoji_events</span>
+            Best Brews
+          </button>
+        )}
       </div>
 
-      {/* Brews grouped by method — coaching-centric cards */}
-      {methodKeys.length > 0 && (
+      {/* Best Brews mode */}
+      {showBest ? (
         <section className="px-4 py-3 space-y-5">
-          {methodKeys.map((methodId) => {
-            const methodBrews = brewsByMethod[methodId];
-            return (
-              <div key={methodId}>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-espresso/20 border border-espresso/30 flex items-center justify-center shrink-0">
-                    <Image src={methodImage(methodId)} alt={methodLabel(methodId)} width={18} height={18} className="w-[18px] h-[18px] object-contain" />
+          {methodKeys.length === 0 ? (
+            <div className="py-12 text-center">
+              <span className="material-symbols-outlined text-4xl text-slate-600">emoji_events</span>
+              <p className="mt-2 text-sm text-slate-400">No top-rated brews yet.</p>
+              <p className="text-xs text-slate-500 mt-1">Rate your brews 8+ to see them here.</p>
+            </div>
+          ) : (
+            methodKeys.map((methodId) => {
+              const methodBrews = activeBrewGroups[methodId];
+              return (
+                <div key={methodId}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-lg bg-espresso/20 border border-espresso/30 flex items-center justify-center shrink-0">
+                      <Image src={methodImage(methodId)} alt={methodLabel(methodId)} width={18} height={18} className="w-[18px] h-[18px] object-contain" />
+                    </div>
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{methodLabel(methodId)}</h3>
                   </div>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{methodLabel(methodId)}</h3>
+                  <div className="space-y-2">
+                    {methodBrews.map((entry) => {
+                      const beanName = getBeanName(entry.beanId);
+                      const hasCoaching = !!entry.coachingFeedback;
+                      return hasCoaching ? (
+                        <CoachedBrewCard
+                          key={entry.id}
+                          entry={entry}
+                          beanName={beanName}
+                          onClick={() => router.push(`/coach/brew/${entry.id}`)}
+                          onBrewWithCoach={() => handleBrewWithCoach(entry)}
+                        />
+                      ) : (
+                        <UncoachedBrewCard
+                          key={entry.id}
+                          entry={entry}
+                          beanName={beanName}
+                          onClick={() => router.push(`/coach/brew/${entry.id}`)}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  {methodBrews.map((entry) => {
-                    const beanName = getBeanName(entry.beanId);
-                    const hasCoaching = !!entry.coachingFeedback;
-
-                    return hasCoaching ? (
-                      <CoachedBrewCard
-                        key={entry.id}
-                        entry={entry}
-                        beanName={beanName}
-                        onClick={() => router.push(`/coach/brew/${entry.id}`)}
-                      />
-                    ) : (
-                      <UncoachedBrewCard
-                        key={entry.id}
-                        entry={entry}
-                        beanName={beanName}
-                        onClick={() => router.push(`/coach/brew/${entry.id}`)}
-                      />
-                    );
-                  })}
+              );
+            })
+          )}
+        </section>
+      ) : (
+        <>
+          {/* The One Thing — proactive insight */}
+          <div className="px-4 py-3">
+            <div className="rounded-2xl bg-primary/10 border border-primary/20 p-5">
+              <div className="flex items-start gap-3">
+                <div className="w-18 h-18 shrink-0">
+                  <Image
+                    src={insight.avatar}
+                    alt="Coffee Coach"
+                    width={72}
+                    height={72}
+                    className="w-full h-full object-contain drop-shadow-md"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg font-bold text-slate-100">{insight.title}</h2>
+                  <p className="text-sm text-slate-300 mt-1 leading-relaxed whitespace-pre-line">{insight.body}</p>
                 </div>
               </div>
-            );
-          })}
-        </section>
-      )}
-
-      {/* Coach's Tips — filtered by equipment */}
-      <section className="px-4 py-3">
-        <div className="flex items-center gap-2 mb-3">
-          <Image src="/coach/img2_reading_book.png" alt="Coach" width={32} height={32} className="object-contain" />
-          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Coach&apos;s Tips</h3>
-        </div>
-        <div className="space-y-2">
-          {filteredTips.map((tip, i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-primary/10 bg-primary/5 p-4 flex gap-3"
-            >
-              <span className="material-symbols-outlined text-primary text-lg shrink-0 mt-0.5">lightbulb</span>
-              <p className="text-sm text-slate-300 leading-relaxed">{tip}</p>
+              {entries.length === 0 && (
+                <Link
+                  href="/log-brew"
+                  className="mt-4 w-full bg-primary text-background-dark font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+                >
+                  <span className="material-symbols-outlined text-lg">add</span>
+                  Log Your First Brew
+                </Link>
+              )}
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+
+          {/* Brews grouped by method — coaching-centric cards */}
+          {methodKeys.length > 0 && (
+            <section className="px-4 py-3 space-y-5">
+              {methodKeys.map((methodId) => {
+                const methodBrews = activeBrewGroups[methodId];
+                return (
+                  <div key={methodId}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-espresso/20 border border-espresso/30 flex items-center justify-center shrink-0">
+                        <Image src={methodImage(methodId)} alt={methodLabel(methodId)} width={18} height={18} className="w-[18px] h-[18px] object-contain" />
+                      </div>
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{methodLabel(methodId)}</h3>
+                    </div>
+                    <div className="space-y-2">
+                      {methodBrews.map((entry) => {
+                        const beanName = getBeanName(entry.beanId);
+                        const hasCoaching = !!entry.coachingFeedback;
+
+                        return hasCoaching ? (
+                          <CoachedBrewCard
+                            key={entry.id}
+                            entry={entry}
+                            beanName={beanName}
+                            onClick={() => router.push(`/coach/brew/${entry.id}`)}
+                            onBrewWithCoach={() => handleBrewWithCoach(entry)}
+                          />
+                        ) : (
+                          <UncoachedBrewCard
+                            key={entry.id}
+                            entry={entry}
+                            beanName={beanName}
+                            onClick={() => router.push(`/coach/brew/${entry.id}`)}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </section>
+          )}
+
+          {/* Did you know? — tip filtered by recent method + equipment */}
+          {filteredTip && (
+            <section className="px-4 py-3">
+              <div className="flex items-center gap-2 mb-3">
+                <Image src="/coach/img2_reading_book.png" alt="Coach" width={32} height={32} className="object-contain" />
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Did you know?</h3>
+              </div>
+              <div className="rounded-xl border border-primary/10 bg-primary/5 p-4 flex gap-3">
+                <span className="material-symbols-outlined text-primary text-lg shrink-0 mt-0.5">lightbulb</span>
+                <p className="text-sm text-slate-300 leading-relaxed">{filteredTip}</p>
+              </div>
+            </section>
+          )}
+        </>
+      )}
     </main>
   );
 }
