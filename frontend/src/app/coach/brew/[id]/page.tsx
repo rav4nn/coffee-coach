@@ -9,6 +9,7 @@ import { SymptomPicker } from "@/components/SymptomPicker";
 import { postCoachingApi, postFavouriteBrewApi, type CoachingResponseApi } from "@/lib/api";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useBeansStore } from "@/lib/beansStore";
+import { useLogBrewStore } from "@/lib/logBrewStore";
 
 function methodLabel(methodId: string | null | undefined) {
   if (!methodId) return "Unknown Method";
@@ -36,6 +37,8 @@ export default function BrewCoachPage() {
   const updateEntry = useBrewHistoryStore((state) => state.updateEntry);
   const beans = useBeansStore((state) => state.userBeans);
   const fetchBeans = useBeansStore((state) => state.fetchBeans);
+  const setCoachMode = useLogBrewStore((state) => state.setCoachMode);
+  const setStepOneSelection = useLogBrewStore((state) => state.setStepOneSelection);
 
   const [rating, setRating] = useState<number>(6);
   const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null);
@@ -154,6 +157,19 @@ export default function BrewCoachPage() {
     }
   }
 
+  function handleBrewWithCoach() {
+    if (!brew) return;
+    setCoachMode(brew, brew.coachingChanges ?? [], brew.recipeId);
+    if (brew.beanId && brew.methodId) {
+      setStepOneSelection({ beanId: brew.beanId, methodId: brew.methodId, pourOverDeviceId: null });
+    }
+    if (brew.recipeId && brew.brewType === "guided") {
+      router.push(`/log-brew/guided/${brew.recipeId}`);
+    } else {
+      router.push("/log-brew/freestyle");
+    }
+  }
+
   const canGetCoaching =
     !isLocked &&
     !isPerfect &&
@@ -197,27 +213,29 @@ export default function BrewCoachPage() {
   return (
     <main className="overflow-y-auto pb-28">
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3 sticky top-0 bg-background-dark/90 backdrop-blur-md z-10 border-b border-primary/10">
+      <div className="px-4 pt-4 pb-2">
         <button
           type="button"
           onClick={() => router.back()}
-          className="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors"
+          className="flex items-center justify-center size-10 -ml-2 mb-1 rounded-full hover:bg-primary/10 transition-colors"
           aria-label="Go back"
         >
           <span className="material-symbols-outlined text-slate-100">arrow_back</span>
         </button>
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Coaching</p>
-          <h1 className="text-lg font-bold text-slate-100">How was this brew?</h1>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Coaching</p>
+            <h1 className="text-2xl font-bold text-slate-100">How was this brew?</h1>
+          </div>
+          <Image
+            src={coachAvatar}
+            alt="Coach"
+            width={52}
+            height={52}
+            className="object-contain drop-shadow-md transition-all duration-300 shrink-0"
+          />
         </div>
-        <Image
-          src={coachAvatar}
-          alt="Coach"
-          width={44}
-          height={44}
-          className="object-contain drop-shadow-md transition-all duration-300"
-        />
-      </header>
+      </div>
 
       <div className="px-4 py-4 space-y-4">
         {/* Brew Parameters Summary */}
@@ -414,13 +432,15 @@ export default function BrewCoachPage() {
           </button>
         )}
 
-        {/* Done button */}
+        {/* Brew with coach's help button */}
         {(response?.fix || isLocked) && (
           <button
-            onClick={() => router.push("/coach")}
-            className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base"
+            type="button"
+            onClick={handleBrewWithCoach}
+            className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base flex items-center justify-center gap-2"
           >
-            Done
+            <span className="material-symbols-outlined text-base">coffee_maker</span>
+            Brew with the coach&apos;s help
           </button>
         )}
 

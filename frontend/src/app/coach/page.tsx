@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 
 import { useBrewHistoryStore, type FreestyleBrewEntry } from "@/lib/brewHistoryStore";
 import { useBeansStore } from "@/lib/beansStore";
-import { useLogBrewStore } from "@/lib/logBrewStore";
 import { COACH_TIPS } from "@/lib/coachTips";
 
 function methodLabel(methodId: string | null | undefined) {
@@ -179,62 +178,48 @@ function CoachedBrewCard({
   entry,
   beanName,
   onClick,
-  onBrewWithCoach,
 }: {
   entry: FreestyleBrewEntry;
   beanName: string;
   onClick: () => void;
-  onBrewWithCoach: () => void;
 }) {
   const changes = entry.coachingChanges ?? [];
   return (
-    <div className="rounded-xl border border-primary/15 bg-primary/5 overflow-hidden">
-      <button
-        type="button"
-        onClick={onClick}
-        className="w-full p-4 text-left hover:bg-primary/[0.08] transition-colors"
-      >
-        {/* Top row: bean · ratio · date | rating */}
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <p className="text-xs text-slate-400 truncate">
-            {beanName} · {ratio(entry.coffeeGrams, entry.waterMl)} · {formatDate(entry.createdAt)}
-          </p>
-          {typeof entry.rating === "number" && (
-            <span className="shrink-0 flex items-center gap-0.5 text-xs font-bold text-primary bg-primary/15 px-2 py-0.5 rounded-full">
-              <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>star</span>
-              {entry.rating}/10
-            </span>
-          )}
-        </div>
-
-        {/* Coaching feedback */}
-        <p className="text-sm text-slate-200 leading-relaxed">{entry.coachingFeedback}</p>
-
-        {/* Parameter change badges */}
-        {changes.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-2.5">
-            {changes.map((change, i) => (
-              <span
-                key={i}
-                className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary/80 font-semibold border border-primary/20"
-              >
-                {change.suggestion}
-              </span>
-            ))}
-          </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full rounded-xl border border-primary/15 bg-primary/5 p-4 text-left hover:bg-primary/[0.08] transition-colors"
+    >
+      {/* Top row: bean · ratio · date | rating */}
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <p className="text-xs text-slate-400 truncate">
+          {beanName} · {ratio(entry.coffeeGrams, entry.waterMl)} · {formatDate(entry.createdAt)}
+        </p>
+        {typeof entry.rating === "number" && (
+          <span className="shrink-0 flex items-center gap-0.5 text-xs font-bold text-primary bg-primary/15 px-2 py-0.5 rounded-full">
+            <span className="material-symbols-outlined" style={{ fontSize: "12px" }}>star</span>
+            {entry.rating}/10
+          </span>
         )}
-      </button>
+      </div>
 
-      {/* Brew with coach CTA */}
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); onBrewWithCoach(); }}
-        className="w-full flex items-center justify-center gap-2 px-4 py-3 border-t border-primary/15 bg-primary text-background-dark font-bold text-sm hover:brightness-110 transition-all"
-      >
-        <span className="material-symbols-outlined text-base">coffee_maker</span>
-        Brew with the coach&apos;s help?
-      </button>
-    </div>
+      {/* Coaching feedback */}
+      <p className="text-sm text-slate-200 leading-relaxed">{entry.coachingFeedback}</p>
+
+      {/* Parameter change badges */}
+      {changes.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2.5">
+          {changes.map((change, i) => (
+            <span
+              key={i}
+              className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary/80 font-semibold border border-primary/20"
+            >
+              {change.suggestion}
+            </span>
+          ))}
+        </div>
+      )}
+    </button>
   );
 }
 
@@ -281,8 +266,6 @@ export default function CoachPage() {
   const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
   const beans = useBeansStore((state) => state.userBeans);
   const fetchBeans = useBeansStore((state) => state.fetchBeans);
-  const setCoachMode = useLogBrewStore((state) => state.setCoachMode);
-  const setStepOneSelection = useLogBrewStore((state) => state.setStepOneSelection);
 
   const [equipment, setEquipment] = useState<string[]>([]);
   const [initialFetchDone, setInitialFetchDone] = useState(false);
@@ -309,9 +292,11 @@ export default function CoachPage() {
     return sorted[0]?.methodId ?? null;
   }, [entries]);
 
-  // Group brews by method, last 2 per method
+  // Group brews by method, last 2 per method (exclude 10/10 brews)
   const brewsByMethod = useMemo(() => {
-    const sorted = [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const sorted = [...entries]
+      .filter((e) => e.rating !== 10)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     const groups: Record<string, FreestyleBrewEntry[]> = {};
     for (const entry of sorted) {
       const key = entry.methodId ?? "unknown";
@@ -321,11 +306,11 @@ export default function CoachPage() {
     return groups;
   }, [entries]);
 
-  // Best brews: rating >= 8, grouped by method
+  // Best brews: rating === 10 only, grouped by method
   const bestBrewsByMethod = useMemo(() => {
     const best = [...entries]
-      .filter((e) => typeof e.rating === "number" && e.rating >= 8)
-      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+      .filter((e) => e.rating === 10)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     const groups: Record<string, FreestyleBrewEntry[]> = {};
     for (const entry of best) {
       const key = entry.methodId ?? "unknown";
@@ -354,22 +339,6 @@ export default function CoachPage() {
   function getBeanName(beanId: string | null) {
     if (!beanId) return "Unknown Bean";
     return beans.find((b) => b.id === beanId)?.beanName ?? "Unknown Bean";
-  }
-
-  function handleBrewWithCoach(entry: FreestyleBrewEntry) {
-    setCoachMode(entry, entry.coachingChanges ?? [], entry.recipeId);
-    if (entry.beanId && entry.methodId) {
-      setStepOneSelection({
-        beanId: entry.beanId,
-        methodId: entry.methodId,
-        pourOverDeviceId: null,
-      });
-    }
-    if (entry.recipeId && entry.brewType === "guided") {
-      router.push(`/log-brew/guided/${entry.recipeId}`);
-    } else {
-      router.push("/log-brew/freestyle");
-    }
   }
 
   if (!initialFetchDone && loading) {
@@ -414,8 +383,8 @@ export default function CoachPage() {
           {methodKeys.length === 0 ? (
             <div className="py-12 text-center">
               <span className="material-symbols-outlined text-4xl text-slate-600">emoji_events</span>
-              <p className="mt-2 text-sm text-slate-400">No top-rated brews yet.</p>
-              <p className="text-xs text-slate-500 mt-1">Rate your brews 8+ to see them here.</p>
+              <p className="mt-2 text-sm text-slate-400">No perfect brews yet.</p>
+              <p className="text-xs text-slate-500 mt-1">Rate a brew 10/10 to see it here.</p>
             </div>
           ) : (
             methodKeys.map((methodId) => {
@@ -438,7 +407,6 @@ export default function CoachPage() {
                           entry={entry}
                           beanName={beanName}
                           onClick={() => router.push(`/coach/brew/${entry.id}`)}
-                          onBrewWithCoach={() => handleBrewWithCoach(entry)}
                         />
                       ) : (
                         <UncoachedBrewCard
@@ -511,7 +479,6 @@ export default function CoachPage() {
                             entry={entry}
                             beanName={beanName}
                             onClick={() => router.push(`/coach/brew/${entry.id}`)}
-                            onBrewWithCoach={() => handleBrewWithCoach(entry)}
                           />
                         ) : (
                           <UncoachedBrewCard
