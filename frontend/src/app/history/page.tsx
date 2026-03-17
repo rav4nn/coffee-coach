@@ -6,8 +6,10 @@ import { useSearchParams } from "next/navigation";
 
 import { BrewEditSheet } from "@/components/BrewEditSheet";
 import { BrewStatsView } from "@/components/BrewStatsView";
+import { BrewShareCard } from "@/components/share/BrewShareCard";
 import { useBeansStore } from "@/lib/beansStore";
 import { useBrewHistoryStore, type FreestyleBrewEntry } from "@/lib/brewHistoryStore";
+import { captureAsBlob, captureStatsAndShare, shareOrDownload, SHARE_CAPTION } from "@/lib/shareUtils";
 
 const ALL_METHODS = [
   { id: "pour_over", label: "Pour Over" },
@@ -65,9 +67,10 @@ interface BrewCardProps {
   isOpen: boolean;
   onToggle: () => void;
   onEdit: () => void;
+  onShare: () => void;
 }
 
-function BrewCard({ entry, beanName, isOpen, onToggle, onEdit }: BrewCardProps) {
+function BrewCard({ entry, beanName, isOpen, onToggle, onEdit, onShare }: BrewCardProps) {
   const imgSrc = methodImage(entry.methodId);
   const chips = entry.tastingNotes ?? [];
   const visibleChips = chips.slice(0, 3);
@@ -166,6 +169,15 @@ function BrewCard({ entry, beanName, isOpen, onToggle, onEdit }: BrewCardProps) 
               <p className="text-sm text-slate-300 leading-relaxed">{entry.notes}</p>
             </div>
           )}
+
+          <button
+            type="button"
+            onClick={onShare}
+            className="flex items-center gap-2 text-xs font-semibold text-primary/70 hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined text-base">share</span>
+            Share this brew
+          </button>
 
         </div>
       )}
@@ -307,8 +319,11 @@ export default function JournalPage() {
   const searchParams = useSearchParams();
   const [expandedId, setExpandedId] = useState<string | null>(searchParams.get("expand"));
   const [editBrewId, setEditBrewId] = useState<string | null>(null);
+  const [sharingBrewId, setSharingBrewId] = useState<string | null>(null);
+  const [isSharingStats, setIsSharingStats] = useState(false);
   const [filters, setFilters] = useState<FilterState>({ methods: [], beanIds: [] });
   const [view, setView] = useState<"journal" | "stats">("journal");
+  const statsWrapperRef = useRef<HTMLDivElement>(null);
 
   const entries = useBrewHistoryStore((state) => state.entries);
   const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
@@ -370,6 +385,7 @@ export default function JournalPage() {
         isOpen={expandedId === entry.id}
         onToggle={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
         onEdit={() => setEditBrewId(entry.id)}
+        onShare={() => setSharingBrewId(entry.id)}
       />
     );
   }
@@ -412,7 +428,26 @@ export default function JournalPage() {
 
       {/* Content */}
       {view === "stats" ? (
-        <BrewStatsView entries={filtered} beans={beans} />
+        <>
+          <div className="px-4 pb-2 flex justify-end">
+            <button
+              type="button"
+              onClick={() => {
+                if (!statsWrapperRef.current) return;
+                setIsSharingStats(true);
+                captureStatsAndShare(statsWrapperRef.current).finally(() => setIsSharingStats(false));
+              }}
+              disabled={isSharingStats}
+              className="flex items-center gap-1.5 text-xs font-semibold text-primary/70 hover:text-primary transition-colors disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-base">share</span>
+              {isSharingStats ? "Sharing…" : "Share Stats"}
+            </button>
+          </div>
+          <div ref={statsWrapperRef}>
+            <BrewStatsView entries={filtered} beans={beans} />
+          </div>
+        </>
       ) : loading && filtered.length === 0 ? (
         <p className="px-4 text-sm text-slate-500 py-8 text-center">Loading brews…</p>
       ) : filtered.length === 0 ? (
@@ -436,6 +471,27 @@ export default function JournalPage() {
         open={editBrewId !== null}
         onOpenChange={(o) => { if (!o) setEditBrewId(null); }}
       />
+
+      {/* Off-screen brew share card capture */}
+      {sharingBrewId && (() => {
+        const entry = entries.find((e) => e.id === sharingBrewId);
+        if (!entry) return null;
+        const bean = beans.find((b) => b.id === entry.beanId);
+        const beanName = bean ? `${bean.roaster} — ${bean.beanName}` : undefined;
+        return (
+          <div
+            style={{ position: "fixed", left: -9999, top: 0, pointerEvents: "none" }}
+            ref={(el) => {
+              if (!el) return;
+              captureAsBlob(el)
+                .then((blob) => shareOrDownload(blob, "coffee-coach-brew.png", SHARE_CAPTION))
+                .finally(() => setSharingBrewId(null));
+            }}
+          >
+            <BrewShareCard entry={entry} beanName={beanName} />
+          </div>
+        );
+      })()}
     </section>
   );
 }

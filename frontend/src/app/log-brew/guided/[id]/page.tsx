@@ -9,6 +9,8 @@ import { getRecipeByIdApi, postBrewApi, type GuidedRecipe, type CoachingChangeAp
 import { useBrewSessionStore } from "@/lib/brewSessionStore";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
+import { RecipeShareCard } from "@/components/share/RecipeShareCard";
+import { captureAsBlob, shareOrDownload, SHARE_CAPTION } from "@/lib/shareUtils";
 
 type Phase = "preview" | "brewing" | "confirm" | "complete";
 
@@ -195,6 +197,9 @@ export default function GuidedRecipeDetailPage() {
 
   // Complete phase state
   const [completedBrewId, setCompletedBrewId] = useState<string | null>(null);
+
+  // Share state
+  const [isSharing, setIsSharing] = useState(false);
 
   const autoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -819,7 +824,19 @@ export default function GuidedRecipeDetailPage() {
             <span className="material-symbols-outlined text-slate-100">arrow_back</span>
           </button>
           <h2 className="text-base font-bold text-slate-100 text-center flex-1 px-2">{methodDisplayName(recipe.method)}</h2>
-          <div className="size-10" />
+          {!isBrewing ? (
+            <button
+              type="button"
+              onClick={() => setIsSharing(true)}
+              disabled={isSharing}
+              className="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors disabled:opacity-50"
+              aria-label="Share recipe"
+            >
+              <span className="material-symbols-outlined text-slate-100">share</span>
+            </button>
+          ) : (
+            <div className="size-10" />
+          )}
         </div>
 
         {/* Brewing progress bar — hidden for cold brew, otherwise slides in when brewing starts */}
@@ -1114,6 +1131,21 @@ export default function GuidedRecipeDetailPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Off-screen share card capture ── */}
+      {isSharing && recipe && (
+        <div
+          style={{ position: "fixed", left: -9999, top: 0, pointerEvents: "none" }}
+          ref={(el) => {
+            if (!el) return;
+            captureAsBlob(el)
+              .then((blob) => shareOrDownload(blob, "coffee-coach-recipe.png", SHARE_CAPTION))
+              .finally(() => setIsSharing(false));
+          }}
+        >
+          <RecipeShareCard recipe={recipe} />
         </div>
       )}
     </>

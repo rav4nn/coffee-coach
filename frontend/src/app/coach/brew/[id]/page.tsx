@@ -6,10 +6,12 @@ import { useParams, useRouter } from "next/navigation";
 
 import { GoalPicker } from "@/components/GoalPicker";
 import { SymptomPicker } from "@/components/SymptomPicker";
+import { BrewShareCard } from "@/components/share/BrewShareCard";
 import { postCoachingApi, postFavouriteBrewApi, type CoachingResponseApi, type CoachingChangeApi } from "@/lib/api";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useBeansStore } from "@/lib/beansStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
+import { captureAsBlob, shareOrDownload, SHARE_CAPTION } from "@/lib/shareUtils";
 
 function methodLabel(methodId: string | null | undefined) {
   if (!methodId) return "Unknown Method";
@@ -83,6 +85,7 @@ export default function BrewCoachPage() {
   const [isSavingFavourite, setIsSavingFavourite] = useState(false);
   const [isFavouriteSaved, setIsFavouriteSaved] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     Promise.all([fetchEntries(), fetchBeans()]).finally(() => setDataLoaded(true));
@@ -322,6 +325,17 @@ export default function BrewCoachPage() {
               {brew.brewTime} brew time
             </div>
           )}
+          <div className="mt-3 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setIsSharing(true)}
+              disabled={isSharing}
+              className="flex items-center gap-1.5 text-xs font-semibold text-primary/60 hover:text-primary transition-colors disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-base">share</span>
+              Share brew
+            </button>
+          </div>
         </div>
 
         {/* Rating Slider */}
@@ -497,6 +511,21 @@ export default function BrewCoachPage() {
           </button>
         )}
       </div>
+
+      {/* Off-screen brew share card capture */}
+      {isSharing && (
+        <div
+          style={{ position: "fixed", left: -9999, top: 0, pointerEvents: "none" }}
+          ref={(el) => {
+            if (!el) return;
+            captureAsBlob(el)
+              .then((blob) => shareOrDownload(blob, "coffee-coach-brew.png", SHARE_CAPTION))
+              .finally(() => setIsSharing(false));
+          }}
+        >
+          <BrewShareCard entry={brew} beanName={beanName} />
+        </div>
+      )}
     </main>
   );
 }
