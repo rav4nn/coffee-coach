@@ -1,22 +1,12 @@
-import brewMethods from "@/data/brew_methods.json";
+import { NextRequest, NextResponse } from "next/server";
 
-type BrewMethodRecord = {
-  method_id: string;
-  display_name: string;
-  parent_method: string | null;
-};
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const parent = searchParams.get("parent");
-
-  const methods = (brewMethods as BrewMethodRecord[]).filter((method) => {
-    if (!parent) {
-      return true;
-    }
-
-    return method.parent_method === parent;
-  });
-
-  return Response.json(methods);
+  const qs = searchParams.toString();
+  const url = `${BACKEND_URL}/api/brew-methods${qs ? `?${qs}` : ""}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return NextResponse.json(data, { status: res.status });
 }

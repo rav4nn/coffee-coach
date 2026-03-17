@@ -1,5 +1,9 @@
-import grinders from "@/data/hand_grinders.json";
+import { NextResponse } from "next/server";
+
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
 export async function GET() {
-  return Response.json(grinders.hand_grinders);
+  const res = await fetch(`${BACKEND_URL}/api/grinders`);
+  const data = await res.json();
+  return NextResponse.json(data, { status: res.status });
 }

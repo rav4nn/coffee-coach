@@ -1,22 +1,12 @@
-import beansCatalog from "@/data/beans_catalog.json";
+import { NextRequest, NextResponse } from "next/server";
 
-type CatalogItem = {
-  coffee_id: string;
-  name: string;
-  roaster: string;
-};
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const roaster = searchParams.get("roaster")?.trim().toLowerCase();
-
-  const beans = (beansCatalog as CatalogItem[]).filter((bean) => {
-    if (!roaster) {
-      return true;
-    }
-
-    return bean.roaster.toLowerCase() === roaster;
-  });
-
-  return Response.json({ beans });
+  const qs = searchParams.toString();
+  const url = `${BACKEND_URL}/api/beans/catalog${qs ? `?${qs}` : ""}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return NextResponse.json(data, { status: res.status });
 }

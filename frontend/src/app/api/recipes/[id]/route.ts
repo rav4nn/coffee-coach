@@ -1,20 +1,14 @@
-import recipes from "@/data/recipes.json";
+import { NextResponse } from "next/server";
+
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
 type Params = {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 };
 
 export async function GET(_: Request, { params }: Params) {
   const { id } = await params;
-  const items = recipes as Array<Record<string, unknown>>;
-  const recipe =
-    items.find((item) => typeof item?.recipe_id === "string" && String(item.recipe_id) === id) ?? null;
-
-  if (!recipe) {
-    return Response.json({ message: "Could not load this recipe" }, { status: 404 });
-  }
-
-  return Response.json(recipe);
+  const res = await fetch(`${BACKEND_URL}/api/recipes/${id}`);
+  const data = await res.json();
+  return NextResponse.json(data, { status: res.status });
 }

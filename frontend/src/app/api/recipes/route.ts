@@ -1,16 +1,12 @@
-import recipes from "@/data/recipes.json";
+import { NextRequest, NextResponse } from "next/server";
 
-type Recipe = {
-  recipe_id: string;
-  method: string;
-};
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const method = searchParams.get("method");
-  const list = recipes as Recipe[];
-
-  const filtered = method ? list.filter((recipe) => recipe.method === method) : list;
-
-  return Response.json({ recipes: filtered });
+  const qs = searchParams.toString();
+  const url = `${BACKEND_URL}/api/recipes${qs ? `?${qs}` : ""}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return NextResponse.json(data, { status: res.status });
 }

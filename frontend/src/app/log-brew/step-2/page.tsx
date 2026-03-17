@@ -5,15 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import recipes from "@/data/recipes.json";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 
 type Choice = "coach" | "guided" | "freestyle";
-
-type RecipeRecord = {
-  method?: string;
-};
 
 function toRecipeMethodKey(selectedMethodId: string | null, selectedPourOverDeviceId: string | null) {
   if (!selectedMethodId) {
@@ -102,12 +97,17 @@ export default function LogBrewStepTwoPage() {
     [selectedMethodId, selectedPourOverDeviceId],
   );
 
-  const recipeCount = useMemo(() => {
-    if (!recipeMethodKey) {
-      return 0;
-    }
+  const [recipeCount, setRecipeCount] = useState(0);
 
-    return (recipes as RecipeRecord[]).filter((recipe) => recipe.method === recipeMethodKey).length;
+  useEffect(() => {
+    if (!recipeMethodKey) {
+      setRecipeCount(0);
+      return;
+    }
+    fetch(`/api/recipes?method=${recipeMethodKey}`)
+      .then((res) => res.json())
+      .then((data) => setRecipeCount(data.recipes?.length ?? 0))
+      .catch(() => setRecipeCount(0));
   }, [recipeMethodKey]);
 
   function handleNext() {
