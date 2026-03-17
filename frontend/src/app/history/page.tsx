@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
 import { BrewEditSheet } from "@/components/BrewEditSheet";
+import { BrewStatsView } from "@/components/BrewStatsView";
 import { useBeansStore } from "@/lib/beansStore";
 import { useBrewHistoryStore, type FreestyleBrewEntry } from "@/lib/brewHistoryStore";
 
@@ -307,6 +308,7 @@ export default function JournalPage() {
   const [expandedId, setExpandedId] = useState<string | null>(searchParams.get("expand"));
   const [editBrewId, setEditBrewId] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({ methods: [], beanIds: [] });
+  const [view, setView] = useState<"journal" | "stats">("journal");
 
   const entries = useBrewHistoryStore((state) => state.entries);
   const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
@@ -374,19 +376,46 @@ export default function JournalPage() {
 
   return (
     <section className="pb-28">
-      {/* Header */}
+      {/* Header with toggle */}
       <div className="px-4 pt-2 pb-3 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-100">Brew Journal</h1>
-        <FilterDropdown
-          filters={filters}
-          onChange={setFilters}
-          availableMethods={availableMethods}
-          availableBeans={availableBeans}
-        />
+        <div className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 p-1">
+          <button
+            onClick={() => setView("journal")}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+              view === "journal"
+                ? "bg-primary text-background-dark"
+                : "text-primary/70"
+            }`}
+          >
+            <span className="material-symbols-outlined text-base">menu_book</span>
+            Journal
+          </button>
+          <button
+            onClick={() => setView("stats")}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+              view === "stats"
+                ? "bg-primary text-background-dark"
+                : "text-primary/70"
+            }`}
+          >
+            <span className="material-symbols-outlined text-base">bar_chart</span>
+            View Stats
+          </button>
+        </div>
+        {view === "journal" && (
+          <FilterDropdown
+            filters={filters}
+            onChange={setFilters}
+            availableMethods={availableMethods}
+            availableBeans={availableBeans}
+          />
+        )}
       </div>
 
       {/* Content */}
-      {loading && filtered.length === 0 ? (
+      {view === "stats" ? (
+        <BrewStatsView entries={entries} beans={beans} />
+      ) : loading && filtered.length === 0 ? (
         <p className="px-4 text-sm text-slate-500 py-8 text-center">Loading brews…</p>
       ) : filtered.length === 0 ? (
         <div className="px-4 py-12 text-center">
