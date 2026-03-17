@@ -26,10 +26,13 @@ frontend/src/data/brew_methods.json
 
 # Project specs and personal notes
 design_spec.md
+DESIGN_SPEC.md
 tech_spec.md
 my-todo.md
 TODO.md
 ux_audit.txt
+CLAUDE.md
+deploy.sh
 tasks/
 
 # IDE and editor files
