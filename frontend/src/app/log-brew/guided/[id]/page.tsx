@@ -9,7 +9,6 @@ import { getRecipeByIdApi, postBrewApi, type GuidedRecipe, type CoachingChangeAp
 import { useBrewSessionStore } from "@/lib/brewSessionStore";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
-import { BrewTimePicker } from "@/components/BrewTimePicker";
 
 type Phase = "preview" | "brewing" | "confirm" | "complete";
 
@@ -187,6 +186,8 @@ export default function GuidedRecipeDetailPage() {
   const [confirmGrinderName, setConfirmGrinderName] = useState<string | null>(null);
   const [confirmGrinderClicks, setConfirmGrinderClicks] = useState("");
   const [confirmBrewTime, setConfirmBrewTime] = useState("00:00");
+  const [confirmBrewTimeDisplay, setConfirmBrewTimeDisplay] = useState("00:00");
+  const [confirmBrewTimeError, setConfirmBrewTimeError] = useState<string | null>(null);
   const [confirmNotes, setConfirmNotes] = useState("");
   const [confirmStepTimes, setConfirmStepTimes] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
@@ -230,6 +231,7 @@ export default function GuidedRecipeDetailPage() {
             const grind = GRIND_SIZES.find((g) => g.toLowerCase() === grindVal?.toLowerCase()) ?? "Medium";
             setConfirmGrindSize(grind);
             setConfirmBrewTime(formatTimer(existingSession.total_brew_time_seconds));
+            setConfirmBrewTimeDisplay(formatTimer(existingSession.total_brew_time_seconds));
             setPhase("confirm");
           } else {
             // Restore brewing phase
@@ -483,6 +485,7 @@ export default function GuidedRecipeDetailPage() {
           ? elapsedSeconds - manualBrewStartElapsed
           : elapsedSeconds;
       setConfirmBrewTime(formatTimer(defaultBrewSecs));
+      setConfirmBrewTimeDisplay(formatTimer(defaultBrewSecs));
       setConfirmNotes("");
       setSaveError(null);
       setPhase("confirm");
@@ -491,8 +494,19 @@ export default function GuidedRecipeDetailPage() {
     setCurrentIndex((i) => i + 1);
   }
 
+  function handleConfirmBrewTimeChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value;
+    setConfirmBrewTimeDisplay(val);
+    setConfirmBrewTime(val);
+    if (confirmBrewTimeError) setConfirmBrewTimeError(null);
+  }
+
   async function handleConfirmSave() {
     if (!recipe) return;
+    if (!/^\d+:[0-5]\d$/.test(confirmBrewTime)) {
+      setSaveError("Invalid brew time — use mm:ss format (e.g. 01:40)");
+      return;
+    }
     setSaving(true);
     setSaveError(null);
     try {
@@ -616,168 +630,157 @@ export default function GuidedRecipeDetailPage() {
   if (phase === "confirm") {
     const isColdBrew = recipe.method === "cold_brew";
     return (
-      <>
-        <main className="flex-1 overflow-y-auto pb-44">
-          {/* Minimal header */}
-          <header className="sticky top-0 z-40 bg-background-dark/90 backdrop-blur-md border-b border-primary/10 px-4 py-4">
-            <h2 className="text-base font-bold text-slate-100 text-center">Confirm Your Brew</h2>
-          </header>
+      <main className="flex-1 overflow-y-auto pb-28">
+        {/* Minimal header */}
+        <header className="sticky top-0 z-40 bg-background-dark/90 backdrop-blur-md border-b border-primary/10 px-4 py-4">
+          <h2 className="text-base font-bold text-slate-100 text-center">Confirm Your Brew</h2>
+        </header>
 
-          <div className="p-4 space-y-6">
-            {/* Steps section */}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-primary mb-3">
-                Step Timings — edit if you deviated
-              </p>
-              <div className="space-y-3">
-                {mergedSteps.map((step, i) => (
-                  <div key={i} className="rounded-xl border border-white/10 bg-white/5 p-3 flex items-center gap-3">
-                    <div className="size-7 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0">
-                      {i + 1}
-                    </div>
-                    <p className="flex-1 text-sm text-slate-300 leading-snug">{resolveInstructionMath(step.instruction)}</p>
-                    {step.duration_seconds !== null ? (
-                      <input
-                        type="text"
-                        value={confirmStepTimes[i] ?? "00:00"}
-                        onChange={(e) => {
-                          const next = [...confirmStepTimes];
-                          next[i] = e.target.value;
-                          setConfirmStepTimes(next);
-                        }}
-                        placeholder="mm:ss"
-                        className="w-16 h-8 rounded-lg bg-white/5 border border-white/10 px-2 text-xs text-slate-100 text-center outline-none focus:border-primary/50 shrink-0"
-                      />
-                    ) : (
-                      <span className="text-xs text-slate-500 shrink-0">—</span>
-                    )}
-                  </div>
-                ))}
-              </div>
+        <div className="px-4 pt-4 space-y-4">
+          {/* ── Brewing Essentials ── */}
+          <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="material-symbols-outlined text-primary text-lg">coffee_maker</span>
+              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Brewing Essentials</h2>
             </div>
 
-            {/* Overall brew parameters */}
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-primary mb-3">Brew Parameters</p>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Coffee (g)</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={confirmCoffeeG}
-                      onChange={(e) => setConfirmCoffeeG(e.target.value)}
-                      className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
-                    />
-                    {coachChangeMap.has("coffeeGrams") && (
-                      <CoachHintInline label={coachChangeMap.get("coffeeGrams")!.suggestion} param="coffeeGrams" />
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Water (ml)</label>
-                    <input
-                      type="number"
-                      step="1"
-                      value={confirmWaterMl}
-                      onChange={(e) => setConfirmWaterMl(e.target.value)}
-                      className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
-                    />
-                  </div>
-                </div>
-
-                {!isColdBrew && (
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Water Temperature (°C)</label>
-                    <input
-                      type="number"
-                      step="1"
-                      value={confirmWaterTempC}
-                      onChange={(e) => setConfirmWaterTempC(e.target.value)}
-                      className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
-                    />
-                    {coachChangeMap.has("waterTempC") && (
-                      <CoachHintInline label={coachChangeMap.get("waterTempC")!.suggestion} param="waterTempC" />
-                    )}
-                  </div>
+            {/* Row 1: Coffee + Water */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Coffee (g)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={confirmCoffeeG}
+                  onChange={(e) => setConfirmCoffeeG(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-mocha/20 bg-steam px-3 py-2 text-sm text-espresso placeholder:text-mocha/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mocha/40"
+                />
+                {coachChangeMap.has("coffeeGrams") && (
+                  <CoachHintInline label={coachChangeMap.get("coffeeGrams")!.suggestion} param="coffeeGrams" />
                 )}
-
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      {confirmUseClicks ? "Clicks" : "Grind Size"}
-                    </label>
-                    {confirmGrinderName && (
-                      <button
-                        type="button"
-                        onClick={() => setConfirmUseClicks((v) => !v)}
-                        className="text-[9px] font-semibold text-primary/60 hover:text-primary uppercase tracking-wider"
-                      >
-                        {confirmUseClicks ? "Use size" : "Use clicks"}
-                      </button>
-                    )}
-                  </div>
-                  {confirmUseClicks && confirmGrinderName ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        step="1"
-                        min="1"
-                        placeholder="Clicks"
-                        value={confirmGrinderClicks}
-                        onChange={(e) => setConfirmGrinderClicks(e.target.value)}
-                        className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
-                      />
-                      <span className="text-[10px] text-slate-500 shrink-0">{confirmGrinderName}</span>
-                    </div>
-                  ) : (
-                    <select
-                      value={confirmGrindSize}
-                      onChange={(e) => setConfirmGrindSize(e.target.value as typeof GRIND_SIZES[number])}
-                      className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-3 text-sm text-slate-100 outline-none focus:border-primary/50"
-                    >
-                      {GRIND_SIZES.map((s) => (
-                        <option key={s} value={s} className="bg-[#1a0f00]">{s}</option>
-                      ))}
-                    </select>
-                  )}
-                  {coachChangeMap.has("grindSize") && (
-                    <CoachHintInline label={coachChangeMap.get("grindSize")!.suggestion} param="grindSize" />
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Total Brew Time</label>
-                  <BrewTimePicker value={confirmBrewTime} onChange={setConfirmBrewTime} coldBrew={isColdBrew} />
-                  {coachChangeMap.has("brewTime") && (
-                    <CoachHintInline label={coachChangeMap.get("brewTime")!.suggestion} param="brewTime" />
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Notes</label>
-                  <textarea
-                    rows={3}
-                    value={confirmNotes}
-                    onChange={(e) => setConfirmNotes(e.target.value)}
-                    placeholder="Any observations about this brew..."
-                    className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-primary/50 resize-none"
-                  />
-                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Water (ml)</label>
+                <input
+                  type="number"
+                  step="1"
+                  value={confirmWaterMl}
+                  onChange={(e) => setConfirmWaterMl(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-mocha/20 bg-steam px-3 py-2 text-sm text-espresso placeholder:text-mocha/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mocha/40"
+                />
               </div>
             </div>
 
-            {saveError && <p className="text-xs text-red-400">{saveError}</p>}
+            {/* Row 2: Temp + Brew Time */}
+            <div className={`grid gap-3 ${isColdBrew ? "grid-cols-1" : "grid-cols-2"}`}>
+              {!isColdBrew && (
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Temp (°C)</label>
+                  <input
+                    type="number"
+                    step="1"
+                    value={confirmWaterTempC}
+                    onChange={(e) => setConfirmWaterTempC(e.target.value)}
+                    className="flex h-10 w-full rounded-xl border border-mocha/20 bg-steam px-3 py-2 text-sm text-espresso placeholder:text-mocha/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mocha/40"
+                  />
+                  {coachChangeMap.has("waterTempC") && (
+                    <CoachHintInline label={coachChangeMap.get("waterTempC")!.suggestion} param="waterTempC" />
+                  )}
+                </div>
+              )}
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                  {isColdBrew ? "Brew Time (h:mm)" : "Brew Time"}
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder={isColdBrew ? "h:mm" : "mm:ss"}
+                  value={confirmBrewTimeDisplay}
+                  onChange={handleConfirmBrewTimeChange}
+                  className="flex h-10 w-full rounded-xl border border-mocha/20 bg-steam px-3 py-2 text-sm text-espresso placeholder:text-mocha/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mocha/40"
+                />
+                {confirmBrewTimeError && <p className="text-xs text-red-400 mt-0.5">{confirmBrewTimeError}</p>}
+                {coachChangeMap.has("brewTime") && (
+                  <CoachHintInline label={coachChangeMap.get("brewTime")!.suggestion} param="brewTime" />
+                )}
+              </div>
+            </div>
           </div>
-        </main>
 
-        {/* Sticky save button */}
-        <div className="fixed bottom-20 left-0 right-0 px-4 z-40 max-w-phone mx-auto">
+          {/* ── Grind Setting ── */}
+          <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-lg">tune</span>
+                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Grind Setting</h2>
+              </div>
+              {confirmGrinderName && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmUseClicks((v) => !v)}
+                  className="text-[10px] font-semibold uppercase tracking-wider text-primary/70 hover:text-primary transition-colors"
+                >
+                  {confirmUseClicks ? "Use grind size" : "Use clicks"}
+                </button>
+              )}
+            </div>
+            {confirmUseClicks && confirmGrinderName ? (
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                  Clicks on {confirmGrinderName}
+                </label>
+                <input
+                  type="number"
+                  step="1"
+                  min="1"
+                  placeholder="e.g. 24"
+                  value={confirmGrinderClicks}
+                  onChange={(e) => setConfirmGrinderClicks(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-mocha/20 bg-steam px-3 py-2 text-sm text-espresso placeholder:text-mocha/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mocha/40"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Grind Size</label>
+                <select
+                  value={confirmGrindSize}
+                  onChange={(e) => setConfirmGrindSize(e.target.value as typeof GRIND_SIZES[number])}
+                  className="h-10 w-full rounded-xl border border-mocha/20 bg-steam px-3 text-sm text-espresso outline-none focus:ring-2 focus:ring-mocha/40"
+                >
+                  {GRIND_SIZES.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {coachChangeMap.has("grindSize") && (
+              <CoachHintInline label={coachChangeMap.get("grindSize")!.suggestion} param="grindSize" />
+            )}
+          </div>
+
+          {/* ── Notes ── */}
+          <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-2">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="material-symbols-outlined text-primary text-lg">edit_note</span>
+              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Notes</h2>
+            </div>
+            <textarea
+              rows={3}
+              value={confirmNotes}
+              onChange={(e) => setConfirmNotes(e.target.value)}
+              placeholder="Any quick observations about this brew..."
+              className="w-full rounded-xl border border-mocha/20 bg-steam px-3 py-2 text-sm text-espresso outline-none focus:ring-2 focus:ring-mocha/40 resize-none"
+            />
+          </div>
+
+          {saveError && <p className="text-xs text-red-400">{saveError}</p>}
+
           <button
             type="button"
             onClick={handleConfirmSave}
             disabled={saving}
-            className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 hover:brightness-110 active:scale-[0.98] transition-all"
+            className="h-12 w-full bg-primary text-background-dark font-bold rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 hover:brightness-110 active:scale-[0.98] transition-all"
           >
             {saving ? (
               "Saving…"
@@ -789,7 +792,7 @@ export default function GuidedRecipeDetailPage() {
             )}
           </button>
         </div>
-      </>
+      </main>
     );
   }
 

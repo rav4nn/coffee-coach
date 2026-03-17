@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 
 import { GoalPicker } from "@/components/GoalPicker";
 import { SymptomPicker } from "@/components/SymptomPicker";
-import { postCoachingApi, postFavouriteBrewApi, type CoachingResponseApi } from "@/lib/api";
+import { postCoachingApi, postFavouriteBrewApi, type CoachingResponseApi, type CoachingChangeApi } from "@/lib/api";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useBeansStore } from "@/lib/beansStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
@@ -27,6 +27,41 @@ function methodImage(methodId: string | null | undefined): string {
   return "/methods/pour_over.png";
 }
 
+const PARAM_LABELS: Record<string, string> = {
+  grindSize: "Grind",
+  coffeeGrams: "Dose",
+  waterTempC: "Temp",
+  brewTime: "Brew Time",
+};
+
+function formatChangeDisplay(change: CoachingChangeApi): string {
+  const prev = change.previousValue;
+  const next = change.newValue;
+  if (prev == null || next == null) return change.suggestion;
+  if (change.param === "grindSize" && typeof prev === "number" && typeof next === "number") {
+    return `${prev} clicks → ${next} clicks`;
+  }
+  if (change.param === "coffeeGrams") return `${prev}g → ${next}g`;
+  if (change.param === "waterTempC") return `${prev}°C → ${next}°C`;
+  return `${prev} → ${next}`;
+}
+
+function CoachingChanges({ changes }: { changes: CoachingChangeApi[] }) {
+  const displayable = changes.filter((c) => c.previousValue != null && c.newValue != null);
+  if (displayable.length === 0) return null;
+  return (
+    <div className="mt-3 pt-3 border-t border-primary/15 space-y-1.5">
+      <p className="text-[10px] uppercase tracking-widest text-primary/50 font-semibold">Suggested adjustments</p>
+      {displayable.map((change, i) => (
+        <div key={i} className="flex items-center justify-between gap-2">
+          <span className="text-xs text-slate-400">{PARAM_LABELS[change.param] ?? change.param}</span>
+          <span className="text-xs font-semibold text-slate-200">{formatChangeDisplay(change)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function BrewCoachPage() {
   const params = useParams();
   const router = useRouter();
@@ -41,7 +76,7 @@ export default function BrewCoachPage() {
   const setStepOneSelection = useLogBrewStore((state) => state.setStepOneSelection);
 
   const [rating, setRating] = useState<number>(6);
-  const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null);
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [response, setResponse] = useState<CoachingResponseApi | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +96,10 @@ export default function BrewCoachPage() {
     if (brew) {
       setRating(brew.rating ?? 6);
       if (brew.coachingFeedback) {
-        setResponse({ fix: brew.coachingFeedback });
+        setResponse({
+          fix: brew.coachingFeedback,
+          changes: brew.coachingChanges ?? undefined,
+        });
       }
     }
   }, [brew]);
@@ -100,13 +138,14 @@ export default function BrewCoachPage() {
       }));
   }, [entries, brew]);
 
-  async function requestCoaching(payload: { symptom?: string; goals?: string[] }) {
+  async function requestCoaching(payload: { symptoms?: string[]; goals?: string[] }) {
     if (!brewId || !brew) return;
     setIsLoading(true);
     try {
       const data = await postCoachingApi({
         brew_id: brewId,
         ...payload,
+        rating,
         current_params: {
           coffeeGrams: brew.coffeeGrams,
           waterMl: brew.waterMl,
@@ -128,16 +167,24 @@ export default function BrewCoachPage() {
     }
   }
 
+  function toggleSymptom(symptom: string) {
+    setSelectedSymptoms((prev) =>
+      prev.includes(symptom) ? prev.filter((s) => s !== symptom) : [...prev, symptom]
+    );
+    setSelectedGoals([]);
+  }
+
   function toggleGoal(goal: string) {
     setSelectedGoals((current) => {
       const exists = current.includes(goal);
-      return exists ? current.filter((g) => g !== goal) : current.length < 2 ? [...current, goal] : current;
+      return exists ? [] : [goal]; // single selection
     });
+    setSelectedSymptoms([]);
   }
 
   function handleGetCoaching() {
-    if (selectedSymptom) {
-      void requestCoaching({ symptom: selectedSymptom });
+    if (selectedSymptoms.length > 0) {
+      void requestCoaching({ symptoms: selectedSymptoms });
     } else if (selectedGoals.length > 0) {
       void requestCoaching({ goals: selectedGoals });
     }
@@ -174,7 +221,7 @@ export default function BrewCoachPage() {
     !isLocked &&
     !isPerfect &&
     !response?.fix &&
-    (selectedSymptom !== null || selectedGoals.length > 0);
+    (selectedSymptoms.length > 0 || selectedGoals.length > 0);
 
   // Loading state
   if (!dataLoaded) {
@@ -332,6 +379,7 @@ export default function BrewCoachPage() {
             {response.freshness_caveat && (
               <p className="mt-2 text-xs text-slate-400">Freshness note: {response.freshness_caveat}</p>
             )}
+            {response.changes && <CoachingChanges changes={response.changes} />}
           </div>
         )}
 
@@ -347,11 +395,8 @@ export default function BrewCoachPage() {
                 <div className="space-y-2">
                   <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">What went wrong?</p>
                   <SymptomPicker
-                    selected={selectedSymptom}
-                    onSelect={(s) => {
-                      setSelectedSymptom((prev) => (prev === s ? null : s));
-                      setSelectedGoals([]);
-                    }}
+                    selected={selectedSymptoms}
+                    onToggle={toggleSymptom}
                   />
                 </div>
 
@@ -359,11 +404,8 @@ export default function BrewCoachPage() {
                   <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Or set a goal</p>
                   <GoalPicker
                     selected={selectedGoals}
-                    maxSelections={2}
-                    onToggle={(g) => {
-                      toggleGoal(g);
-                      setSelectedSymptom(null);
-                    }}
+                    maxSelections={1}
+                    onToggle={toggleGoal}
                   />
                 </div>
               </>
@@ -383,6 +425,7 @@ export default function BrewCoachPage() {
                 {response?.freshness_caveat && (
                   <p className="mt-2 text-xs text-slate-400">Freshness note: {response.freshness_caveat}</p>
                 )}
+                {response?.changes && <CoachingChanges changes={response.changes} />}
               </>
             )}
           </div>

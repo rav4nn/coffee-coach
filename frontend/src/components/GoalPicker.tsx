@@ -10,7 +10,7 @@ const DEFAULT_GOALS = [
 export function GoalPicker({
   options = DEFAULT_GOALS,
   selected = [],
-  maxSelections = 2,
+  maxSelections = 1,
   onToggle,
 }: {
   options?: string[];

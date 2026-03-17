@@ -30,7 +30,7 @@ export function BrewRatingSheet({
   const updateEntry = useBrewHistoryStore((state) => state.updateEntry);
 
   const [rating, setRating] = useState<number>(initialRating ?? 6);
-  const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null);
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [response, setResponse] = useState<CoachingResponseApi | null>(
     initialFeedback ? { fix: initialFeedback } : null,
@@ -42,7 +42,7 @@ export function BrewRatingSheet({
   // Reset state when the brew changes
   useEffect(() => {
     setRating(initialRating ?? 6);
-    setSelectedSymptom(null);
+    setSelectedSymptoms([]);
     setSelectedGoals([]);
     setResponse(initialFeedback ? { fix: initialFeedback } : null);
     setIsLoading(false);
@@ -62,7 +62,7 @@ export function BrewRatingSheet({
     }
   }
 
-  async function requestCoaching(payload: { symptom?: string; goals?: string[] }) {
+  async function requestCoaching(payload: { symptoms?: string[]; goals?: string[] }) {
     if (!brewId) return;
     setIsLoading(true);
     try {
@@ -77,14 +77,13 @@ export function BrewRatingSheet({
   function toggleGoal(goal: string) {
     setSelectedGoals((current) => {
       const exists = current.includes(goal);
-      return exists ? current.filter((g) => g !== goal) : current.length < 2 ? [...current, goal] : current;
+      return exists ? [] : [goal];
     });
   }
 
   function handleGetCoaching() {
-    // Symptom takes priority over goals
-    if (selectedSymptom) {
-      void requestCoaching({ symptom: selectedSymptom });
+    if (selectedSymptoms.length > 0) {
+      void requestCoaching({ symptoms: selectedSymptoms });
     } else if (selectedGoals.length > 0) {
       void requestCoaching({ goals: selectedGoals });
     }
@@ -108,7 +107,7 @@ export function BrewRatingSheet({
     !isLocked &&
     !isPerfect &&
     !response?.fix &&
-    (selectedSymptom !== null || selectedGoals.length > 0);
+    (selectedSymptoms.length > 0 || selectedGoals.length > 0);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -209,9 +208,11 @@ export function BrewRatingSheet({
                   <div className="space-y-2">
                     <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Fix a Symptom</p>
                     <SymptomPicker
-                      selected={selectedSymptom}
-                      onSelect={(s) => {
-                        setSelectedSymptom((prev) => (prev === s ? null : s));
+                      selected={selectedSymptoms}
+                      onToggle={(s) => {
+                        setSelectedSymptoms((prev) =>
+                          prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
+                        );
                         setSelectedGoals([]);
                       }}
                     />
@@ -221,10 +222,10 @@ export function BrewRatingSheet({
                     <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Set a Goal</p>
                     <GoalPicker
                       selected={selectedGoals}
-                      maxSelections={2}
+                      maxSelections={1}
                       onToggle={(g) => {
                         toggleGoal(g);
-                        setSelectedSymptom(null);
+                        setSelectedSymptoms([]);
                       }}
                     />
                   </div>

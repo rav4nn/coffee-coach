@@ -402,19 +402,17 @@ export default function JournalPage() {
             View Stats
           </button>
         </div>
-        {view === "journal" && (
-          <FilterDropdown
-            filters={filters}
-            onChange={setFilters}
-            availableMethods={availableMethods}
-            availableBeans={availableBeans}
-          />
-        )}
+        <FilterDropdown
+          filters={filters}
+          onChange={setFilters}
+          availableMethods={availableMethods}
+          availableBeans={availableBeans}
+        />
       </div>
 
       {/* Content */}
       {view === "stats" ? (
-        <BrewStatsView entries={entries} beans={beans} />
+        <BrewStatsView entries={filtered} beans={beans} />
       ) : loading && filtered.length === 0 ? (
         <p className="px-4 text-sm text-slate-500 py-8 text-center">Loading brews…</p>
       ) : filtered.length === 0 ? (

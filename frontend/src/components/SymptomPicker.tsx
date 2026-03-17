@@ -9,22 +9,22 @@ const DEFAULT_SYMPTOMS = [
 
 export function SymptomPicker({
   options = DEFAULT_SYMPTOMS,
-  selected,
-  onSelect,
+  selected = [],
+  onToggle,
 }: {
   options?: string[];
-  selected?: string | null;
-  onSelect?: (value: string) => void;
+  selected?: string[];
+  onToggle?: (value: string) => void;
 }) {
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((option) => {
-        const active = selected === option;
+        const active = selected.includes(option);
         return (
           <button
             key={option}
             type="button"
-            onClick={() => onSelect?.(option)}
+            onClick={() => onToggle?.(option)}
             className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
               active
                 ? "border-primary bg-primary/20 text-primary"

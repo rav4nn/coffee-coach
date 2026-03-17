@@ -39,7 +39,7 @@ function CoachingPageContent() {
 
   const [rating, setRating] = useState<number>(selectedBrew?.rating ?? 6);
   const [improvementMode, setImprovementMode] = useState<ImprovementMode>("goal");
-  const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null);
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [response, setResponse] = useState<CoachingResponseApi | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +50,7 @@ function CoachingPageContent() {
       return;
     }
     setRating(selectedBrew.rating ?? 6);
-    setSelectedSymptom(null);
+    setSelectedSymptoms([]);
     setSelectedGoals([]);
     setResponse(null);
     setSaveFavouriteMessage(null);
@@ -59,7 +59,7 @@ function CoachingPageContent() {
   const mode = coachingMode(rating);
   const isOscillating = response?.trend === "oscillating";
 
-  async function requestCoaching(payload: { symptom?: string; goals?: string[] }) {
+  async function requestCoaching(payload: { symptoms?: string[]; goals?: string[] }) {
     if (!selectedBrew) {
       return;
     }
@@ -68,7 +68,7 @@ function CoachingPageContent() {
     try {
       const data = await postCoachingApi({
         brew_id: selectedBrew.id,
-        symptom: payload.symptom,
+        symptoms: payload.symptoms,
         goals: payload.goals,
       });
       setResponse(data);
@@ -147,10 +147,13 @@ function CoachingPageContent() {
 
           {mode === "diagnosis" ? (
             <SymptomPicker
-              selected={selectedSymptom}
-              onSelect={(symptom) => {
-                setSelectedSymptom(symptom);
-                void requestCoaching({ symptom });
+              selected={selectedSymptoms}
+              onToggle={(symptom) => {
+                const next = selectedSymptoms.includes(symptom)
+                  ? selectedSymptoms.filter((s) => s !== symptom)
+                  : [...selectedSymptoms, symptom];
+                setSelectedSymptoms(next);
+                void requestCoaching({ symptoms: next });
               }}
             />
           ) : null}
@@ -170,10 +173,13 @@ function CoachingPageContent() {
               </div>
               {improvementMode === "symptom" ? (
                 <SymptomPicker
-                  selected={selectedSymptom}
-                  onSelect={(symptom) => {
-                    setSelectedSymptom(symptom);
-                    void requestCoaching({ symptom });
+                  selected={selectedSymptoms}
+                  onToggle={(symptom) => {
+                    const next = selectedSymptoms.includes(symptom)
+                      ? selectedSymptoms.filter((s) => s !== symptom)
+                      : [...selectedSymptoms, symptom];
+                    setSelectedSymptoms(next);
+                    void requestCoaching({ symptoms: next });
                   }}
                 />
               ) : isOscillating ? (

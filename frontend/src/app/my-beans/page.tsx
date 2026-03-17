@@ -44,6 +44,7 @@ export default function MyBeansPage() {
   const [restockValue, setRestockValue] = useState<string>("");
   const [roasters, setRoasters] = useState<string[]>([]);
   const [catalogBeans, setCatalogBeans] = useState<CatalogBean[]>([]);
+  const [customCatalogBeans, setCustomCatalogBeans] = useState<CatalogBean[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [filterTab, setFilterTab] = useState<FilterTab>("all");
@@ -63,8 +64,8 @@ export default function MyBeansPage() {
     [roasters],
   );
   const beanOptions = useMemo(
-    () => catalogBeans.map((b) => ({ label: b.name, value: b.coffee_id })),
-    [catalogBeans],
+    () => [...catalogBeans, ...customCatalogBeans].map((b) => ({ label: b.name, value: b.coffee_id })),
+    [catalogBeans, customCatalogBeans],
   );
 
   useEffect(() => { fetchBeans(); }, [fetchBeans]);
@@ -78,9 +79,12 @@ export default function MyBeansPage() {
   useEffect(() => {
     if (!selectedRoaster) {
       setCatalogBeans([]);
+      setCustomCatalogBeans([]);
       form.setValue("coffeeId", "");
       return;
     }
+    setCustomCatalogBeans([]);
+    form.setValue("coffeeId", "");
     setCatalogLoading(true);
     getCatalogBeansByRoaster(selectedRoaster)
       .then(setCatalogBeans)
@@ -89,19 +93,22 @@ export default function MyBeansPage() {
   }, [selectedRoaster, form]);
 
   async function onSubmit(values: AddBeanFormValues) {
-    const selectedBean = catalogBeans.find((b) => b.coffee_id === values.coffeeId);
+    const allBeans = [...catalogBeans, ...customCatalogBeans];
+    const selectedBean = allBeans.find((b) => b.coffee_id === values.coffeeId);
     if (!selectedBean) return;
+    const isCustom = values.coffeeId === "__custom__";
     try {
       await addBean({
-        coffee_id: values.coffeeId,
+        ...(isCustom ? {} : { coffee_id: values.coffeeId }),
+        name: selectedBean.name,
+        roaster: selectedBean.roaster,
         roast_date: values.roastDate?.trim() ? values.roastDate : null,
         is_pre_ground: values.isPreGround,
         bag_weight_grams: values.bagWeightGrams,
-        name: selectedBean.name,
-        roaster: selectedBean.roaster,
       });
       form.reset({ roaster: "", coffeeId: "", roastDate: "", isPreGround: false, bagWeightGrams: undefined });
       setCatalogBeans([]);
+      setCustomCatalogBeans([]);
       setSheetOpen(false);
     } catch {
       form.setError("root", { message: "Failed to save bean. Please try again." });
@@ -476,6 +483,10 @@ export default function MyBeansPage() {
                 value={selectedRoaster}
                 onChange={(value) => form.setValue("roaster", value, { shouldValidate: true })}
                 options={roasterOptions}
+                onAddNew={(q) => {
+                  setRoasters((prev) => (prev.includes(q) ? prev : [q, ...prev]));
+                  form.setValue("roaster", q, { shouldValidate: true });
+                }}
               />
               {form.formState.errors.roaster && (
                 <p className="text-xs text-red-400">{form.formState.errors.roaster.message}</p>
@@ -493,6 +504,11 @@ export default function MyBeansPage() {
                 onChange={(value) => form.setValue("coffeeId", value, { shouldValidate: true })}
                 options={beanOptions}
                 disabled={!selectedRoaster || catalogLoading}
+                onAddNew={(q) => {
+                  const custom: CatalogBean = { coffee_id: "__custom__", name: q, roaster: selectedRoaster };
+                  setCustomCatalogBeans([custom]);
+                  form.setValue("coffeeId", "__custom__", { shouldValidate: true });
+                }}
               />
               {form.formState.errors.coffeeId && (
                 <p className="text-xs text-red-400">{form.formState.errors.coffeeId.message}</p>

@@ -82,7 +82,9 @@ export type UserPreferencesApi = {
 };
 
 export type CreateUserBeanPayload = {
-  coffee_id: string;
+  coffee_id?: string | null;
+  name?: string;
+  roaster?: string;
   roast_date?: string | null;
   is_pre_ground: boolean;
   bag_weight_grams: number;
@@ -257,8 +259,9 @@ export type CoachingResponseApi = {
 
 export type CoachingPayloadApi = {
   brew_id: string;
-  symptom?: string;
+  symptoms?: string[];
   goals?: string[];
+  rating?: number;
   current_params?: {
     coffeeGrams: number;
     waterMl: number;

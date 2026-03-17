@@ -22,6 +22,9 @@ function shiftGrind(current: string, direction: "finer" | "coarser"): string {
 }
 
 function CoachHint({ change, originalValue }: { change: CoachingChange; originalValue?: string }) {
+  const hasComputedValues = change.previousValue != null && change.newValue != null;
+  const isClicksGrind = change.param === "grindSize" && typeof change.previousValue === "number";
+
   return (
     <div className="flex items-start gap-1.5 mt-1 px-2 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
       <Image
@@ -32,31 +35,23 @@ function CoachHint({ change, originalValue }: { change: CoachingChange; original
         className="w-4 h-4 object-contain shrink-0 mt-0.5"
       />
       <p className="text-xs text-primary leading-relaxed">
-        <span className="font-semibold">Coach says:</span> {change.suggestion}
-        {originalValue && <span className="text-primary/60"> (was {originalValue})</span>}
+        <span className="font-semibold">Coach says:</span>{" "}
+        {hasComputedValues ? (
+          <>
+            <span className="line-through text-primary/50">{change.previousValue}{isClicksGrind ? " clicks" : ""}</span>
+            <span className="font-semibold"> → {change.newValue}{isClicksGrind ? " clicks" : ""}</span>
+          </>
+        ) : (
+          <>
+            {change.suggestion}
+            {originalValue && <span className="text-primary/60"> (was {originalValue})</span>}
+          </>
+        )}
       </p>
     </div>
   );
 }
 
-/** Auto-format a brew time input: as user types digits, format as mm:ss */
-function formatBrewTimeInput(raw: string): string {
-  const digits = raw.replace(/\D/g, "").slice(0, 4);
-  if (digits.length <= 2) return digits;
-  return `${digits.slice(0, digits.length - 2)}:${digits.slice(-2)}`;
-}
-
-function isValidBrewTime(val: string): boolean {
-  return /^\d+:\d{2}$/.test(val);
-}
-
-function normalizeBrewTime(val: string): string {
-  const match = val.match(/^(\d+):(\d{2})$/);
-  if (!match) return "00:00";
-  const mins = parseInt(match[1], 10);
-  const secs = Math.min(59, parseInt(match[2], 10));
-  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-}
 
 const freestyleSchema = z.object({
   coffeeGrams: z.coerce.number().positive("Enter coffee amount"),
@@ -66,7 +61,8 @@ const freestyleSchema = z.object({
   grinderClicks: z.coerce.number().int().positive("Enter click count").optional(),
   brewTime: z
     .string()
-    .regex(/^\d+:\d{2}$/, "Use mm:ss (or h:mm for cold brew)"),
+    .min(1, "Enter brew time")
+    .regex(/^\d+:[0-5]\d$/, "Invalid time — use mm:ss format (e.g. 01:40)"),
   notes: z.string().optional(),
 });
 
@@ -118,6 +114,7 @@ export default function FreestyleLogPage() {
       waterMl: coachBrewRef.waterMl,
       waterTempC: coachBrewRef.waterTempC ?? undefined,
       grindSize: coachBrewRef.grindSize,
+      grinderClicks: coachBrewRef.grinderClicks ?? undefined,
       brewTime: coachBrewRef.brewTime,
       notes: "",
     };
@@ -126,7 +123,14 @@ export default function FreestyleLogPage() {
       if (change.newValue != null) {
         if (change.param === "coffeeGrams") defaults.coffeeGrams = change.newValue as number;
         if (change.param === "waterTempC") defaults.waterTempC = change.newValue as number;
-        if (change.param === "grindSize") defaults.grindSize = change.newValue as typeof defaults.grindSize;
+        if (change.param === "grindSize") {
+          if (typeof change.newValue === "number") {
+            // Clicks-based grind: update click count, not grind size label
+            defaults.grinderClicks = change.newValue;
+          } else {
+            defaults.grindSize = change.newValue as typeof defaults.grindSize;
+          }
+        }
         if (change.param === "brewTime") defaults.brewTime = change.newValue as string;
       } else if (change.param === "grindSize" && (change.direction === "finer" || change.direction === "coarser")) {
         defaults.grindSize = shiftGrind(defaults.grindSize, change.direction) as typeof defaults.grindSize;
@@ -163,7 +167,7 @@ export default function FreestyleLogPage() {
       waterMl: undefined,
       waterTempC: undefined,
       grindSize: "Medium",
-      brewTime: "00:00",
+      brewTime: "",
       notes: "",
     },
   });
@@ -178,7 +182,7 @@ export default function FreestyleLogPage() {
   }, [lastGrindForBean, setValue, isCoachMode]);
 
   // Brew time — local display value for auto-formatting
-  const [brewTimeDisplay, setBrewTimeDisplay] = useState(form.getValues("brewTime") ?? "00:00");
+  const [brewTimeDisplay, setBrewTimeDisplay] = useState(form.getValues("brewTime") ?? "");
 
   const [tastingNotes, setTastingNotes] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -186,12 +190,9 @@ export default function FreestyleLogPage() {
   const errors = form.formState.errors;
 
   function handleBrewTimeChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const formatted = formatBrewTimeInput(e.target.value);
-    setBrewTimeDisplay(formatted);
-    if (isValidBrewTime(formatted)) {
-      const normalized = normalizeBrewTime(formatted);
-      form.setValue("brewTime", normalized, { shouldValidate: true });
-    }
+    const val = e.target.value;
+    setBrewTimeDisplay(val);
+    form.setValue("brewTime", val, { shouldValidate: true });
   }
 
   async function onSubmit(values: FreestyleForm) {
