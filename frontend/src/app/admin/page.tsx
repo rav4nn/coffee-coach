@@ -39,7 +39,7 @@ interface AdminStats {
   }>;
 }
 
-const ADMIN_USER_ID = "108196894671264092520";
+const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID ?? "";
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
