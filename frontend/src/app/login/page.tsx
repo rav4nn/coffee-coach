@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
@@ -49,6 +50,16 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-background-dark font-display flex flex-col overflow-hidden">
+      <style>{`
+        @keyframes kapiFadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .kapi-fadein {
+          animation: kapiFadeIn 0.6s ease forwards;
+        }
+      `}</style>
+
       {/* Hero — auto-scrolling images */}
       <div className="relative w-full overflow-hidden" style={{ minHeight: "52vh" }}>
         <div
@@ -73,18 +84,29 @@ export default function LoginPage() {
             </div>
           ))}
         </div>
-
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col items-center px-6 pt-10 pb-10">
+      <div className="flex-1 flex flex-col items-center px-6 pb-10">
+        {/* Kapi emerging from hero */}
+        <div className="-mt-14 mb-2 flex justify-center">
+          <Image
+            src="/img3_waving.png"
+            alt="Coach Kapi"
+            width={120}
+            height={120}
+            className="kapi-fadein object-contain"
+            style={{ mixBlendMode: "screen" }}
+          />
+        </div>
+
         <div className="w-full text-center mb-8">
-          <h1 className="text-slate-100 text-[40px] font-bold leading-[1.1] tracking-tight">
-            Welcome to<br />
-            <span className="text-primary">Coffee Coach</span>
+          <h1 className="text-[44px] leading-[1.1] tracking-wide" style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300 }}>
+            <span className="text-slate-100">Your beans deserve</span><br />
+            <span className="text-primary">better brewing.</span>
           </h1>
           <p className="text-slate-400 text-base mt-4">
-            Master the art of brewing the perfect cup with personalized coaching.
+            Coach Kapi learns your taste and fixes your brew — one cup at a time.
           </p>
         </div>
 

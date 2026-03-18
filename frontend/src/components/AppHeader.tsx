@@ -17,8 +17,8 @@ export function AppHeader() {
         isBrewingActive ? "max-h-0 opacity-0" : "max-h-24 opacity-100"
       }`}
     >
-      <div className="flex items-center justify-center px-6 py-4 max-w-phone mx-auto w-full">
-        <h1 className="text-xl font-bold tracking-tight text-slate-100">Coffee Coach</h1>
+      <div className="flex items-center justify-center px-6 py-5 max-w-phone mx-auto w-full">
+        <h1 className="text-2xl text-slate-100 tracking-wide" style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300 }}>Coffee Coach</h1>
       </div>
     </header>
   );

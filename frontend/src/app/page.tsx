@@ -23,7 +23,7 @@ export default function Home() {
       <header className="sticky top-0 z-10 bg-background-dark/90 backdrop-blur-md">
         <div className="flex items-center justify-between px-4 py-3 max-w-phone mx-auto">
           <div className="w-10" />
-          <h1 className="text-xl font-bold text-slate-100">Coffee Coach</h1>
+          <h1 className="text-2xl text-slate-100 tracking-wide" style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300 }}>Coffee Coach</h1>
           <button
             onClick={() => setProfileOpen(true)}
             className="w-10 h-10 rounded-full border-2 border-primary/30 bg-primary/20 flex items-center justify-center flex-shrink-0 hover:border-primary/60 transition-colors overflow-hidden"
