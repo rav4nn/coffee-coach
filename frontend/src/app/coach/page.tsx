@@ -314,18 +314,12 @@ export default function CoachPage() {
 
   return (
     <main className="overflow-y-auto pb-28">
-      {/* Header */}
-      <div className="px-4 pt-4 pb-2">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Your Coach</p>
-        <h1 className="text-2xl font-bold text-slate-100">Coffee Coach</h1>
-      </div>
-
-      {/* Toggle + Filter row */}
-      <div className="px-4 pt-1 pb-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 p-1">
+      {/* Toggle */}
+      <div className="px-4 pt-4 pb-2 flex items-center justify-center">
+        <div className="flex items-center rounded-full border border-primary/20 bg-primary/5 p-1">
           <button
             onClick={() => setActiveTab("training")}
-            className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+            className={`flex-1 min-w-[120px] text-center px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
               activeTab === "training"
                 ? "bg-primary text-background-dark"
                 : "text-primary/70"
@@ -335,7 +329,7 @@ export default function CoachPage() {
           </button>
           <button
             onClick={() => setActiveTab("best")}
-            className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+            className={`flex-1 min-w-[120px] text-center px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
               activeTab === "best"
                 ? "bg-primary text-background-dark"
                 : "text-primary/70"
@@ -344,6 +338,10 @@ export default function CoachPage() {
             Best Performances
           </button>
         </div>
+      </div>
+
+      {/* Filter */}
+      <div className="px-4 pb-2 flex justify-end">
         <FilterDropdown
           filters={filters}
           onChange={setFilters}

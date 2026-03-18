@@ -117,8 +117,7 @@ export async function getCatalogBeansByRoaster(roaster: string) {
     throw new Error("Failed to fetch beans by roaster");
   }
 
-  const data = (await response.json()) as { beans: { coffee_id: string; name: string; roaster: string }[] };
-  return data.beans;
+  return (await response.json()) as { coffee_id: string; name: string; roaster: string }[];
 }
 
 export async function getUserBeansApi() {
