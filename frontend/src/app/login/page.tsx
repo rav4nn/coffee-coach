@@ -6,23 +6,13 @@ import { signIn } from "next-auth/react";
 export default function LoginPage() {
   return (
     <div className="min-h-screen bg-background-dark font-display flex flex-col overflow-hidden">
-      <style>{`
-        @keyframes kapiFadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .kapi-fadein {
-          animation: kapiFadeIn 0.6s ease forwards;
-        }
-      `}</style>
-
       {/* Hero — static image */}
       <div className="w-full max-w-[430px] mx-auto">
         <Image
           src="/coach_login.png"
           alt="Coffee Coach"
           width={430}
-          height={430}
+          height={400}
           className="w-full h-auto"
           priority
         />
@@ -30,19 +20,7 @@ export default function LoginPage() {
 
       {/* Content */}
       <div className="flex-1 flex flex-col items-center px-6 pb-10">
-        {/* Kapi emerging from hero */}
-        <div className="-mt-14 mb-2 flex justify-center">
-          <Image
-            src="/img3_waving.png"
-            alt="Coach Kapi"
-            width={120}
-            height={120}
-            className="kapi-fadein object-contain"
-            style={{ mixBlendMode: "screen" }}
-          />
-        </div>
-
-        <div className="w-full text-center mb-8">
+        <div className="w-full text-center mb-8 pt-4">
           <h1 className="text-[44px] leading-[1.1] tracking-wide" style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300 }}>
             <span className="text-slate-100">Your beans deserve</span><br />
             <span className="text-primary">better brewing.</span>
