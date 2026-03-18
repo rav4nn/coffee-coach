@@ -174,7 +174,6 @@ export default function BrewCoachPage() {
     setSelectedSymptoms((prev) =>
       prev.includes(symptom) ? prev.filter((s) => s !== symptom) : [...prev, symptom]
     );
-    setSelectedGoals([]);
   }
 
   function toggleGoal(goal: string) {
@@ -182,14 +181,14 @@ export default function BrewCoachPage() {
       const exists = current.includes(goal);
       return exists ? [] : [goal]; // single selection
     });
-    setSelectedSymptoms([]);
   }
 
   function handleGetCoaching() {
-    if (selectedSymptoms.length > 0) {
-      void requestCoaching({ symptoms: selectedSymptoms });
-    } else if (selectedGoals.length > 0) {
-      void requestCoaching({ goals: selectedGoals });
+    const payload: { symptoms?: string[]; goals?: string[] } = {};
+    if (selectedSymptoms.length > 0) payload.symptoms = selectedSymptoms;
+    if (selectedGoals.length > 0) payload.goals = selectedGoals;
+    if (Object.keys(payload).length > 0) {
+      void requestCoaching(payload);
     }
   }
 
@@ -415,7 +414,7 @@ export default function BrewCoachPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Or set a goal</p>
+                  <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Set a goal</p>
                   <GoalPicker
                     selected={selectedGoals}
                     maxSelections={1}
