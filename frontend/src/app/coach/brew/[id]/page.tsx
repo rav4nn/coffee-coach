@@ -108,7 +108,9 @@ export default function BrewCoachPage() {
   }, [brew]);
 
   const isLocked = !!brew?.coachingFeedback;
+  const isRated = brew?.rating != null;
   const isPerfect = rating === 10;
+  const isAlreadyFavourite = !!brew?.isFavourite;
   const isOscillating = response?.trend === "oscillating";
 
   const coachAvatar = isLoading
@@ -274,7 +276,7 @@ export default function BrewCoachPage() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1 min-w-0">
             <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Coaching</p>
-            <h1 className="text-2xl font-bold text-slate-100">How was this brew?</h1>
+            <h1 className="text-2xl font-bold text-slate-100">{isRated ? "Brew Details" : "How was this brew?"}</h1>
           </div>
           <Image
             src={coachAvatar}
@@ -350,8 +352,8 @@ export default function BrewCoachPage() {
             min={1}
             max={10}
             value={rating}
-            onChange={(e) => !isLocked && handleRatingChange(Number(e.target.value))}
-            disabled={isLocked}
+            onChange={(e) => !isLocked && !isAlreadyFavourite && handleRatingChange(Number(e.target.value))}
+            disabled={isLocked || isAlreadyFavourite}
             className="w-full accent-primary disabled:opacity-60"
           />
           <div className="flex justify-between mt-1">
@@ -360,8 +362,16 @@ export default function BrewCoachPage() {
           </div>
         </div>
 
-        {/* 10/10 perfect brew */}
-        {!isLocked && isPerfect && (
+        {/* 10/10 perfect brew — already saved as favourite */}
+        {isPerfect && isAlreadyFavourite && (
+          <div className="rounded-2xl bg-primary/10 border border-primary/30 p-5 text-center space-y-3">
+            <span className="material-symbols-outlined text-primary text-4xl">star</span>
+            <p className="font-bold text-slate-100 text-lg">Excellent brew!</p>
+          </div>
+        )}
+
+        {/* 10/10 perfect brew — not yet saved */}
+        {isPerfect && !isAlreadyFavourite && !isLocked && (
           <div className="rounded-2xl bg-primary/10 border border-primary/30 p-5 text-center space-y-3">
             <span className="material-symbols-outlined text-primary text-4xl">star</span>
             <p className="font-bold text-slate-100 text-lg">Excellent brew!</p>
@@ -488,8 +498,20 @@ export default function BrewCoachPage() {
           </button>
         )}
 
-        {/* Brew with coach's help button */}
-        {(response?.fix || isLocked) && (
+        {/* Brew this again — for already-favourite 10/10 brews */}
+        {isPerfect && isAlreadyFavourite && (
+          <button
+            type="button"
+            onClick={handleBrewWithCoach}
+            className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base flex items-center justify-center gap-2"
+          >
+            <span className="material-symbols-outlined text-base">coffee_maker</span>
+            Brew this again
+          </button>
+        )}
+
+        {/* Brew with coach's help button — for coached brews (not already-favourite 10/10) */}
+        {!isPerfect && (response?.fix || isLocked) && (
           <button
             type="button"
             onClick={handleBrewWithCoach}
@@ -500,8 +522,8 @@ export default function BrewCoachPage() {
           </button>
         )}
 
-        {/* Done after saving favourite */}
-        {isPerfect && !isLocked && (
+        {/* Done after saving favourite — only for newly rated 10/10 not yet saved */}
+        {isPerfect && !isAlreadyFavourite && !isLocked && (
           <button
             onClick={() => router.push("/coach")}
             className={`w-full h-12 rounded-xl font-bold text-base ${isFavouriteSaved ? "bg-primary text-background-dark" : "border border-primary/30 text-primary"}`}

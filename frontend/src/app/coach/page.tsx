@@ -315,11 +315,11 @@ export default function CoachPage() {
   return (
     <main className="overflow-y-auto pb-28">
       {/* Toggle */}
-      <div className="px-4 pt-4 pb-2 flex items-center justify-center">
+      <div className="px-4 pt-4 pb-2">
         <div className="flex items-center rounded-full border border-primary/20 bg-primary/5 p-1">
           <button
             onClick={() => setActiveTab("training")}
-            className={`flex-1 min-w-[120px] text-center px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+            className={`flex-1 text-center py-2 rounded-full text-sm font-semibold transition-colors ${
               activeTab === "training"
                 ? "bg-primary text-background-dark"
                 : "text-primary/70"
@@ -329,13 +329,13 @@ export default function CoachPage() {
           </button>
           <button
             onClick={() => setActiveTab("best")}
-            className={`flex-1 min-w-[120px] text-center px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+            className={`flex-1 text-center py-2 rounded-full text-sm font-semibold transition-colors ${
               activeTab === "best"
                 ? "bg-primary text-background-dark"
                 : "text-primary/70"
             }`}
           >
-            Best Performances
+            Top Performances
           </button>
         </div>
       </div>
@@ -379,15 +379,6 @@ export default function CoachPage() {
               </Link>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Section heading */}
-      {filteredBrews.length > 0 && (
-        <div className="px-4 pt-3 pb-1">
-          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-            {activeTab === "best" ? "Best Performances" : "Latest Performances"}
-          </h2>
         </div>
       )}
 
