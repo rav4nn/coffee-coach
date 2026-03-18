@@ -99,7 +99,7 @@ export default function OnboardingPage() {
       {/* Kapi image */}
       <div className="flex justify-center mt-4">
         <Image
-          src="/img2_reading_book.png"
+          src="/coach/img2_reading_book.png"
           alt="Coach Kapi"
           width={90}
           height={90}

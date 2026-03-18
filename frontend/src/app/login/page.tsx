@@ -20,7 +20,7 @@ export default function LoginPage() {
 
       {/* Content */}
       <div className="flex-1 flex flex-col items-center px-6 pb-10">
-        <div className="w-full text-center mb-8 pt-4">
+        <div className="w-full text-center mb-8 pt-6">
           <h1 className="text-[44px] leading-[1.1] tracking-wide" style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300 }}>
             <span className="text-slate-100">Your beans deserve</span><br />
             <span className="text-primary">better brewing.</span>

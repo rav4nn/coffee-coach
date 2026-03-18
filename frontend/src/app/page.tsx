@@ -1,11 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
 import { ProfileDrawer } from "@/components/ProfileDrawer";
+import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
+
+const METHOD_LABELS: Record<string, string> = {
+  pour_over: "Pour Over",
+  aeropress: "AeroPress",
+  french_press: "French Press",
+  moka_pot: "Moka Pot",
+  cold_brew: "Cold Brew",
+  south_indian_filter: "Filter Kaapi",
+};
 
 function getInitials(name: string | null | undefined): string {
   if (!name) return "?";
@@ -15,10 +25,44 @@ function getInitials(name: string | null | undefined): string {
 export default function Home() {
   const { data: session } = useSession();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [primaryMethod, setPrimaryMethod] = useState<string | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+
+  const entries = useBrewHistoryStore((state) => state.entries);
+  const loading = useBrewHistoryStore((state) => state.loading);
+  const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
+
   const user = session?.user;
+  const firstName = user?.name?.split(" ")[0] ?? "Brewer";
+
+  useEffect(() => {
+    void fetchEntries();
+  }, [fetchEntries]);
+
+  useEffect(() => {
+    fetch("/api/users/me", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((u) => {
+        const eq = u.primary_equipment as string[] | undefined;
+        setPrimaryMethod(eq?.[0] ?? null);
+      })
+      .catch(() => {})
+      .finally(() => setProfileLoaded(true));
+  }, []);
+
+  const isLoading = loading || !profileLoaded;
+  const isNewUser = !isLoading && entries.length === 0;
 
   return (
     <>
+      <style>{`
+        @keyframes kapiAppear {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        .kapi-appear { animation: kapiAppear 0.8s ease forwards; }
+      `}</style>
+
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background-dark/90 backdrop-blur-md">
         <div className="flex items-center justify-between px-4 py-3 max-w-phone mx-auto">
@@ -46,43 +90,101 @@ export default function Home() {
       </header>
 
       <main className="overflow-y-auto pb-28">
-        {/* Hero Section */}
-        <div className="flex flex-col items-center px-6 pt-8 pb-2">
-          <div className="w-52 h-52">
-            <Image
-              src="/coach/img3_hero_thumbs_up.png"
-              alt="Coffee Coach"
-              width={208}
-              height={208}
-              className="w-full h-full object-contain drop-shadow-2xl"
-              priority
-            />
+        {isLoading ? (
+          /* Loading — avoid flickering between states */
+          <div className="flex items-center justify-center pt-32">
+            <div className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
           </div>
-          <h2 className="text-3xl font-bold text-slate-100 text-center mt-4 leading-snug">
-            Ready for your best brew?
-          </h2>
-          <p className="text-slate-400 text-sm text-center mt-2 leading-relaxed max-w-xs">
-            Coach is here to help you dial in the perfect cup.
-          </p>
-        </div>
+        ) : isNewUser ? (
+          /* ── NEW USER STATE ── */
+          <>
+            <div className="flex flex-col items-center px-6 pt-8 pb-2">
+              <div className="w-40 h-40">
+                <Image
+                  src="/coach/img3_waving.png"
+                  alt="Coach Kapi"
+                  width={160}
+                  height={160}
+                  className="kapi-appear w-full h-full object-contain"
+                  style={{ mixBlendMode: "screen" }}
+                  priority
+                />
+              </div>
 
-        {/* Action Buttons */}
-        <div className="px-6 pt-6 pb-4 space-y-3">
-          <Link
-            href="/log-brew"
-            className="flex items-center justify-center gap-2 w-full bg-primary text-background-dark font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.01] transition-transform"
-          >
-            <span className="material-symbols-outlined text-xl">add</span>
-            Start New Brew
-          </Link>
-          <Link
-            href="/history"
-            className="flex items-center justify-center gap-2 w-full bg-primary/10 border border-primary/20 text-slate-100 font-semibold py-4 rounded-2xl hover:scale-[1.01] transition-transform"
-          >
-            <span className="material-symbols-outlined text-xl">schedule</span>
-            Recent Brews
-          </Link>
-        </div>
+              {primaryMethod ? (
+                <h2 className="text-3xl font-bold text-slate-100 text-center mt-4 leading-snug">
+                  Welcome, {firstName}. Let&apos;s brew your first<br />
+                  <span className="text-primary">{METHOD_LABELS[primaryMethod] ?? primaryMethod}.</span>
+                </h2>
+              ) : (
+                <h2 className="text-3xl font-bold text-slate-100 text-center mt-4 leading-snug">
+                  Welcome, {firstName}.<br />
+                  <span className="text-primary">Let&apos;s log your first brew.</span>
+                </h2>
+              )}
+
+              <p className="text-slate-400 text-sm text-center mt-2 leading-relaxed max-w-xs">
+                Log a brew, rate it, and Coach Kapi will tell you exactly what to change next.
+              </p>
+            </div>
+
+            <div className="px-6 pt-6 pb-4 space-y-3">
+              <Link
+                href="/log-brew"
+                className="flex items-center justify-center gap-2 w-full bg-primary text-background-dark font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.01] transition-transform"
+              >
+                <span className="material-symbols-outlined text-xl">add</span>
+                Start Your First Brew
+              </Link>
+              <Link
+                href="/my-beans"
+                className="flex items-center justify-center gap-2 w-full bg-primary/10 border border-primary/20 text-slate-100 font-semibold py-4 rounded-2xl hover:scale-[1.01] transition-transform"
+              >
+                <span className="material-symbols-outlined text-xl">coffee</span>
+                Explore Beans
+              </Link>
+            </div>
+          </>
+        ) : (
+          /* ── RETURNING USER STATE ── */
+          <>
+            <div className="flex flex-col items-center px-6 pt-8 pb-2">
+              <div className="w-52 h-52">
+                <Image
+                  src="/coach/img3_hero_thumbs_up.png"
+                  alt="Coffee Coach"
+                  width={208}
+                  height={208}
+                  className="w-full h-full object-contain drop-shadow-2xl"
+                  priority
+                />
+              </div>
+              <h2 className="text-3xl font-bold text-slate-100 text-center mt-4 leading-snug">
+                Ready for your next brew, {firstName}?
+              </h2>
+              <p className="text-slate-400 text-sm text-center mt-2 leading-relaxed max-w-xs">
+                Coach is here to help you dial in the perfect cup.
+              </p>
+            </div>
+
+            <div className="px-6 pt-6 pb-4 space-y-3">
+              <Link
+                href="/log-brew"
+                className="flex items-center justify-center gap-2 w-full bg-primary text-background-dark font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.01] transition-transform"
+              >
+                <span className="material-symbols-outlined text-xl">add</span>
+                Start New Brew
+              </Link>
+              <Link
+                href="/history"
+                className="flex items-center justify-center gap-2 w-full bg-primary/10 border border-primary/20 text-slate-100 font-semibold py-4 rounded-2xl hover:scale-[1.01] transition-transform"
+              >
+                <span className="material-symbols-outlined text-xl">schedule</span>
+                Recent Brews
+              </Link>
+            </div>
+          </>
+        )}
       </main>
 
       <ProfileDrawer open={profileOpen} onClose={() => setProfileOpen(false)} />
