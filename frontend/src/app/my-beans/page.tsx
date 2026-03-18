@@ -410,7 +410,7 @@ export default function MyBeansPage() {
       {deletingBeanId && (() => {
         const bean = userBeans.find((b) => b.id === deletingBeanId);
         return (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-background-dark/80 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-background-dark/80 backdrop-blur-sm px-4 pt-4 pb-24">
             <div className="relative w-full max-w-sm rounded-2xl border border-primary/20 bg-[#2a1d11] p-6 shadow-2xl">
               <button
                 type="button"

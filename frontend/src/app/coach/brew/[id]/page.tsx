@@ -82,10 +82,18 @@ export default function BrewCoachPage() {
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [response, setResponse] = useState<CoachingResponseApi | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const [dotCount, setDotCount] = useState(1);
   const [isSavingFavourite, setIsSavingFavourite] = useState(false);
   const [isFavouriteSaved, setIsFavouriteSaved] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+
+  useEffect(() => {
+    if (!isThinking) return;
+    const t = setInterval(() => setDotCount((d) => (d >= 3 ? 1 : d + 1)), 400);
+    return () => clearInterval(t);
+  }, [isThinking]);
 
   useEffect(() => {
     Promise.all([fetchEntries(), fetchBeans()]).finally(() => setDataLoaded(true));
@@ -113,7 +121,9 @@ export default function BrewCoachPage() {
   const isAlreadyFavourite = !!brew?.isFavourite;
   const isOscillating = response?.trend === "oscillating";
 
-  const coachAvatar = isLoading
+  const coachAvatar = isThinking
+    ? "/coach/coffee_coach_thinking.png"
+    : isLoading
     ? "/coach/img2_laptop_focused.png"
     : isPerfect
     ? "/coach/img3_hero_thumbs_up.png"
@@ -185,12 +195,23 @@ export default function BrewCoachPage() {
     });
   }
 
-  function handleGetCoaching() {
+  async function handleGetCoaching() {
     const payload: { symptoms?: string[]; goals?: string[] } = {};
     if (selectedSymptoms.length > 0) payload.symptoms = selectedSymptoms;
     if (selectedGoals.length > 0) payload.goals = selectedGoals;
-    if (Object.keys(payload).length > 0) {
-      void requestCoaching(payload);
+    if (!Object.keys(payload).length) return;
+
+    setIsThinking(true);
+    const startTime = Date.now();
+    try {
+      await requestCoaching(payload);
+      const remaining = Math.max(0, 2000 - (Date.now() - startTime));
+      if (remaining > 0) await new Promise((r) => setTimeout(r, remaining));
+    } catch {
+      // cancelled — animation stops
+    } finally {
+      setIsThinking(false);
+      setDotCount(1);
     }
   }
 
@@ -276,19 +297,29 @@ export default function BrewCoachPage() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1 min-w-0">
             <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Coaching</p>
-            <h1 className="text-2xl font-bold text-slate-100">{isRated ? "Brew Details" : "How was this brew?"}</h1>
+            <h1 className="text-2xl font-bold text-slate-100">{isRated ? "Coach's Advice" : "How was this brew?"}</h1>
           </div>
-          <Image
-            src={coachAvatar}
-            alt="Coach"
-            width={52}
-            height={52}
-            className="object-contain drop-shadow-md transition-all duration-300 shrink-0"
-          />
+          {(!isLocked && !response?.fix) && (
+            <Image
+              src={coachAvatar}
+              alt="Coach"
+              width={52}
+              height={52}
+              className={`object-contain drop-shadow-md transition-all duration-300 shrink-0${isThinking ? " animate-pulse" : ""}`}
+            />
+          )}
         </div>
       </div>
 
       <div className="px-4 py-4 space-y-4">
+        <style>{`
+          @keyframes kapiPulse {
+            0%, 100% { transform: scale(1); }
+            50%       { transform: scale(1.08); }
+          }
+          .kapi-pulse { animation: kapiPulse 1s ease-in-out infinite; }
+        `}</style>
+
         {/* Brew Parameters Summary */}
         <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
           <div className="flex items-center gap-3 mb-3">
@@ -339,6 +370,22 @@ export default function BrewCoachPage() {
           </div>
         </div>
 
+        {/* Symptoms — above slider */}
+        {!isLocked && !isPerfect && !response?.fix && (
+          <div className="space-y-2">
+            {isOscillating ? (
+              <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4 text-sm text-slate-300">
+                Keep brew inputs consistent for 2–3 brews before making new changes.
+              </div>
+            ) : (
+              <>
+                <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">What do you want to fix?</p>
+                <SymptomPicker selected={selectedSymptoms} onToggle={toggleSymptom} />
+              </>
+            )}
+          </div>
+        )}
+
         {/* Rating Slider */}
         <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4">
           <div className="flex items-center justify-between mb-3">
@@ -361,6 +408,14 @@ export default function BrewCoachPage() {
             <span className="text-xs text-slate-500">Excellent</span>
           </div>
         </div>
+
+        {/* Goals — below slider */}
+        {!isLocked && !isPerfect && !response?.fix && !isOscillating && (
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Set a goal</p>
+            <GoalPicker selected={selectedGoals} maxSelections={1} onToggle={toggleGoal} />
+          </div>
+        )}
 
         {/* 10/10 perfect brew — already saved as favourite */}
         {isPerfect && isAlreadyFavourite && (
@@ -396,62 +451,56 @@ export default function BrewCoachPage() {
 
         {/* Locked: read-only feedback */}
         {isLocked && response?.fix && (
-          <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4">
-            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Coach Says</p>
-            <p className="text-sm text-slate-100 leading-relaxed">{response.fix}</p>
-            {response.freshness_caveat && (
-              <p className="mt-2 text-xs text-slate-400">Freshness note: {response.freshness_caveat}</p>
-            )}
-            {response.changes && <CoachingChanges changes={response.changes} />}
-          </div>
-        )}
-
-        {/* Symptom + Goal pickers (1-9 rating, not yet coached) */}
-        {!isLocked && !isPerfect && !response?.fix && (
           <>
-            {isOscillating ? (
-              <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4 text-sm text-slate-300">
-                Keep brew inputs consistent for 2\u20133 brews before making new changes.
-              </div>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">What went wrong?</p>
-                  <SymptomPicker
-                    selected={selectedSymptoms}
-                    onToggle={toggleSymptom}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Set a goal</p>
-                  <GoalPicker
-                    selected={selectedGoals}
-                    maxSelections={1}
-                    onToggle={toggleGoal}
-                  />
-                </div>
-              </>
-            )}
+            <div className="flex justify-center">
+              <img
+                src="/coach/coffee_coach_whispering.png"
+                alt="Coach Kapi"
+                width={100}
+                height={100}
+                style={{ mixBlendMode: "screen" }}
+              />
+            </div>
+            <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4" style={{ borderLeft: '3px solid #f49d25' }}>
+              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Coach Says</p>
+              <p className="text-base font-medium text-slate-100 leading-relaxed">{response.fix}</p>
+              {response.freshness_caveat && (
+                <p className="mt-2 text-xs text-slate-400">Freshness note: {response.freshness_caveat}</p>
+              )}
+              {response.changes && <CoachingChanges changes={response.changes} />}
+            </div>
           </>
         )}
 
         {/* Coaching response */}
         {!isLocked && (response?.fix || isLoading) && (
-          <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4">
-            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Coach Says</p>
-            {isLoading ? (
-              <p className="text-sm text-slate-400 animate-pulse">Getting your coaching tip\u2026</p>
-            ) : (
-              <>
-                <p className="text-sm text-slate-100 leading-relaxed">{response?.fix}</p>
-                {response?.freshness_caveat && (
-                  <p className="mt-2 text-xs text-slate-400">Freshness note: {response.freshness_caveat}</p>
-                )}
-                {response?.changes && <CoachingChanges changes={response.changes} />}
-              </>
+          <>
+            {response?.fix && !isLoading && (
+              <div className="flex justify-center">
+                <img
+                  src="/coach/coffee_coach_whispering.png"
+                  alt="Coach Kapi"
+                  width={100}
+                  height={100}
+                  style={{ mixBlendMode: "screen" }}
+                />
+              </div>
             )}
-          </div>
+            <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4" style={response?.fix && !isLoading ? { borderLeft: '3px solid #f49d25' } : {}}>
+              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Coach Says</p>
+              {isLoading ? (
+                <p className="text-sm text-slate-400 animate-pulse">Getting your coaching tip…</p>
+              ) : (
+                <>
+                  <p className="text-base font-medium text-slate-100 leading-relaxed">{response?.fix}</p>
+                  {response?.freshness_caveat && (
+                    <p className="mt-2 text-xs text-slate-400">Freshness note: {response.freshness_caveat}</p>
+                  )}
+                  {response?.changes && <CoachingChanges changes={response.changes} />}
+                </>
+              )}
+            </div>
+          </>
         )}
 
         {/* Escalation warning */}
@@ -491,10 +540,14 @@ export default function BrewCoachPage() {
         {canGetCoaching && (
           <button
             onClick={handleGetCoaching}
-            disabled={isLoading}
-            className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base disabled:opacity-50"
+            disabled={isLoading || isThinking}
+            className="w-full h-12 rounded-xl font-bold text-base transition-colors"
+            style={{ backgroundColor: isThinking ? '#c47d10' : '#f49d25', color: '#1a0f00' }}
           >
-            Get Coaching
+            {isThinking
+              ? `Coach Kapi is thinking${'.'.repeat(dotCount)}`
+              : 'Get Coaching'
+            }
           </button>
         )}
 

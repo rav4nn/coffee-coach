@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { CoachingResponse } from "@/components/CoachingResponse";
 import { GoalPicker } from "@/components/GoalPicker";
@@ -27,6 +28,7 @@ export function BrewRatingSheet({
   initialFeedback,
   initialTastingNotes,
 }: BrewRatingSheetProps) {
+  const router = useRouter();
   const updateEntry = useBrewHistoryStore((state) => state.updateEntry);
 
   const [rating, setRating] = useState<number>(initialRating ?? 6);
@@ -36,8 +38,16 @@ export function BrewRatingSheet({
     initialFeedback ? { fix: initialFeedback } : null,
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const [dotCount, setDotCount] = useState(1);
   const [isSavingFavourite, setIsSavingFavourite] = useState(false);
   const [isFavouriteSaved, setIsFavouriteSaved] = useState(false);
+
+  useEffect(() => {
+    if (!isThinking) return;
+    const t = setInterval(() => setDotCount((d) => (d >= 3 ? 1 : d + 1)), 400);
+    return () => clearInterval(t);
+  }, [isThinking]);
 
   // Reset state when the brew changes
   useEffect(() => {
@@ -81,11 +91,25 @@ export function BrewRatingSheet({
     });
   }
 
-  function handleGetCoaching() {
-    if (selectedSymptoms.length > 0) {
-      void requestCoaching({ symptoms: selectedSymptoms });
-    } else if (selectedGoals.length > 0) {
-      void requestCoaching({ goals: selectedGoals });
+  async function handleGetCoaching() {
+    const payload: { symptoms?: string[]; goals?: string[] } = {};
+    if (selectedSymptoms.length > 0) payload.symptoms = selectedSymptoms;
+    else if (selectedGoals.length > 0) payload.goals = selectedGoals;
+    if (!Object.keys(payload).length) return;
+
+    setIsThinking(true);
+    const startTime = Date.now();
+    try {
+      await requestCoaching(payload);
+      const remaining = Math.max(0, 2000 - (Date.now() - startTime));
+      if (remaining > 0) await new Promise((r) => setTimeout(r, remaining));
+      onOpenChange(false);
+      router.push(`/coach/brew/${brewId}`);
+    } catch {
+      // cancelled — animation stops
+    } finally {
+      setIsThinking(false);
+      setDotCount(1);
     }
   }
 
@@ -137,6 +161,30 @@ export function BrewRatingSheet({
         {/* Scrollable body — fixed height so sheet never resizes */}
         <div className="flex-1 overflow-y-auto px-6 space-y-4 mt-2 pb-6">
 
+          {/* Symptoms — above slider */}
+          {!isLocked && !isPerfect && !response?.fix && (
+            <div className="space-y-2">
+              {isOscillating ? (
+                <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4 text-sm text-slate-300">
+                  Keep brew inputs consistent for 2–3 brews before making new changes.
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">What do you want to fix?</p>
+                  <SymptomPicker
+                    selected={selectedSymptoms}
+                    onToggle={(s) => {
+                      setSelectedSymptoms((prev) =>
+                        prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
+                      );
+                      setSelectedGoals([]);
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          )}
+
           {/* Rating slider */}
           <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4">
             <div className="flex items-center justify-between mb-3">
@@ -159,6 +207,24 @@ export function BrewRatingSheet({
               <span className="text-xs text-slate-500">Excellent</span>
             </div>
           </div>
+
+          {/* Goals — below slider */}
+          {!isLocked && !isPerfect && !response?.fix && !isOscillating && (
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Set a Goal</p>
+              <GoalPicker
+                selected={selectedGoals}
+                maxSelections={1}
+                onToggle={(g) => {
+                  setSelectedGoals((current) => {
+                    const exists = current.includes(g);
+                    return exists ? [] : [g];
+                  });
+                  setSelectedSymptoms([]);
+                }}
+              />
+            </div>
+          )}
 
           {/* ── 10/10 perfect brew ── */}
           {!isLocked && isPerfect && (
@@ -196,43 +262,6 @@ export function BrewRatingSheet({
             </div>
           )}
 
-          {/* ── 1-9 coaching pickers — both always visible ── */}
-          {!isLocked && !isPerfect && !response?.fix && (
-            <>
-              {isOscillating ? (
-                <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4 text-sm text-slate-300">
-                  Keep brew inputs consistent for 2–3 brews before making new changes.
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Fix a Symptom</p>
-                    <SymptomPicker
-                      selected={selectedSymptoms}
-                      onToggle={(s) => {
-                        setSelectedSymptoms((prev) =>
-                          prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-                        );
-                        setSelectedGoals([]);
-                      }}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Set a Goal</p>
-                    <GoalPicker
-                      selected={selectedGoals}
-                      maxSelections={1}
-                      onToggle={(g) => {
-                        toggleGoal(g);
-                        setSelectedSymptoms([]);
-                      }}
-                    />
-                  </div>
-                </>
-              )}
-            </>
-          )}
 
           {/* Coaching response */}
           {!isLocked && (response?.fix || isLoading) && (
@@ -255,10 +284,11 @@ export function BrewRatingSheet({
           {canGetCoaching && (
             <button
               onClick={handleGetCoaching}
-              disabled={isLoading}
-              className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base disabled:opacity-50"
+              disabled={isLoading || isThinking}
+              className="w-full h-12 rounded-xl font-bold text-base transition-colors"
+              style={{ backgroundColor: isThinking ? '#c47d10' : '#f49d25', color: '#1a0f00' }}
             >
-              Get Coaching
+              {isThinking ? `Coach Kapi is thinking${'.'.repeat(dotCount)}` : 'Get Coaching'}
             </button>
           )}
 

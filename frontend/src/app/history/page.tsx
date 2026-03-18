@@ -67,9 +67,9 @@ function BrewCard({ entry, beanName, isOpen, onToggle, onEdit, onShare }: BrewCa
   const h1 = [methodLabelFromId(entry.methodId), ratioStr].filter(Boolean).join(" · ");
 
   return (
-    <article className="rounded-2xl border border-primary/20 bg-primary/5 overflow-hidden">
+    <article className="rounded-2xl border border-primary/20 bg-primary/5 overflow-hidden" style={{ borderLeft: '2px solid rgba(244, 157, 37, 0.4)' }}>
       {/* Card header row — tap anywhere except pencil to toggle */}
-      <div className="flex items-center gap-3 px-4 py-3">
+      <div className="flex items-center gap-3 px-4 py-4">
         <button type="button" onClick={onToggle} className="flex items-center gap-3 flex-1 min-w-0 text-left">
           <div className="w-12 h-12 rounded-xl bg-espresso/20 border border-espresso/30 flex items-center justify-center shrink-0 overflow-hidden">
             <Image src={imgSrc} alt="" width={32} height={32} className="w-8 h-8 object-contain" />
@@ -106,6 +106,7 @@ function BrewCard({ entry, beanName, isOpen, onToggle, onEdit, onShare }: BrewCa
               )}
             </div>
           </div>
+          <span style={{ color: '#f49d25', fontSize: '20px', lineHeight: 1, flexShrink: 0 }}>›</span>
         </button>
 
         {/* Edit pencil */}
