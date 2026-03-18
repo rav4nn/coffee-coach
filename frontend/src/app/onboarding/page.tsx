@@ -28,12 +28,10 @@ export default function OnboardingPage() {
   const { data: session, update } = useSession();
 
   const [name, setName] = useState(session?.user?.name ?? "");
-  const [age, setAge] = useState("");
   const [equipment, setEquipment] = useState<MethodCardId[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
-  const [ageError, setAgeError] = useState<string | null>(null);
 
   // Grinder state
   const [grinderList, setGrinderList] = useState<string[]>([]);
@@ -55,30 +53,18 @@ export default function OnboardingPage() {
   };
 
   const nameValid = /^[A-Za-z]+(?: [A-Za-z]+)*$/.test(name.trim());
-  const ageNum = parseInt(age, 10);
-  const ageValid = /^\d+$/.test(age) && ageNum >= 10 && ageNum <= 100;
-  const canContinue = nameValid && ageValid;
 
   const handleSubmit = async () => {
-    let valid = true;
     if (!nameValid) {
       setNameError(name.trim().length === 0 ? "Please enter your name." : "Name must contain only letters and spaces.");
-      valid = false;
-    } else {
-      setNameError(null);
+      return;
     }
-    if (!ageValid) {
-      setAgeError(age.length === 0 ? "Please enter your age." : "Age must be a whole number between 10 and 100.");
-      valid = false;
-    } else {
-      setAgeError(null);
-    }
-    if (!valid) return;
+    setNameError(null);
 
     setSaving(true);
     setError(null);
     try {
-      await patchUserProfileApi({ name: name.trim(), age: ageNum, primary_equipment: equipment, grinder_name: grinderName });
+      await patchUserProfileApi({ name: name.trim(), age: 25, primary_equipment: equipment, grinder_name: grinderName });
       await update({ profile_complete: true });
       window.location.href = "/";
     } catch (err) {
@@ -89,8 +75,41 @@ export default function OnboardingPage() {
 
   return (
     <div className="relative flex min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden bg-background-dark font-display">
+      <style>{`
+        @keyframes kapiFloat {
+          0%   { transform: translateY(0px); }
+          50%  { transform: translateY(-6px); }
+          100% { transform: translateY(0px); }
+        }
+        .kapi-float {
+          animation: kapiFloat 2s ease-in-out infinite;
+        }
+      `}</style>
+
+      {/* Coffee Coach title */}
+      <div className="pt-10 text-center">
+        <span
+          className="text-2xl text-slate-100 tracking-wide"
+          style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300 }}
+        >
+          Coffee Coach
+        </span>
+      </div>
+
+      {/* Kapi image */}
+      <div className="flex justify-center mt-4">
+        <Image
+          src="/img2_reading_book.png"
+          alt="Coach Kapi"
+          width={90}
+          height={90}
+          className="kapi-float object-contain"
+          style={{ mixBlendMode: "screen" }}
+        />
+      </div>
+
       {/* Profile section */}
-      <div className="flex pt-10 px-6 pb-4">
+      <div className="flex px-6 pb-4 pt-4">
         <div className="flex w-full flex-col gap-4 items-center">
           <div className="flex gap-4 flex-col items-center">
             {/* Google profile picture */}
@@ -116,7 +135,7 @@ export default function OnboardingPage() {
                 Welcome, {session?.user?.name?.split(" ")[0] ?? "Brewer"}
               </p>
               <p className="text-primary/70 text-sm text-center mt-1">
-                Let&apos;s calibrate your brewing experience.
+                Tell Kapi how you brew.
               </p>
             </div>
           </div>
@@ -124,7 +143,7 @@ export default function OnboardingPage() {
       </div>
 
       {/* Form */}
-      <main className="flex-1 px-6 space-y-6 pb-32 pt-6">
+      <main className="flex-1 px-6 space-y-6 pb-32 pt-2">
         {/* Name */}
         <label className="flex flex-col gap-2">
           <span className="text-slate-100 text-sm font-semibold uppercase tracking-wider ml-1">Full Name</span>
@@ -138,28 +157,10 @@ export default function OnboardingPage() {
           {nameError && <p className="text-rose-400 text-xs ml-1">{nameError}</p>}
         </label>
 
-        {/* Age */}
-        <label className="flex flex-col gap-2">
-          <span className="text-slate-100 text-sm font-semibold uppercase tracking-wider ml-1">Age</span>
-          <div className="relative">
-            <input
-              className="w-full rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50 border border-primary/20 bg-primary/5 h-14 placeholder:text-primary/30 px-4 text-base transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              placeholder="Enter your age"
-              type="number"
-              min={1}
-              max={120}
-              value={age}
-              onChange={(e) => { setAge(e.target.value); setAgeError(null); }}
-            />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/60 text-sm">YEARS</span>
-          </div>
-          {ageError && <p className="text-rose-400 text-xs ml-1">{ageError}</p>}
-        </label>
-
         {/* Primary equipment */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-slate-100 text-sm font-semibold uppercase tracking-wider ml-1">Primary Equipment</span>
+            <span className="text-slate-100 text-sm font-semibold uppercase tracking-wider ml-1">How do you brew?</span>
           </div>
           <div className="grid grid-cols-3 gap-3">
             {BREW_METHODS.map((method) => {
@@ -183,10 +184,8 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        {/* Hand Grinder */}
+        {/* Grinder */}
         <div ref={grinderSectionRef} className="space-y-3">
-          <span className="text-slate-100 text-sm font-semibold uppercase tracking-wider ml-1">Hand Grinder</span>
-
           {grinderName ? (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/30">
               <span className="material-symbols-outlined text-primary">coffee</span>
@@ -206,10 +205,10 @@ export default function OnboardingPage() {
                 setShowGrinderPicker(true);
                 setTimeout(() => grinderSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
               }}
-              className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-primary/20 text-primary/60 hover:border-primary/40 hover:text-primary/80 transition-colors"
+              className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-primary/20 text-primary/60 hover:border-primary/40 hover:text-primary/80 transition-colors"
             >
               <span className="material-symbols-outlined text-xl">add</span>
-              <span className="text-sm font-medium">Add a Grinder</span>
+              <span className="text-sm font-medium">Got a grinder? Add it</span>
             </button>
           ) : (
             <div className="space-y-3">
