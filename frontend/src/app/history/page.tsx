@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 import { BrewEditSheet } from "@/components/BrewEditSheet";
@@ -291,21 +292,23 @@ export default function JournalPage() {
       {/* Content */}
       {view === "stats" ? (
         <>
-          <div className="px-4 pb-2 flex justify-end">
-            <button
-              type="button"
-              onClick={() => {
-                if (!statsWrapperRef.current) return;
-                setIsSharingStats(true);
-                captureStatsAndShare(statsWrapperRef.current).finally(() => setIsSharingStats(false));
-              }}
-              disabled={isSharingStats}
-              className="flex items-center gap-1.5 text-xs font-semibold text-primary/70 hover:text-primary transition-colors disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-base">share</span>
-              {isSharingStats ? "Sharing…" : "Share Stats"}
-            </button>
-          </div>
+          {entries.length > 0 && (
+            <div className="px-4 pb-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!statsWrapperRef.current) return;
+                  setIsSharingStats(true);
+                  captureStatsAndShare(statsWrapperRef.current).finally(() => setIsSharingStats(false));
+                }}
+                disabled={isSharingStats}
+                className="flex items-center gap-1.5 text-xs font-semibold text-primary/70 hover:text-primary transition-colors disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-base">share</span>
+                {isSharingStats ? "Sharing…" : "Share Stats"}
+              </button>
+            </div>
+          )}
           <div ref={statsWrapperRef}>
             <BrewStatsView entries={filtered} beans={beans} />
           </div>
@@ -313,9 +316,25 @@ export default function JournalPage() {
       ) : loading && filtered.length === 0 ? (
         <p className="px-4 text-sm text-slate-500 py-8 text-center">Loading brews…</p>
       ) : filtered.length === 0 ? (
-        <div className="px-4 py-12 text-center">
-          <span className="material-symbols-outlined text-4xl text-slate-600">menu_book</span>
-          <p className="mt-2 text-sm text-slate-500">No brews found.</p>
+        <div className="px-4 py-12 text-center flex flex-col items-center">
+          <img
+            src="/img3_waving.png"
+            alt="Kapi waving"
+            width={160}
+            height={160}
+            style={{ mixBlendMode: "screen" }}
+          />
+          <p className="mt-4 text-base font-semibold text-slate-200">Your brew journal starts here.</p>
+          <p className="mt-2 text-sm text-slate-500 max-w-xs">
+            Every brew you log will live here.{" "}
+            Start brewing to build your history.
+          </p>
+          <Link
+            href="/log-brew"
+            className="mt-5 bg-primary text-background-dark font-bold text-sm px-6 py-3 rounded-xl hover:scale-[1.01] transition-transform"
+          >
+            + Log Your First Brew
+          </Link>
         </div>
       ) : (
         <div className="px-4 space-y-5">

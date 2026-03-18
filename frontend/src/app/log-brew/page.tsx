@@ -419,14 +419,20 @@ export default function LogBrewPage() {
       {!hasBeans && !isLoading && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-background-dark/80 backdrop-blur-sm p-6">
           <div className="w-full max-w-sm rounded-2xl border border-primary/20 bg-[#2a1d11] p-6 text-center shadow-2xl">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
-              <span className="material-symbols-outlined text-3xl text-primary/60">coffee</span>
+            <div className="flex justify-center mb-4">
+              <img
+                src="/coffee_coach_whispering.png"
+                alt="Coach Kapi whispering"
+                width={130}
+                height={130}
+                style={{ mixBlendMode: "screen" }}
+              />
             </div>
             <h2 className="text-xl font-bold text-slate-100 mb-2">
-              Add your beans first
+              One quick step first.
             </h2>
             <p className="text-sm text-slate-400 mb-5">
-              You need at least one saved bean before logging a brew session.
+              Add your first bag of beans and Coach Kapi can start coaching your brews right away.
             </p>
             <Link
               href="/my-beans"

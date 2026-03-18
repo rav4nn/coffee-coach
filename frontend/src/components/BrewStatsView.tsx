@@ -123,9 +123,18 @@ export function BrewStatsView({ entries, beans }: BrewStatsViewProps) {
   // Empty state
   if (entries.length === 0) {
     return (
-      <div className="px-4 py-16 text-center">
-        <span className="material-symbols-outlined text-5xl text-slate-600">bar_chart</span>
-        <p className="mt-3 text-sm text-slate-400">Log your first brew to see stats</p>
+      <div className="px-4 py-16 text-center flex flex-col items-center">
+        <img
+          src="/coffee_coach_searching.png"
+          alt="Coach Kapi searching"
+          width={160}
+          height={160}
+          style={{ mixBlendMode: "screen" }}
+        />
+        <p className="mt-4 text-base font-semibold text-slate-200">Nothing to analyse yet.</p>
+        <p className="mt-2 text-sm text-slate-400 max-w-xs">
+          Log a few brews and Coach Kapi will start finding patterns in your brewing.
+        </p>
       </div>
     );
   }

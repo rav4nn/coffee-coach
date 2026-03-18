@@ -211,12 +211,16 @@ export default function MyBeansPage() {
 
         {!isLoading && userBeans.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
-            <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <span className="material-symbols-outlined text-4xl text-primary/60">coffee</span>
-            </div>
+            <img
+              src="/coffee_coach_pointing.png"
+              alt="Coach Kapi pointing"
+              width={160}
+              height={160}
+              style={{ mixBlendMode: "screen" }}
+            />
             <h2 className="text-lg font-bold text-slate-100">No beans yet</h2>
             <p className="text-sm text-slate-500 max-w-xs">
-              Add your first bag so the brew flow can start with bean-first selection.
+              Add your first bag and Coach Kapi will personalise your brewing from the very first cup.
             </p>
             <button
               onClick={() => setSheetOpen(true)}
