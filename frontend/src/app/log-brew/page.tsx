@@ -421,7 +421,7 @@ export default function LogBrewPage() {
           <div className="w-full max-w-sm rounded-2xl border border-primary/20 bg-[#2a1d11] p-6 text-center shadow-2xl">
             <div className="flex justify-center mb-4">
               <img
-                src="/coffee_coach_whispering.png"
+                src="/coach/coffee_coach_whispering.png"
                 alt="Coach Kapi whispering"
                 width={130}
                 height={130}

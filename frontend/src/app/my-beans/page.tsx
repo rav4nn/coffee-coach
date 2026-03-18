@@ -212,7 +212,7 @@ export default function MyBeansPage() {
         {!isLoading && userBeans.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
             <img
-              src="/coffee_coach_pointing.png"
+              src="/coach/coffee_coach_pointing.png"
               alt="Coach Kapi pointing"
               width={160}
               height={160}

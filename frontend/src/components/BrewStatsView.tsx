@@ -125,7 +125,7 @@ export function BrewStatsView({ entries, beans }: BrewStatsViewProps) {
     return (
       <div className="px-4 py-16 text-center flex flex-col items-center">
         <img
-          src="/coffee_coach_searching.png"
+          src="/coach/coffee_coach_searching.png"
           alt="Coach Kapi searching"
           width={160}
           height={160}

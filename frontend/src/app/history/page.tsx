@@ -318,7 +318,7 @@ export default function JournalPage() {
       ) : filtered.length === 0 ? (
         <div className="px-4 py-12 text-center flex flex-col items-center">
           <img
-            src="/img3_waving.png"
+            src="/coach/img3_waving.png"
             alt="Kapi waving"
             width={160}
             height={160}
