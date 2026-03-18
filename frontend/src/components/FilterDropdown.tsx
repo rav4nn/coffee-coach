@@ -35,11 +35,13 @@ export function FilterDropdown({
   onChange,
   availableMethods,
   availableBeans,
+  dropdownPosition = "below",
 }: {
   filters: FilterState;
   onChange: (f: FilterState) => void;
   availableMethods: string[];
   availableBeans: { id: string; label: string }[];
+  dropdownPosition?: "below" | "above";
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -68,6 +70,11 @@ export function FilterDropdown({
     onChange({ ...filters, beanIds: next });
   }
 
+  const dropdownPos =
+    dropdownPosition === "above"
+      ? "absolute right-0 bottom-12 z-20"
+      : "absolute right-0 top-11 z-20";
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -88,7 +95,7 @@ export function FilterDropdown({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-11 z-20 w-64 rounded-2xl border border-primary/20 bg-background-dark shadow-xl shadow-black/40 overflow-hidden">
+        <div className={`${dropdownPos} w-64 rounded-2xl border border-primary/20 bg-background-dark shadow-xl shadow-black/40 overflow-hidden`}>
           {availableMethods.length > 0 && (
             <div className="p-3 border-b border-primary/10">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Brew Method</p>
@@ -117,21 +124,20 @@ export function FilterDropdown({
           {availableBeans.length > 0 && (
             <div className="p-3">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Bean</p>
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-wrap gap-1.5">
                 {availableBeans.map(({ id, label }) => {
                   const active = filters.beanIds.includes(id);
                   return (
                     <button
                       key={id}
                       onClick={() => toggleBean(id)}
-                      className={`flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-xl font-semibold border transition-colors text-left ${
+                      className={`text-xs px-2.5 py-1 rounded-full font-semibold border transition-colors ${
                         active
                           ? "bg-primary text-background-dark border-primary"
                           : "bg-primary/10 text-primary/70 border-primary/20"
                       }`}
                     >
-                      <span className="material-symbols-outlined text-sm">nutrition</span>
-                      <span className="truncate">{label}</span>
+                      {label}
                     </button>
                   );
                 })}

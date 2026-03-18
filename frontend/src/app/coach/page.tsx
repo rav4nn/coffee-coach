@@ -340,13 +340,14 @@ export default function CoachPage() {
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="px-4 pb-2 flex justify-end">
+      {/* Floating filter button */}
+      <div className="fixed bottom-24 right-4 z-30">
         <FilterDropdown
           filters={filters}
           onChange={setFilters}
           availableMethods={availableMethods}
           availableBeans={availableBeans}
+          dropdownPosition="above"
         />
       </div>
 
