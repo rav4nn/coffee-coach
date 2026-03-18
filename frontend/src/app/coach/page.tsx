@@ -341,7 +341,7 @@ export default function CoachPage() {
       </div>
 
       {/* Floating filter button */}
-      <div className="fixed bottom-24 right-4 z-30">
+      <div className="fixed bottom-28 right-4 z-30 rounded-2xl bg-background-dark/70 backdrop-blur-md">
         <FilterDropdown
           filters={filters}
           onChange={setFilters}

@@ -250,11 +250,11 @@ export default function JournalPage() {
   return (
     <section className="pb-28">
       {/* Header with toggle */}
-      <div className="px-4 pt-2 pb-3 flex items-center justify-between">
-        <div className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 p-1">
+      <div className="px-4 pt-2 pb-3">
+        <div className="flex items-center rounded-full border border-primary/20 bg-primary/5 p-1">
           <button
             onClick={() => setView("journal")}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-sm font-semibold transition-colors ${
               view === "journal"
                 ? "bg-primary text-background-dark"
                 : "text-primary/70"
@@ -265,7 +265,7 @@ export default function JournalPage() {
           </button>
           <button
             onClick={() => setView("stats")}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-sm font-semibold transition-colors ${
               view === "stats"
                 ? "bg-primary text-background-dark"
                 : "text-primary/70"
@@ -275,11 +275,16 @@ export default function JournalPage() {
             View Stats
           </button>
         </div>
+      </div>
+
+      {/* Floating filter button */}
+      <div className="fixed bottom-28 right-4 z-30 rounded-2xl bg-background-dark/70 backdrop-blur-md">
         <FilterDropdown
           filters={filters}
           onChange={setFilters}
           availableMethods={availableMethods}
           availableBeans={availableBeans}
+          dropdownPosition="above"
         />
       </div>
 
