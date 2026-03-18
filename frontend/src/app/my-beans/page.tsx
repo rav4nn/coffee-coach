@@ -63,10 +63,16 @@ export default function MyBeansPage() {
     () => roasters.map((r) => ({ label: r, value: r })),
     [roasters],
   );
-  const beanOptions = useMemo(
-    () => [...catalogBeans, ...customCatalogBeans].map((b) => ({ label: b.name, value: b.coffee_id })),
-    [catalogBeans, customCatalogBeans],
-  );
+  const beanOptions = useMemo(() => {
+    const seen = new Set<string>();
+    return [...catalogBeans, ...customCatalogBeans]
+      .filter((b) => {
+        if (seen.has(b.name)) return false;
+        seen.add(b.name);
+        return true;
+      })
+      .map((b) => ({ label: b.name, value: b.coffee_id }));
+  }, [catalogBeans, customCatalogBeans]);
 
   useEffect(() => { fetchBeans(); }, [fetchBeans]);
 

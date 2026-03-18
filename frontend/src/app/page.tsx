@@ -103,8 +103,8 @@ export default function Home() {
                 <Image
                   src="/coach/img3_waving.png"
                   alt="Coach Kapi"
-                  width={160}
-                  height={160}
+                  width={240}
+                  height={240}
                   className="kapi-appear w-full h-full object-contain"
                   style={{ mixBlendMode: "screen" }}
                   priority
@@ -113,12 +113,12 @@ export default function Home() {
 
               {primaryMethod ? (
                 <h2 className="text-3xl font-bold text-slate-100 text-center mt-4 leading-snug">
-                  Welcome, {firstName}. Let&apos;s brew your first<br />
-                  <span className="text-primary">{METHOD_LABELS[primaryMethod] ?? primaryMethod}.</span>
+                  Welcome, <span className="text-primary">{firstName}.</span><br />
+                  Let&apos;s brew your first <span className="text-primary">{METHOD_LABELS[primaryMethod] ?? primaryMethod}.</span>
                 </h2>
               ) : (
                 <h2 className="text-3xl font-bold text-slate-100 text-center mt-4 leading-snug">
-                  Welcome, {firstName}.<br />
+                  Welcome, <span className="text-primary">{firstName}.</span><br />
                   <span className="text-primary">Let&apos;s log your first brew.</span>
                 </h2>
               )}
