@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
+import { useBeansStore } from "@/lib/beansStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 
 type Choice = "coach" | "guided" | "freestyle";
@@ -64,6 +65,9 @@ export default function LogBrewStepTwoPage() {
   const selectedMethodId = useLogBrewStore((state) => state.selectedMethodId);
   const selectedPourOverDeviceId = useLogBrewStore((state) => state.selectedPourOverDeviceId);
   const setCoachMode = useLogBrewStore((state) => state.setCoachMode);
+
+  const userBeans = useBeansStore((state) => state.userBeans);
+  const selectedBean = userBeans.find((b) => b.id === selectedBeanId);
 
   const entries = useBrewHistoryStore((state) => state.entries);
   const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
@@ -152,9 +156,18 @@ export default function LogBrewStepTwoPage() {
         <div className="size-10" />
       </div>
 
+      {/* Context bar */}
+      {selectedBean && effectiveMethodId && (
+        <p className="text-xs text-slate-500 text-center mb-3">
+          {selectedBean.beanName} <span className="text-primary">·</span> {prettyMethodName(effectiveMethodId)}
+        </p>
+      )}
+
       {/* Title */}
-      <h1 className="text-3xl font-bold text-slate-100 mt-2 mb-1">Choose Your Logging Style</h1>
-      <p className="text-sm text-slate-400 mb-4">Pick how you want to continue this brew session.</p>
+      <h1 className="text-3xl font-bold text-slate-100 mt-2 mb-1">
+        How do you want to brew your {prettyMethodName(effectiveMethodId)}?
+      </h1>
+      <p className="text-sm text-slate-400 mb-4">Coach Kapi will adjust your recipe after you rate it.</p>
 
       {/* Missing step 1 guard */}
       {!selectedMethodId && (
@@ -223,7 +236,7 @@ export default function LogBrewStepTwoPage() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2 mb-0.5">
-              <h3 className="text-base font-bold text-slate-100">Follow a Recipe</h3>
+              <h3 className="text-base font-bold text-slate-100">Guide Me</h3>
               {recipeMethodKey && (
                 <span className="shrink-0 bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest border border-primary/20">
                   {recipeCount} recipes
@@ -248,10 +261,21 @@ export default function LogBrewStepTwoPage() {
             <span className="material-symbols-outlined text-primary text-xl">edit_note</span>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-slate-100 mb-0.5">Use My Own Recipe</h3>
+            <h3 className="text-base font-bold text-slate-100 mb-0.5">I'll Freestyle</h3>
             <p className="text-xs text-slate-400">Feeling confident? Just log what you brew as you go.</p>
           </div>
         </button>
+      </div>
+
+      {/* Kapi illustration */}
+      <div className="flex justify-center mt-6">
+        <img
+          src="/coach/coffee_coach_thinking.png"
+          alt="Coach Kapi thinking"
+          width={120}
+          height={120}
+          style={{ mixBlendMode: "screen" }}
+        />
       </div>
 
       {/* Floating Next button */}

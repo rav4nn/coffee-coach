@@ -514,6 +514,7 @@ export default function MyBeansPage() {
                 onChange={(value) => form.setValue("coffeeId", value, { shouldValidate: true })}
                 options={beanOptions}
                 disabled={!selectedRoaster || catalogLoading}
+                showEscapeHatch
                 onAddNew={(q) => {
                   const custom: CatalogBean = { coffee_id: "__custom__", name: q, roaster: selectedRoaster };
                   setCustomCatalogBeans([custom]);

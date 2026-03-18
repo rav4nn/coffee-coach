@@ -609,12 +609,35 @@ export default function GuidedRecipeDetailPage() {
   if (phase === "complete") {
     return (
       <main className="flex-1 flex flex-col items-center justify-center px-6 gap-4 text-center">
+        <style>{`
+          @keyframes kapiBouncIn {
+            0%   { transform: scale(0.5); opacity: 0; }
+            70%  { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1);   opacity: 1; }
+          }
+          .kapi-bounce-in { animation: kapiBouncIn 0.6s ease-out forwards; }
+        `}</style>
+
+        <img
+          src="/coach/coffee_coach_excited.png"
+          alt="Coach Kapi celebrating"
+          width={180}
+          height={180}
+          className="kapi-bounce-in"
+          style={{ mixBlendMode: "screen" }}
+        />
+
         <div className="w-20 h-20 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center mb-2">
           <span className="material-symbols-outlined text-5xl text-primary">check_circle</span>
         </div>
         <h1 className="text-3xl font-bold text-slate-100">Brew Complete!</h1>
-        <p className="font-mono text-xl text-primary">{confirmBrewTime}</p>
-        <p className="text-sm text-slate-400">Great work. Enjoy your cup.</p>
+        <div>
+          <p className="text-sm text-slate-300">Great work. Enjoy your cup.</p>
+          <p className="text-sm text-slate-500 mt-1">
+            Come back once you&apos;ve tasted it —<br />
+            Coach Kapi will tell you what to tweak next.
+          </p>
+        </div>
 
         {completedBrewId && (
           <button
@@ -626,6 +649,13 @@ export default function GuidedRecipeDetailPage() {
             How was that brew?
           </button>
         )}
+        <button
+          type="button"
+          onClick={() => router.push("/")}
+          className="w-full max-w-xs border border-white/15 text-slate-400 font-semibold py-4 rounded-xl flex items-center justify-center gap-2 hover:border-white/30 hover:text-slate-200 transition-all"
+        >
+          Rate Later
+        </button>
       </main>
     );
   }
@@ -996,12 +1026,12 @@ export default function GuidedRecipeDetailPage() {
                     }`}
                   >
                     {/* Step number bubble */}
-                    <div className={`size-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 transition-all duration-300 ${
+                    <div className={`rounded-full flex items-center justify-center font-bold shrink-0 transition-all duration-300 ${
                       isCurrent
-                        ? "bg-primary text-background-dark"
+                        ? "size-10 text-[18px] bg-primary text-background-dark"
                         : isPast
-                        ? "bg-primary/30 text-primary"
-                        : "bg-white/15 text-slate-400"
+                        ? "size-8 text-sm bg-primary/30 text-primary"
+                        : "size-8 text-sm bg-white/15 text-slate-400"
                     }`}>
                       {isPast
                         ? <span className="material-symbols-outlined text-sm">check</span>
@@ -1012,7 +1042,7 @@ export default function GuidedRecipeDetailPage() {
                     {/* Step body */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <p className={`text-sm leading-snug ${isCurrent ? "font-medium text-slate-100" : "font-medium text-slate-300"}`}>
+                        <p className={`leading-snug ${isCurrent ? "text-lg font-semibold text-slate-100" : "text-sm font-medium text-slate-300"}`}>
                           {resolveInstructionMath(step.instruction)}
                         </p>
                         {step.duration_seconds && (
@@ -1026,7 +1056,9 @@ export default function GuidedRecipeDetailPage() {
 
                       {/* Water amount badge */}
                       {step.target_water_g !== null && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-white/10 px-2 py-1 rounded mt-1">
+                        <span className={`inline-flex items-center gap-1 font-bold bg-white/10 rounded mt-1 ${
+                          isCurrent ? "text-sm px-3.5 py-1.5" : "text-[10px] px-2 py-1"
+                        }`}>
                           <span className="material-symbols-outlined text-xs">water_drop</span>
                           {step.target_water_g}g
                         </span>

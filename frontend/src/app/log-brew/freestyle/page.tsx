@@ -10,6 +10,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBrewHistoryStore, type FreestyleBrewEntry, type CoachingChange } from "@/lib/brewHistoryStore";
+import { useBeansStore } from "@/lib/beansStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 
 const grindSizeOptions = ["Extra Fine", "Fine", "Medium-Fine", "Medium", "Medium-Coarse", "Coarse"] as const;
@@ -75,6 +76,19 @@ export default function FreestyleLogPage() {
   const selectedBeanId = useLogBrewStore((state) => state.selectedBeanId);
   const selectedMethodId = useLogBrewStore((state) => state.selectedMethodId);
   const selectedPourOverDeviceId = useLogBrewStore((state) => state.selectedPourOverDeviceId);
+  const userBeans = useBeansStore((state) => state.userBeans);
+  const selectedBean = userBeans.find((b) => b.id === selectedBeanId);
+  const effectiveMethodLabel = (() => {
+    const key = selectedMethodId === "pour_over" ? (selectedPourOverDeviceId ?? selectedMethodId) : selectedMethodId;
+    if (!key) return null;
+    const map: Record<string, string> = {
+      v60: "V60", chemex: "Chemex", kalita_wave: "Kalita Wave", clever_dripper: "Clever Dripper",
+      hario_switch: "Hario Switch", wilfa_pour_over: "Wilfa Pour Over", origami_dripper: "Origami Dripper",
+      aeropress: "AeroPress", french_press: "French Press", moka_pot: "Moka Pot",
+      cold_brew: "Cold Brew", south_indian_filter: "Filter Kaapi",
+    };
+    return map[key] ?? key.replace(/_/g, " ");
+  })();
   const coachBrewRef = useLogBrewStore((state) => state.coachBrewRef);
   const coachChanges = useLogBrewStore((state) => state.coachChanges);
   const clearCoachMode = useLogBrewStore((state) => state.clearCoachMode);
@@ -273,6 +287,13 @@ export default function FreestyleLogPage() {
         )}
       </div>
 
+      {/* Context bar */}
+      {selectedBean && effectiveMethodLabel && (
+        <p className="text-xs text-slate-500 text-center pb-2 px-4">
+          {selectedBean.beanName} <span className="text-primary">·</span> {effectiveMethodLabel}
+        </p>
+      )}
+
       <form onSubmit={form.handleSubmit(onSubmit)} className="px-4 space-y-4 pt-2">
         {/* ── Brewing Essentials ──────────────────────────────────── */}
         <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
@@ -409,39 +430,6 @@ export default function FreestyleLogPage() {
               originalValue={coachBrewRef?.grindSize}
             />
           )}
-        </div>
-
-        {/* ── Tasting Notes ──────────────────────────────────────── */}
-        <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="material-symbols-outlined text-primary text-lg">restaurant</span>
-            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">How did it taste?</h2>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {(["Sweet", "Sour", "Bitter", "Bright", "Flat", "Roasty", "Floral", "Fruity", "Nutty", "Chocolatey"] as const).map((chip) => {
-              const selected = tastingNotes.includes(chip);
-              return (
-                <button
-                  key={chip}
-                  type="button"
-                  onClick={() =>
-                    setTastingNotes((current) =>
-                      current.includes(chip)
-                        ? current.filter((c) => c !== chip)
-                        : [...current, chip]
-                    )
-                  }
-                  className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
-                    selected
-                      ? "bg-mocha text-cream border-mocha"
-                      : "bg-steam text-mocha border-mocha/20"
-                  }`}
-                >
-                  {chip}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* ── Notes ──────────────────────────────────────────────── */}

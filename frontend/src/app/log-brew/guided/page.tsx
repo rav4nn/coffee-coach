@@ -24,10 +24,12 @@ export default function GuidedRecipesPage() {
   const router = useRouter();
   const selectedMethodId = useLogBrewStore((state) => state.selectedMethodId);
   const selectedPourOverDeviceId = useLogBrewStore((state) => state.selectedPourOverDeviceId);
+  const selectedBeanId = useLogBrewStore((state) => state.selectedBeanId);
   const entries = useBrewHistoryStore((state) => state.entries);
   const fetchEntries = useBrewHistoryStore((state) => state.fetchEntries);
   const beans = useBeansStore((state) => state.userBeans);
   const fetchBeans = useBeansStore((state) => state.fetchBeans);
+  const selectedBean = beans.find((b) => b.id === selectedBeanId);
   const [recipes, setRecipes] = useState<GuidedRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -113,6 +115,14 @@ export default function GuidedRecipesPage() {
         </div>
         <div className="size-10" />
       </header>
+
+      {/* Context bar */}
+      {selectedBean && (selectedMethodId || selectedPourOverDeviceId) && (
+        <p className="text-xs text-slate-500 text-center py-2 border-b border-primary/10">
+          {selectedBean.beanName} <span className="text-primary">·</span>{" "}
+          {methodLabel(selectedMethodId === "pour_over" ? (selectedPourOverDeviceId ?? selectedMethodId) : selectedMethodId)}
+        </p>
+      )}
 
       {/* Recipe list */}
       <main className="flex-1 overflow-y-auto pb-56">

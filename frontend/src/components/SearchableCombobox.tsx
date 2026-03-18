@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -19,6 +19,7 @@ type SearchableComboboxProps = {
   onChange: (value: string) => void;
   onAddNew?: (query: string) => void;
   disabled?: boolean;
+  showEscapeHatch?: boolean;
 };
 
 export function SearchableCombobox({
@@ -30,9 +31,17 @@ export function SearchableCombobox({
   onChange,
   onAddNew,
   disabled,
+  showEscapeHatch,
 }: SearchableComboboxProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [toastVisible, setToastVisible] = useState(false);
+
+  useEffect(() => {
+    if (!toastVisible) return;
+    const t = setTimeout(() => setToastVisible(false), 3500);
+    return () => clearTimeout(t);
+  }, [toastVisible]);
 
   const selected = options.find((o) => o.value === value);
 
@@ -94,7 +103,7 @@ export function SearchableCombobox({
             </div>
 
             {/* Results list */}
-            <div className="overflow-y-auto flex-1 px-4 pb-6">
+            <div className="overflow-y-auto flex-1 px-4 pb-2">
               {filtered.length > 0 ? (
                 filtered.map((option) => (
                   <button
@@ -121,9 +130,31 @@ export function SearchableCombobox({
                   {query.trim() ? `No results for "${query.trim()}"` : "No options available."}
                 </p>
               )}
+
+              {showEscapeHatch && (
+                <div className="border-t border-mocha/15 mt-2 pt-2 pb-4">
+                  <button
+                    type="button"
+                    onClick={() => { setToastVisible(true); close(); }}
+                    className="w-full px-3 py-2 text-xs italic text-left hover:opacity-80 transition-opacity"
+                    style={{ color: "#f49d25" }}
+                  >
+                    Can&apos;t find your bean? Add it manually →
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </>
+      )}
+
+      {toastVisible && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-sm rounded-2xl bg-[#2a1d11] border border-primary/20 px-4 py-3 shadow-2xl text-center">
+          <p className="text-sm text-slate-200 leading-snug">
+            Manual bean entry coming soon —<br />
+            <span className="text-slate-400">DM us your bean and we&apos;ll add it!</span>
+          </p>
+        </div>
       )}
     </div>
   );
