@@ -99,7 +99,7 @@ export default function Home() {
           /* ── NEW USER STATE ── */
           <>
             <div className="flex flex-col items-center px-6 pt-8 pb-2">
-              <div className="w-40 h-40">
+              <div className="w-60 h-60">
                 <Image
                   src="/coach/img3_waving.png"
                   alt="Coach Kapi"

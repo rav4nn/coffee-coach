@@ -44,6 +44,22 @@ const METHOD_TIP_PREFIX: Record<string, string> = {
   south_indian_filter: "filter kaapi",
 };
 
+/** Curated first-brew tips per method */
+const NEW_USER_METHOD_TIPS: Record<string, string> = {
+  aeropress: "In an AeroPress, press into a preheated mug — cold mugs drop your brew temp by 5–8°C instantly.",
+  v60: "For pour over, bloom your grounds first — add 2x the coffee weight in water and wait 30 seconds before your main pour.",
+  pour_over: "For pour over, bloom your grounds first — add 2x the coffee weight in water and wait 30 seconds before your main pour.",
+  chemex: "For pour over, bloom your grounds first — add 2x the coffee weight in water and wait 30 seconds before your main pour.",
+  kalita_wave: "For pour over, bloom your grounds first — add 2x the coffee weight in water and wait 30 seconds before your main pour.",
+  clever_dripper: "For pour over, bloom your grounds first — add 2x the coffee weight in water and wait 30 seconds before your main pour.",
+  hario_switch: "For pour over, bloom your grounds first — add 2x the coffee weight in water and wait 30 seconds before your main pour.",
+  french_press: "Don't press the French Press plunger too fast — a slow 20–30 second press gives you a cleaner, less bitter cup.",
+  moka_pot: "Use hot water in your Moka Pot base, not cold — it reduces the time on heat and prevents a burnt, bitter taste.",
+  cold_brew: "For cold brew, coarser is better — grind coarser than French Press to avoid over-extraction over your 12–18 hour steep.",
+  south_indian_filter: "The decoction strength is everything in Filter Kaapi — aim for a 1:4 coffee to water ratio in the filter for a strong, authentic concentrate.",
+};
+const DEFAULT_NEW_USER_TIP = "Water quality matters more than most brewers think — filtered or mineral water can noticeably improve clarity and sweetness in any brew method.";
+
 function getFilteredTips(equipment: string[], recentMethodId?: string | null): string[] {
   const sources = [...equipment];
   if (recentMethodId && !sources.includes(recentMethodId)) sources.push(recentMethodId);
@@ -66,15 +82,14 @@ function getFilteredTips(equipment: string[], recentMethodId?: string | null): s
 function generateInsight(
   entries: FreestyleBrewEntry[],
   equipment: string[],
+  firstName: string,
 ): { icon: string; title: string; body: string; avatar: string } {
   if (entries.length === 0) {
-    const tips = getFilteredTips(equipment);
-    const tip = tips[Math.floor(Math.random() * tips.length)];
     return {
       icon: "waving_hand",
       avatar: "/coach/img3_waving.png",
-      title: "Welcome, brewer!",
-      body: tip + "\n\nLog your first brew to get personalized coaching.",
+      title: `Welcome, ${firstName}!`,
+      body: "You haven't logged a brew yet.\n\nLog one, rate it, and Coach Kapi will tell you exactly what to change next.",
     };
   }
 
@@ -207,6 +222,7 @@ export default function CoachPage() {
   const fetchBeans = useBeansStore((state) => state.fetchBeans);
 
   const [equipment, setEquipment] = useState<string[]>([]);
+  const [firstName, setFirstName] = useState("Brewer");
   const [initialFetchDone, setInitialFetchDone] = useState(false);
   const [activeTab, setActiveTab] = useState<"training" | "best">("training");
   const [filters, setFilters] = useState<FilterState>({ methods: [], beanIds: [] });
@@ -221,6 +237,9 @@ export default function CoachPage() {
       .then((user) => {
         if (Array.isArray(user.primary_equipment)) {
           setEquipment(user.primary_equipment as string[]);
+        }
+        if (typeof user.name === "string" && user.name) {
+          setFirstName(user.name.split(" ")[0]);
         }
       })
       .catch(() => {});
@@ -281,17 +300,21 @@ export default function CoachPage() {
   }, [entries, beans]);
 
   const insight = useMemo(
-    () => generateInsight(entries, equipment),
+    () => generateInsight(entries, equipment, firstName),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [entries.length, equipment.length],
+    [entries.length, equipment.length, firstName],
   );
 
-  const filteredTip = useMemo(() => {
+  // For new users: method-specific curated tip; for returning users: filtered from COACH_TIPS
+  const displayTip = useMemo(() => {
+    if (entries.length === 0) {
+      return NEW_USER_METHOD_TIPS[equipment[0]] ?? DEFAULT_NEW_USER_TIP;
+    }
     const tips = getFilteredTips(equipment, recentMethodId);
     const shuffled = [...tips].sort(() => Math.random() - 0.5);
     return shuffled[0] ?? null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [equipment.length, recentMethodId]);
+  }, [entries.length, equipment.length, recentMethodId]);
 
   function getBeanName(beanId: string | null) {
     if (!beanId) return "Unknown Bean";
@@ -312,6 +335,8 @@ export default function CoachPage() {
     );
   }
 
+  const isNewUser = entries.length === 0;
+
   return (
     <main className="overflow-y-auto pb-28">
       {/* Toggle */}
@@ -325,7 +350,7 @@ export default function CoachPage() {
                 : "text-primary/70"
             }`}
           >
-            Training Log
+            Brew History
           </button>
           <button
             onClick={() => setActiveTab("best")}
@@ -335,7 +360,7 @@ export default function CoachPage() {
                 : "text-primary/70"
             }`}
           >
-            Top Performances
+            Best Brews
           </button>
         </div>
       </div>
@@ -370,7 +395,7 @@ export default function CoachPage() {
                 <p className="text-sm text-slate-300 mt-1 leading-relaxed whitespace-pre-line">{insight.body}</p>
               </div>
             </div>
-            {entries.length === 0 && (
+            {isNewUser && (
               <Link
                 href="/log-brew"
                 className="mt-4 w-full bg-primary text-background-dark font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:brightness-110 transition-all"
@@ -383,19 +408,51 @@ export default function CoachPage() {
         </div>
       )}
 
-      {/* Brew cards grouped by date */}
+      {/* Brew cards grouped by date — or empty states */}
       {filteredBrews.length === 0 ? (
-        <div className="py-12 text-center">
-          <span className="material-symbols-outlined text-4xl text-slate-600">
-            {activeTab === "best" ? "emoji_events" : "menu_book"}
-          </span>
-          <p className="mt-2 text-sm text-slate-400">
-            {activeTab === "best" ? "No perfect brews yet." : "No brews found."}
-          </p>
-          {activeTab === "best" && (
-            <p className="text-xs text-slate-500 mt-1">Rate a brew 10/10 to see it here.</p>
-          )}
-        </div>
+        activeTab === "best" ? (
+          isNewUser ? (
+            /* Best Brews — new user state */
+            <div className="py-10 flex flex-col items-center px-6">
+              <Image
+                src="/coach/img3_hero_thumbs_up.png"
+                alt="Coach Kapi"
+                width={120}
+                height={120}
+                className="object-contain"
+                style={{ mixBlendMode: "screen" }}
+              />
+              <p className="mt-3 text-base font-semibold text-slate-300 text-center">
+                Your best brews live here.
+              </p>
+              <p className="text-sm text-slate-500 mt-1 text-center max-w-xs">
+                Rate a brew 10/10 and Coach Kapi saves it for you.
+              </p>
+              <Link
+                href="/log-brew"
+                className="mt-6 flex items-center justify-center gap-2 w-full max-w-xs bg-primary/10 border border-primary/20 text-slate-100 font-semibold py-3 rounded-2xl hover:scale-[1.01] transition-transform"
+              >
+                <span className="material-symbols-outlined text-xl">add</span>
+                Log Your First Brew
+              </Link>
+            </div>
+          ) : (
+            /* Best Brews — returning user, no 10/10 yet */
+            <div className="py-12 text-center">
+              <span className="material-symbols-outlined text-4xl text-slate-600">emoji_events</span>
+              <p className="mt-2 text-sm text-slate-400">No perfect brews yet.</p>
+              <p className="text-xs text-slate-500 mt-1">Rate a brew 10/10 to see it here.</p>
+            </div>
+          )
+        ) : (
+          /* Brew History — returning user with active filters that matched nothing */
+          !isNewUser && (
+            <div className="py-12 text-center">
+              <span className="material-symbols-outlined text-4xl text-slate-600">menu_book</span>
+              <p className="mt-2 text-sm text-slate-400">No brews found.</p>
+            </div>
+          )
+        )
       ) : (
         <div className="px-4 pt-1 space-y-4">
           {dateGroups.map(([dateLabel, groupEntries]) => (
@@ -416,8 +473,8 @@ export default function CoachPage() {
         </div>
       )}
 
-      {/* Did you know? — tip filtered by recent method + equipment (training tab only) */}
-      {activeTab === "training" && filteredTip && (
+      {/* Did you know? — training tab only */}
+      {activeTab === "training" && displayTip && (
         <section className="px-4 py-3">
           <div className="flex items-center gap-2 mb-3">
             <Image src="/coach/img2_reading_book.png" alt="Coach" width={32} height={32} className="object-contain" />
@@ -425,7 +482,7 @@ export default function CoachPage() {
           </div>
           <div className="rounded-xl border border-primary/10 bg-primary/5 p-4 flex gap-3">
             <span className="material-symbols-outlined text-primary text-lg shrink-0 mt-0.5">lightbulb</span>
-            <p className="text-sm text-slate-300 leading-relaxed">{filteredTip}</p>
+            <p className="text-sm text-slate-300 leading-relaxed">{displayTip}</p>
           </div>
         </section>
       )}
