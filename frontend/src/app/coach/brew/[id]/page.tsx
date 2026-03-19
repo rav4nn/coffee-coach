@@ -340,39 +340,47 @@ export default function BrewCoachPage() {
         }
 
         @keyframes userBubbleFadeIn {
-          from { opacity: 0; transform: translateX(12px); }
+          from { opacity: 0; transform: translateX(10px); }
           to   { opacity: 1; transform: translateX(0); }
         }
         .user-reply-wrapper {
           animation: userBubbleFadeIn 0.4s ease-out 0.6s both;
         }
-        .user-bubble-btn {
-          transition: transform 100ms ease;
-        }
-        .user-bubble-btn:active {
-          transform: scale(0.97);
-        }
         .user-bubble-tail::before {
           content: '';
           position: absolute;
           right: -9px;
-          top: 14px;
+          top: 12px;
           width: 0;
           height: 0;
-          border-top: 8px solid transparent;
-          border-bottom: 8px solid transparent;
-          border-left: 8px solid rgba(244,157,37,0.7);
+          border-top: 7px solid transparent;
+          border-bottom: 7px solid transparent;
+          border-left: 8px solid rgba(244,157,37,0.5);
         }
         .user-bubble-tail::after {
           content: '';
           position: absolute;
           right: -7px;
-          top: 14px;
+          top: 12px;
           width: 0;
           height: 0;
-          border-top: 8px solid transparent;
-          border-bottom: 8px solid transparent;
-          border-left: 8px solid #1a1a2e;
+          border-top: 7px solid transparent;
+          border-bottom: 7px solid transparent;
+          border-left: 8px solid #1e1e2e;
+        }
+
+        @keyframes kapiBubble2FadeIn {
+          from { opacity: 0; transform: translateX(-10px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .kapi-reply-wrapper {
+          animation: kapiBubble2FadeIn 0.4s ease-out 1.0s both;
+        }
+        .cta-press {
+          transition: transform 100ms ease;
+        }
+        .cta-press:active {
+          transform: scale(0.97);
         }
       `}</style>
 
@@ -406,8 +414,10 @@ export default function BrewCoachPage() {
               <Image src={imgSrc} alt="" width={28} height={28} className="w-7 h-7 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-100 truncate">{beanName}</p>
-              <p className="text-xs text-slate-400">{methodLabel(brew.methodId)}</p>
+              <p className="text-sm font-bold text-slate-100 leading-snug" style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>
+                {beanName.length > 40 ? beanName.slice(0, 40) + "…" : beanName}
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">{methodLabel(brew.methodId)}</p>
             </div>
             {brew.rating != null && (
               <div className="shrink-0 text-right leading-none">
@@ -420,26 +430,26 @@ export default function BrewCoachPage() {
           {/* Parameter grid: 3 across, then 2 centered */}
           <div className="grid grid-cols-6 gap-2 text-center">
             <div className="col-span-2 bg-background-dark/40 rounded-lg py-2">
-              <p className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Dose</p>
-              <p className="text-xs font-bold text-slate-200 mt-0.5">{brew.coffeeGrams}g</p>
+              <p style={{ fontSize: 11 }} className="uppercase tracking-wider text-slate-500 font-semibold">Dose</p>
+              <p style={{ fontSize: 16, fontWeight: 600 }} className="text-slate-200 mt-0.5">{brew.coffeeGrams}g</p>
             </div>
             <div className="col-span-2 bg-background-dark/40 rounded-lg py-2">
-              <p className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Water</p>
-              <p className="text-xs font-bold text-slate-200 mt-0.5">{brew.waterMl}ml</p>
+              <p style={{ fontSize: 11 }} className="uppercase tracking-wider text-slate-500 font-semibold">Water</p>
+              <p style={{ fontSize: 16, fontWeight: 600 }} className="text-slate-200 mt-0.5">{brew.waterMl}ml</p>
             </div>
             <div className="col-span-2 bg-background-dark/40 rounded-lg py-2">
-              <p className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Temp</p>
-              <p className="text-xs font-bold text-slate-200 mt-0.5">{brew.waterTempC ? `${brew.waterTempC}°C` : "—"}</p>
+              <p style={{ fontSize: 11 }} className="uppercase tracking-wider text-slate-500 font-semibold">Temp</p>
+              <p style={{ fontSize: 16, fontWeight: 600 }} className="text-slate-200 mt-0.5">{brew.waterTempC ? `${brew.waterTempC}°C` : "—"}</p>
             </div>
             <div className="col-span-3 bg-background-dark/40 rounded-lg py-2">
-              <p className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Grind</p>
-              <p className="text-xs font-bold text-slate-200 mt-0.5">
+              <p style={{ fontSize: 11 }} className="uppercase tracking-wider text-slate-500 font-semibold">Grind</p>
+              <p style={{ fontSize: 16, fontWeight: 600 }} className="text-slate-200 mt-0.5">
                 {brew.grinderClicks ? `${brew.grinderClicks} clicks` : brew.grindSize}
               </p>
             </div>
             <div className="col-span-3 bg-background-dark/40 rounded-lg py-2">
-              <p className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Brew Time</p>
-              <p className="text-xs font-bold text-slate-200 mt-0.5">{brew.brewTime || "—"}</p>
+              <p style={{ fontSize: 11 }} className="uppercase tracking-wider text-slate-500 font-semibold">Brew Time</p>
+              <p style={{ fontSize: 16, fontWeight: 600 }} className="text-slate-200 mt-0.5">{brew.brewTime || "—"}</p>
             </div>
           </div>
 
@@ -449,15 +459,17 @@ export default function BrewCoachPage() {
               type="button"
               onClick={() => setIsSharing(true)}
               disabled={isSharing}
-              className="flex items-center gap-1.5 text-xs font-semibold disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1 disabled:opacity-50 transition-colors"
               style={{
-                padding: '6px 14px',
+                padding: '4px 10px',
                 borderRadius: 9999,
                 border: '1px solid rgba(244,157,37,0.6)',
                 color: '#f49d25',
+                fontSize: 12,
+                fontWeight: 600,
               }}
             >
-              <span className="material-symbols-outlined text-base">share</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>share</span>
               Share brew
             </button>
           </div>
@@ -556,44 +568,77 @@ export default function BrewCoachPage() {
           </div>
         )}
 
-        {/* User reply chat bubble — replaces "Brew with the coach's help" button */}
+        {/* User reply bubble (display only) */}
         {showUserReply && (
           <div className="user-reply-wrapper flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={handleBrewWithCoach}
-              className="user-bubble-btn user-bubble-tail relative"
+            <div
+              className="user-bubble-tail relative"
               style={{
-                background: "#1a1a2e",
-                border: "1.5px solid rgba(244,157,37,0.7)",
+                background: "#1e1e2e",
+                border: "1.5px solid rgba(244,157,37,0.5)",
                 borderRadius: "16px 16px 4px 16px",
-                boxShadow: "0 0 8px rgba(244,157,37,0.19)",
-                padding: "12px 16px",
+                padding: "10px 14px",
               }}
             >
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-slate-300" style={{ fontSize: 16 }}>coffee_maker</span>
-                <span className="text-slate-100" style={{ fontSize: 15, fontWeight: 500 }}>
-                  Brew with coach&apos;s help <span style={{ color: "#f49d25" }}>→</span>
-                </span>
-              </div>
-            </button>
+              <span className="text-slate-100" style={{ fontSize: 14 }}>
+                Help me brew this better.
+              </span>
+            </div>
             {userAvatar ? (
-              <img
-                src={userAvatar}
-                alt="You"
-                width={40}
-                height={40}
-                className="rounded-full shrink-0 object-cover"
-              />
+              <img src={userAvatar} alt="You" width={36} height={36} className="rounded-full shrink-0 object-cover" />
             ) : (
               <div
-                className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-base font-bold"
-                style={{ background: "#2a1a0a", border: "1px solid rgba(244,157,37,0.3)", color: "#f49d25" }}
+                className="rounded-full shrink-0 flex items-center justify-center text-sm font-bold"
+                style={{ width: 36, height: 36, background: "#2a1a0a", border: "1px solid rgba(244,157,37,0.3)", color: "#f49d25" }}
               >
                 {userInitial}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Kapi reply bubble with CTA */}
+        {showUserReply && (
+          <div className="kapi-reply-wrapper flex items-start gap-3">
+            <img
+              src="/coach/coffee_coach_excited.png"
+              alt="Coach Kapi"
+              width={48}
+              height={48}
+              className="shrink-0"
+              style={{ mixBlendMode: "screen" }}
+            />
+            <div
+              className="chat-bubble-tail relative flex-1"
+              style={{
+                background: "#2a1a0a",
+                border: "1px solid rgba(244,157,37,0.3)",
+                borderRadius: "4px 16px 16px 16px",
+                padding: "12px 14px",
+              }}
+            >
+              <p className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: "#f49d25" }}>
+                Coach Kapi
+              </p>
+              <p className="text-slate-100 mb-2.5" style={{ fontSize: 14, fontWeight: 500 }}>
+                Sure, here you go!
+              </p>
+              <button
+                type="button"
+                onClick={handleBrewWithCoach}
+                className="cta-press w-full flex items-center justify-center gap-2 font-bold"
+                style={{
+                  background: "#f49d25",
+                  color: "#1a0f00",
+                  borderRadius: 10,
+                  padding: "10px 16px",
+                  fontSize: 14,
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>coffee_maker</span>
+                Brew with coach&apos;s help
+              </button>
+            </div>
           </div>
         )}
 

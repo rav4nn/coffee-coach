@@ -608,7 +608,7 @@ export default function GuidedRecipeDetailPage() {
 
   if (phase === "complete") {
     return (
-      <main className="flex-1 flex flex-col items-center justify-center px-6 gap-4 text-center">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 gap-4 text-center pt-16">
         <style>{`
           @keyframes kapiBouncIn {
             0%   { transform: scale(0.5); opacity: 0; }

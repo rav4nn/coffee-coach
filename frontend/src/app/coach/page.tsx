@@ -482,7 +482,6 @@ export default function CoachPage() {
       {activeTab === "training" && displayTip && (
         <section className="px-4 py-3 mt-6">
           <div className="flex items-center gap-2 mb-3">
-            <Image src="/coach/img2_reading_book.png" alt="Coach" width={32} height={32} className="object-contain" />
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Did you know?</h3>
           </div>
           <div className="rounded-xl border border-primary/10 bg-primary/5 p-4 flex items-center gap-3">
