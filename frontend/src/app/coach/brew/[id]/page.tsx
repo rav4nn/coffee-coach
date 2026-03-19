@@ -520,6 +520,9 @@ export default function BrewCoachPage() {
     if (selectedGoals.length > 0) payload.goals = selectedGoals;
     if (!Object.keys(payload).length) return;
 
+    // Prevent the "already coached" hydration effect from restarting and
+    // clearing the live sequence after this brew gets updated with feedback.
+    hasStartedAnimation.current = true;
     clearSequenceState();
     const requestPromise = requestCoaching(payload);
     await runCoachingSequence(requestPromise);
@@ -764,7 +767,7 @@ export default function BrewCoachPage() {
           </div>
         </div>
 
-        {!selectionHidden && !isPerfect && (
+        {!selectionHidden && (
           <div ref={sliderSectionRef} className="mt-5 mb-6" style={exitStyle}>
             <RatingSlider
               value={rating}
@@ -781,11 +784,6 @@ export default function BrewCoachPage() {
                 Done
                 <span className="material-symbols-outlined text-base">arrow_forward</span>
               </button>
-            )}
-            {!isLocked && ratingLocked && (
-              <div className="mt-4 flex h-12 w-full items-center justify-center rounded-xl border border-primary text-center text-primary">
-                {rating}/10 <span className="ml-1">✓</span>
-              </div>
             )}
           </div>
         )}
