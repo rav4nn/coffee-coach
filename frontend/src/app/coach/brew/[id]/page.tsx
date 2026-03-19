@@ -64,6 +64,8 @@ function CoachingChanges({ changes }: { changes: CoachingChangeApi[] }) {
 
 type AnimPhase = "idle" | "exiting" | "thinking" | "typing" | "done";
 
+const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
 export default function BrewCoachPage() {
   const params = useParams();
   const router = useRouter();
@@ -88,19 +90,43 @@ export default function BrewCoachPage() {
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [userInitial, setUserInitial] = useState("U");
 
-  // Animation state
+  // ── Animation state ──────────────────────────────────────────────────────
   const [animPhase, setAnimPhase] = useState<AnimPhase>("idle");
+  const [selectionRemoved, setSelectionRemoved] = useState(false);
+
+  // Main coaching bubble
+  const [coachBubbleVisible, setCoachBubbleVisible] = useState(false);
+  const [coachIsThinking, setCoachIsThinking] = useState(false);
   const [typewriterText, setTypewriterText] = useState("");
   const [showCursor, setShowCursor] = useState(false);
   const [showAdjustments, setShowAdjustments] = useState(false);
-  const [showUserBubble, setShowUserBubble] = useState(false);
-  const [showKapiReply, setShowKapiReply] = useState(false);
+
+  // User bubble
+  const [userBubbleSlideIn, setUserBubbleSlideIn] = useState(false);
+  const [userBubbleText, setUserBubbleText] = useState("");
+  const [showUserCursor, setShowUserCursor] = useState(false);
+
+  // Kapi reply bubble
+  const [kapiReplyVisible, setKapiReplyVisible] = useState(false);
+  const [kapiReplyThinking, setKapiReplyThinking] = useState(false);
+  const [kapiReplyText, setKapiReplyText] = useState("");
+  const [showKapiReplyCursor, setShowKapiReplyCursor] = useState(false);
+
+  // CTA button
   const [showCtaBtn, setShowCtaBtn] = useState(false);
+  const [ctaBtnAnimate, setCtaBtnAnimate] = useState(false);
+
+  // Title
   const [titleFading, setTitleFading] = useState(false);
   const [titleIsAdvice, setTitleIsAdvice] = useState(false);
 
+  // Refs
   const coachingRef = useRef<HTMLDivElement>(null);
+  const userBubbleRef = useRef<HTMLDivElement>(null);
+  const kapiReplyRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
+  const userRafRef = useRef<number | null>(null);
+  const kapiRafRef = useRef<number | null>(null);
 
   useEffect(() => {
     Promise.all([fetchEntries(), fetchBeans()]).finally(() => setDataLoaded(true));
@@ -141,18 +167,25 @@ export default function BrewCoachPage() {
   // For already-coached brews: skip all animations, show everything immediately
   useEffect(() => {
     if (isLocked && brew?.coachingFeedback) {
+      setCoachBubbleVisible(true);
       setTypewriterText(brew.coachingFeedback);
       setTitleIsAdvice(true);
       setShowAdjustments(true);
-      setShowUserBubble(true);
-      setShowKapiReply(true);
+      setUserBubbleSlideIn(true);
+      setUserBubbleText("Help me brew this better.");
+      setKapiReplyVisible(true);
+      setKapiReplyText("Sure, here you go!");
       setShowCtaBtn(true);
     }
   }, [isLocked, brew?.coachingFeedback]);
 
-  // Cleanup RAF on unmount
+  // Cleanup all RAFs on unmount
   useEffect(() => {
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (userRafRef.current) cancelAnimationFrame(userRafRef.current);
+      if (kapiRafRef.current) cancelAnimationFrame(kapiRafRef.current);
+    };
   }, []);
 
   function handleRatingChange(value: number) {
@@ -204,6 +237,7 @@ export default function BrewCoachPage() {
     }
   }
 
+  // Main coaching typewriter — 18ms/char, cursor blinks twice then hides
   const runTypewriter = useCallback((text: string): Promise<void> => {
     return new Promise((resolve) => {
       setShowCursor(true);
@@ -224,11 +258,69 @@ export default function BrewCoachPage() {
         if (charIdx < text.length) {
           rafRef.current = requestAnimationFrame(tick);
         } else {
-          setTimeout(() => setShowCursor(false), 500);
+          setTimeout(() => setShowCursor(false), 1060); // blinks twice
           resolve();
         }
       }
       rafRef.current = requestAnimationFrame(tick);
+    });
+  }, []);
+
+  // User bubble typewriter — 18ms/char, cursor blinks once then hides
+  const runUserTypewriter = useCallback((text: string): Promise<void> => {
+    return new Promise((resolve) => {
+      setShowUserCursor(true);
+      setUserBubbleText("");
+      let charIdx = 0;
+      let lastTime: number | null = null;
+      const MS_PER_CHAR = 18;
+
+      function tick(timestamp: number) {
+        if (lastTime === null) lastTime = timestamp;
+        const elapsed = timestamp - lastTime;
+        const charsToAdd = Math.floor(elapsed / MS_PER_CHAR);
+        if (charsToAdd > 0) {
+          lastTime = timestamp - (elapsed % MS_PER_CHAR);
+          charIdx = Math.min(charIdx + charsToAdd, text.length);
+          setUserBubbleText(text.slice(0, charIdx));
+        }
+        if (charIdx < text.length) {
+          userRafRef.current = requestAnimationFrame(tick);
+        } else {
+          setTimeout(() => setShowUserCursor(false), 530); // blinks once
+          resolve();
+        }
+      }
+      userRafRef.current = requestAnimationFrame(tick);
+    });
+  }, []);
+
+  // Kapi reply typewriter — 22ms/char (slower for effect), cursor blinks once then hides
+  const runKapiReplyTypewriter = useCallback((text: string): Promise<void> => {
+    return new Promise((resolve) => {
+      setShowKapiReplyCursor(true);
+      setKapiReplyText("");
+      let charIdx = 0;
+      let lastTime: number | null = null;
+      const MS_PER_CHAR = 22;
+
+      function tick(timestamp: number) {
+        if (lastTime === null) lastTime = timestamp;
+        const elapsed = timestamp - lastTime;
+        const charsToAdd = Math.floor(elapsed / MS_PER_CHAR);
+        if (charsToAdd > 0) {
+          lastTime = timestamp - (elapsed % MS_PER_CHAR);
+          charIdx = Math.min(charIdx + charsToAdd, text.length);
+          setKapiReplyText(text.slice(0, charIdx));
+        }
+        if (charIdx < text.length) {
+          kapiRafRef.current = requestAnimationFrame(tick);
+        } else {
+          setTimeout(() => setShowKapiReplyCursor(false), 530); // blinks once
+          resolve();
+        }
+      }
+      kapiRafRef.current = requestAnimationFrame(tick);
     });
   }, []);
 
@@ -251,53 +343,72 @@ export default function BrewCoachPage() {
     if (selectedGoals.length > 0) payload.goals = selectedGoals;
     if (!Object.keys(payload).length) return;
 
-    // Phase 1: exit animation (350ms)
+    // ── PHASE 1: Exit (0ms → 300ms) ─────────────────────────────────────
     setAnimPhase("exiting");
     const apiPromise = requestCoaching(payload);
-    await new Promise<void>((r) => setTimeout(r, 350));
+    await delay(300);
+    setSelectionRemoved(true);
 
-    // Phase 2: thinking — show dots, scroll into view
+    // ── PHASE 2: Kapi thinking appears (350ms) ───────────────────────────
+    await delay(50); // 300 + 50 = 350ms from tap
+    setCoachBubbleVisible(true);
+    setCoachIsThinking(true);
     setAnimPhase("thinking");
-    setTimeout(() => {
-      coachingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 60);
+    setTimeout(() => coachingRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
 
     // Wait for API + 2200ms minimum thinking time
     const thinkStart = Date.now();
     const data = await apiPromise;
     const thinkElapsed = Date.now() - thinkStart;
-    if (thinkElapsed < 2200) await new Promise<void>((r) => setTimeout(r, 2200 - thinkElapsed));
+    if (thinkElapsed < 2200) await delay(2200 - thinkElapsed);
 
     if (!data?.fix) {
       setAnimPhase("idle");
+      setSelectionRemoved(false);
+      setCoachBubbleVisible(false);
+      setCoachIsThinking(false);
       return;
     }
 
-    // Phase 3: title transition + typewriter
+    // ── PHASE 3: Title crossfade + coaching typewriter ───────────────────
     setTitleFading(true);
-    await new Promise<void>((r) => setTimeout(r, 200));
+    await delay(200);
     setTitleIsAdvice(true);
     setTitleFading(false);
-
+    setCoachIsThinking(false);
     setAnimPhase("typing");
     await runTypewriter(data.fix);
 
-    // Phase 4: suggested adjustments fade in
-    const hasAdjustments = data.changes && data.changes.filter((c) => c.previousValue != null && c.newValue != null).length > 0;
-    if (hasAdjustments) {
-      await new Promise<void>((r) => setTimeout(r, 300));
-      setShowAdjustments(true);
-      await new Promise<void>((r) => setTimeout(r, 400));
-    } else {
-      await new Promise<void>((r) => setTimeout(r, 400));
-    }
+    // ── PHASE 4: Suggested adjustments fade in (after typewriter + 300ms) ──
+    await delay(300);
+    setShowAdjustments(true);
+    const hasAdjustments = (data.changes ?? []).filter(
+      (c) => c.previousValue != null && c.newValue != null
+    ).length > 0;
+    if (hasAdjustments) await delay(400);
 
-    // Phase 5: conversation bubbles
-    setShowUserBubble(true);
-    await new Promise<void>((r) => setTimeout(r, 600));
-    setShowKapiReply(true);
-    await new Promise<void>((r) => setTimeout(r, 200));
+    // ── PHASE 5: User bubble slides in + typewriter (after Phase 4 + 400ms) ─
+    await delay(400);
+    setUserBubbleSlideIn(true);
+    setTimeout(() => userBubbleRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
+    await delay(300); // wait for slide-in to complete
+    await runUserTypewriter("Help me brew this better.");
+
+    // ── PHASE 6: Kapi reply thinking (after user typewriter + 500ms) ─────
+    await delay(500);
+    setKapiReplyVisible(true);
+    setKapiReplyThinking(true);
+    setTimeout(() => kapiReplyRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
+    await delay(800);
+
+    // ── PHASE 7: Kapi reply typewriter ───────────────────────────────────
+    setKapiReplyThinking(false);
+    await runKapiReplyTypewriter("Sure, here you go!");
+
+    // ── PHASE 8: CTA button spring entrance (after typewriter + 200ms) ───
+    await delay(200);
     setShowCtaBtn(true);
+    setCtaBtnAnimate(true);
 
     setAnimPhase("done");
   }
@@ -329,20 +440,22 @@ export default function BrewCoachPage() {
     }
   }
 
-  // Require both symptom AND goal to reveal the button
-  const bothSelected = selectedSymptoms.length > 0 && selectedGoals.length > 0;
-  const showSelectionUI = !isLocked && !isPerfect && !response?.fix && (animPhase === "idle" || animPhase === "exiting");
-  const showGetCoachingBtn = showSelectionUI;
-  const showCoachBubble = isLocked || animPhase === "thinking" || animPhase === "typing" || animPhase === "done";
+  // ── Derived display values ────────────────────────────────────────────────
+  // Button reveals on ANY pill selection
+  const anySelected = selectedSymptoms.length > 0 || selectedGoals.length > 0;
 
-  // For locked brews on initial render before useEffect fires, show full text immediately
-  const displayedText = (animPhase === "idle" && isLocked)
-    ? (brew?.coachingFeedback ?? "")
-    : typewriterText;
+  const showSelectionUI = !isLocked && !isPerfect && !selectionRemoved && (animPhase === "idle" || animPhase === "exiting");
+  const showGetCoachingBtn = showSelectionUI;
+  const showCoachBubble = coachBubbleVisible;
+
+  // For locked brews on initial render (before useEffect fires), prevent flash
+  const displayedText = (animPhase === "idle" && isLocked) ? (brew?.coachingFeedback ?? "") : typewriterText;
+  const displayedUserText = isLocked ? "Help me brew this better." : userBubbleText;
+  const displayedKapiReplyText = isLocked ? "Sure, here you go!" : kapiReplyText;
 
   const effectiveShowAdjustments = (isLocked && !isPerfect) || showAdjustments;
-  const effectiveShowUserBubble = (isLocked && !isPerfect) || showUserBubble;
-  const effectiveShowKapiReply = (isLocked && !isPerfect) || showKapiReply;
+  const effectiveUserBubbleSlideIn = (isLocked && !isPerfect) || userBubbleSlideIn;
+  const effectiveKapiReplyVisible = (isLocked && !isPerfect) || kapiReplyVisible;
   const effectiveShowCtaBtn = (isLocked && !isPerfect) || showCtaBtn;
 
   const displayedTitle = (isLocked || titleIsAdvice || isRated) ? "Coach's Advice" : "How was this brew?";
@@ -391,7 +504,7 @@ export default function BrewCoachPage() {
           from { opacity: 0; transform: translateY(12px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        .chat-bubble-wrapper { animation: chatFadeIn 0.5s ease-out 0.2s both; }
+        .chat-bubble-wrapper { animation: chatFadeIn 0.35s ease-out both; }
 
         .chat-bubble-tail::before {
           content: ''; position: absolute; left: -9px; top: 14px;
@@ -443,6 +556,17 @@ export default function BrewCoachPage() {
           margin-left: 1px;
           font-weight: 300;
         }
+
+        @keyframes ctaPop {
+          0%   { opacity: 0; transform: scale(0.75); }
+          60%  { opacity: 1; transform: scale(1.08); }
+          80%  { transform: scale(0.96); }
+          100% { opacity: 1; transform: scale(1.0); }
+        }
+        @keyframes ctaPulse {
+          0%, 100% { transform: scale(1); }
+          50%       { transform: scale(1.04); }
+        }
       `}</style>
 
       {/* Page title */}
@@ -460,7 +584,7 @@ export default function BrewCoachPage() {
 
       <div className="px-4 pb-6">
 
-        {/* Brew Parameters Card — unchanged */}
+        {/* Brew Parameters Card */}
         <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-lg bg-espresso/20 border border-espresso/30 flex items-center justify-center shrink-0 overflow-hidden">
@@ -505,7 +629,7 @@ export default function BrewCoachPage() {
           </div>
         </div>
 
-        {/* Symptoms + Goals — animated exit */}
+        {/* Symptoms + Goals — animated exit, removed from DOM after animation */}
         {showSelectionUI && (
           <>
             <div style={{ marginTop: 28, ...exitStyle }}>
@@ -562,11 +686,20 @@ export default function BrewCoachPage() {
           </div>
         )}
 
-        {/* Kapi coaching bubble */}
+        {/* ── Kapi coaching bubble ─────────────────────────────────────────── */}
         {showCoachBubble && (
-          <div ref={coachingRef} className="chat-bubble-wrapper mt-4 flex items-start gap-3">
+          <div
+            ref={coachingRef}
+            className="mt-4 flex items-start gap-3"
+            style={{
+              opacity: coachBubbleVisible ? 1 : 0,
+              transform: coachBubbleVisible ? "translateX(0)" : "translateX(-20px)",
+              transition: "opacity 350ms ease-out, transform 350ms ease-out",
+              willChange: coachBubbleVisible ? "auto" : "opacity, transform",
+            }}
+          >
             <img
-              src={animPhase === "thinking" ? "/coach/coffee_coach_thinking.png" : "/coach/coffee_coach_whispering.png"}
+              src={coachIsThinking ? "/coach/coffee_coach_thinking.png" : "/coach/coffee_coach_whispering.png"}
               alt="Coach Kapi"
               width={56}
               height={56}
@@ -581,7 +714,7 @@ export default function BrewCoachPage() {
                 Coach Kapi
               </p>
 
-              {animPhase === "thinking" ? (
+              {coachIsThinking ? (
                 <div className="flex gap-2 items-center py-1">
                   <span className="thinking-dot thinking-dot-1" />
                   <span className="thinking-dot thinking-dot-2" />
@@ -614,22 +747,26 @@ export default function BrewCoachPage() {
           </div>
         )}
 
-        {/* User reply bubble */}
-        {!isPerfect && showCoachBubble && animPhase !== "thinking" && (
+        {/* ── User reply bubble ────────────────────────────────────────────── */}
+        {!isPerfect && showCoachBubble && !coachIsThinking && (
           <div
+            ref={userBubbleRef}
             className="mt-4 flex items-center justify-end gap-3"
             style={{
-              opacity: effectiveShowUserBubble ? 1 : 0,
-              transform: effectiveShowUserBubble ? "translateX(0)" : "translateX(20px)",
-              transition: "opacity 350ms ease-out, transform 350ms ease-out",
-              willChange: effectiveShowUserBubble ? "auto" : "opacity, transform",
+              opacity: effectiveUserBubbleSlideIn ? 1 : 0,
+              transform: effectiveUserBubbleSlideIn ? "translateX(0)" : "translateX(20px)",
+              transition: "opacity 300ms ease-out, transform 300ms ease-out",
+              willChange: effectiveUserBubbleSlideIn ? "auto" : "opacity, transform",
             }}
           >
             <div
               className="user-bubble-tail relative"
               style={{ background: "#1e1e2e", border: "1.5px solid rgba(244,157,37,0.5)", borderRadius: "16px 16px 4px 16px", padding: "10px 14px" }}
             >
-              <span className="text-slate-100" style={{ fontSize: 14 }}>Help me brew this better.</span>
+              <span className="text-slate-100" style={{ fontSize: 14 }}>
+                {displayedUserText}
+                {showUserCursor && <span className="typewriter-cursor">|</span>}
+              </span>
             </div>
             {userAvatar ? (
               <img src={userAvatar} alt="You" width={36} height={36} className="rounded-full shrink-0 object-cover" />
@@ -642,15 +779,16 @@ export default function BrewCoachPage() {
           </div>
         )}
 
-        {/* Kapi reply bubble with CTA */}
-        {!isPerfect && showCoachBubble && animPhase !== "thinking" && (
+        {/* ── Kapi reply bubble with CTA ───────────────────────────────────── */}
+        {!isPerfect && showCoachBubble && !coachIsThinking && (
           <div
+            ref={kapiReplyRef}
             className="mt-4 flex items-start gap-3"
             style={{
-              opacity: effectiveShowKapiReply ? 1 : 0,
-              transform: effectiveShowKapiReply ? "translateX(0)" : "translateX(-20px)",
-              transition: "opacity 350ms ease-out, transform 350ms ease-out",
-              willChange: effectiveShowKapiReply ? "auto" : "opacity, transform",
+              opacity: effectiveKapiReplyVisible ? 1 : 0,
+              transform: effectiveKapiReplyVisible ? "translateX(0)" : "translateX(-20px)",
+              transition: "opacity 300ms ease-out, transform 300ms ease-out",
+              willChange: effectiveKapiReplyVisible ? "auto" : "opacity, transform",
             }}
           >
             <img
@@ -666,24 +804,39 @@ export default function BrewCoachPage() {
               style={{ background: "#2a1a0a", border: "1px solid rgba(244,157,37,0.3)", borderRadius: "4px 16px 16px 16px", padding: "12px 14px" }}
             >
               <p className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: "#f49d25" }}>Coach Kapi</p>
-              <p className="text-slate-100 mb-2.5" style={{ fontSize: 14, fontWeight: 500 }}>Sure, here you go!</p>
-              <div
-                style={{
-                  opacity: effectiveShowCtaBtn ? 1 : 0,
-                  transition: "opacity 200ms ease-out",
-                  willChange: effectiveShowCtaBtn ? "auto" : "opacity",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={handleBrewWithCoach}
-                  className="cta-press w-full flex items-center justify-center gap-2 font-bold"
-                  style={{ background: "#f49d25", color: "#1a0f00", borderRadius: 10, padding: "10px 16px", fontSize: 14 }}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>coffee_maker</span>
-                  Brew with coach&apos;s help
-                </button>
-              </div>
+
+              {kapiReplyThinking ? (
+                <div className="flex gap-2 items-center py-1">
+                  <span className="thinking-dot thinking-dot-1" />
+                  <span className="thinking-dot thinking-dot-2" />
+                  <span className="thinking-dot thinking-dot-3" />
+                </div>
+              ) : (
+                <>
+                  <p className="text-slate-100 mb-2.5" style={{ fontSize: 14, fontWeight: 500 }}>
+                    {displayedKapiReplyText}
+                    {showKapiReplyCursor && <span className="typewriter-cursor">|</span>}
+                  </p>
+                  <div
+                    style={{
+                      opacity: effectiveShowCtaBtn ? 1 : 0,
+                      animation: ctaBtnAnimate
+                        ? "ctaPop 500ms ease-out forwards, ctaPulse 600ms ease-in-out 500ms 1 forwards"
+                        : undefined,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={handleBrewWithCoach}
+                      className="cta-press w-full flex items-center justify-center gap-2 font-bold"
+                      style={{ background: "#f49d25", color: "#1a0f00", borderRadius: 10, padding: "10px 16px", fontSize: 14 }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 16 }}>coffee_maker</span>
+                      Brew with coach&apos;s help
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -733,25 +886,25 @@ export default function BrewCoachPage() {
         )}
       </div>
 
-      {/* Fixed Get Coaching button — always in DOM, animated with spring */}
+      {/* ── Fixed Get Coaching button — spring reveal on any pill selection ── */}
       {showGetCoachingBtn && (
         <div className="fixed bottom-36 left-0 right-0 max-w-phone mx-auto z-20 px-4">
           {/* Gradient fade above button */}
           <div style={{ height: 60, background: "linear-gradient(to bottom, transparent, #1a0f00)", pointerEvents: "none", marginBottom: -4 }} />
           <button
             onClick={handleGetCoaching}
-            disabled={!bothSelected || animPhase === "exiting" || isLoading}
+            disabled={animPhase === "exiting" || isLoading}
             className="w-full h-12 rounded-xl font-bold text-base"
             style={{
               backgroundColor: '#f49d25',
               color: '#1a0f00',
-              opacity: bothSelected ? 1 : 0,
-              transform: bothSelected ? "translateY(0)" : "translateY(80px)",
-              transition: bothSelected
+              opacity: anySelected ? 1 : 0,
+              transform: anySelected ? "translateY(0)" : "translateY(80px)",
+              transition: anySelected
                 ? "opacity 400ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1)"
                 : "opacity 250ms ease-in, transform 250ms ease-in",
               willChange: "opacity, transform",
-              pointerEvents: bothSelected ? "auto" : "none",
+              pointerEvents: anySelected ? "auto" : "none",
             }}
           >
             Get Coaching
