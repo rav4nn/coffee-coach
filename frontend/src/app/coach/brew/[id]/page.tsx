@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 
 import { GoalPicker } from "@/components/GoalPicker";
+import { RatingSlider } from "@/components/RatingSlider";
 import { SymptomPicker } from "@/components/SymptomPicker";
 import { postCoachingApi, postFavouriteBrewApi, type CoachingResponseApi, type CoachingChangeApi } from "@/lib/api";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
@@ -62,10 +63,6 @@ function CoachingChanges({ changes }: { changes: CoachingChangeApi[] }) {
   );
 }
 
-type AnimPhase = "idle" | "exiting" | "thinking" | "typing" | "done";
-
-const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
-
 export default function BrewCoachPage() {
   const params = useParams();
   const router = useRouter();
@@ -79,7 +76,7 @@ export default function BrewCoachPage() {
   const setCoachMode = useLogBrewStore((state) => state.setCoachMode);
   const setStepOneSelection = useLogBrewStore((state) => state.setStepOneSelection);
 
-  const [rating, setRating] = useState<number>(6);
+  const [rating, setRating] = useState<number>(5);
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [response, setResponse] = useState<CoachingResponseApi | null>(null);
@@ -91,21 +88,26 @@ export default function BrewCoachPage() {
   const [userInitial, setUserInitial] = useState("U");
 
   // ── Animation state ──────────────────────────────────────────────────────
-  const [animPhase, setAnimPhase] = useState<AnimPhase>("idle");
-  const [selectionRemoved, setSelectionRemoved] = useState(false);
-
-  // Each bubble is only mounted when its phase is reached — no opacity:0 tricks
+  const [selectionExiting, setSelectionExiting] = useState(false);
+  const [selectionHidden, setSelectionHidden] = useState(false);
+  const [sequenceRunning, setSequenceRunning] = useState(false);
+  const [animationComplete, setAnimationComplete] = useState(false);
   const [coachBubbleVisible, setCoachBubbleVisible] = useState(false);
+  const [coachBubbleEntered, setCoachBubbleEntered] = useState(false);
   const [coachIsThinking, setCoachIsThinking] = useState(false);
+  const [coachAvatarSrc, setCoachAvatarSrc] = useState("/coach/coffee_coach_thinking.png");
   const [typewriterText, setTypewriterText] = useState("");
   const [showCursor, setShowCursor] = useState(false);
   const [showAdjustments, setShowAdjustments] = useState(false);
+  const [adjustmentsEntered, setAdjustmentsEntered] = useState(false);
 
   const [userBubbleVisible, setUserBubbleVisible] = useState(false);
+  const [userBubbleEntered, setUserBubbleEntered] = useState(false);
   const [userBubbleText, setUserBubbleText] = useState("");
   const [showUserCursor, setShowUserCursor] = useState(false);
 
   const [kapiReplyVisible, setKapiReplyVisible] = useState(false);
+  const [kapiReplyEntered, setKapiReplyEntered] = useState(false);
   const [kapiReplyThinking, setKapiReplyThinking] = useState(false);
   const [kapiReplyText, setKapiReplyText] = useState("");
   const [showKapiReplyCursor, setShowKapiReplyCursor] = useState(false);
@@ -113,18 +115,23 @@ export default function BrewCoachPage() {
   const [showCtaBtn, setShowCtaBtn] = useState(false);
   const [ctaBtnAnimate, setCtaBtnAnimate] = useState(false);
 
-  const [titleFading, setTitleFading] = useState(false);
   const [titleIsAdvice, setTitleIsAdvice] = useState(false);
 
   // ── Refs ─────────────────────────────────────────────────────────────────
   const coachingRef = useRef<HTMLDivElement>(null);
+  const adjustmentsRef = useRef<HTMLDivElement>(null);
   const userBubbleRef = useRef<HTMLDivElement>(null);
+  const userAvatarRef = useRef<HTMLDivElement>(null);
   const kapiReplyRef = useRef<HTMLDivElement>(null);
-  const rafRef = useRef<number | null>(null);
-  const userRafRef = useRef<number | null>(null);
-  const kapiRafRef = useRef<number | null>(null);
+  const sliderSectionRef = useRef<HTMLDivElement>(null);
+  const symptomsSectionRef = useRef<HTMLDivElement>(null);
+  const goalsSectionRef = useRef<HTMLDivElement>(null);
+  const getCoachingBtnRef = useRef<HTMLButtonElement>(null);
   // Prevents locked-brew animation from firing twice (StrictMode / re-renders)
   const hasStartedAnimation = useRef(false);
+  const cancelled = useRef(false);
+  const isAnimatingRef = useRef(false);
+  const pendingWaits = useRef<Array<{ id: ReturnType<typeof setTimeout>; resolve: () => void }>>([]);
 
   useEffect(() => {
     Promise.all([fetchEntries(), fetchBeans()]).finally(() => setDataLoaded(true));
@@ -143,10 +150,15 @@ export default function BrewCoachPage() {
   const brew = useMemo(() => entries.find((e) => e.id === brewId) ?? null, [entries, brewId]);
   const bean = useMemo(() => (brew?.beanId ? beans.find((b) => b.id === brew.beanId) : null), [brew, beans]);
 
+  useEffect(() => {
+    hasStartedAnimation.current = false;
+    clearSequenceState();
+  }, [brewId]);
+
   // Hydrate response state from existing brew data
   useEffect(() => {
     if (brew) {
-      setRating(brew.rating ?? 6);
+      setRating(brew.rating ?? 5);
       if (brew.coachingFeedback) {
         setResponse({
           fix: brew.coachingFeedback,
@@ -162,12 +174,64 @@ export default function BrewCoachPage() {
   const isAlreadyFavourite = !!brew?.isFavourite;
   const isOscillating = response?.trend === "oscillating";
 
-  // Cleanup all RAF loops on unmount
+  function wait(ms: number) {
+    return new Promise<void>((resolve) => {
+      if (cancelled.current) {
+        resolve();
+        return;
+      }
+      const entry = {
+        id: setTimeout(() => {
+          pendingWaits.current = pendingWaits.current.filter((item) => item !== entry);
+          resolve();
+        }, ms),
+        resolve,
+      };
+      pendingWaits.current.push(entry);
+    });
+  }
+
+  function setElementWillChange(node: HTMLElement | null, active: boolean) {
+    if (!node) return;
+    node.style.willChange = active ? "opacity, transform" : "auto";
+  }
+
+  function clearSequenceState() {
+    setSelectionExiting(false);
+    setSelectionHidden(false);
+    setSequenceRunning(false);
+    setAnimationComplete(false);
+    setTitleIsAdvice(false);
+    setCoachBubbleVisible(false);
+    setCoachBubbleEntered(false);
+    setCoachIsThinking(false);
+    setCoachAvatarSrc("/coach/coffee_coach_thinking.png");
+    setTypewriterText("");
+    setShowCursor(false);
+    setShowAdjustments(false);
+    setAdjustmentsEntered(false);
+    setUserBubbleVisible(false);
+    setUserBubbleEntered(false);
+    setUserBubbleText("");
+    setShowUserCursor(false);
+    setKapiReplyVisible(false);
+    setKapiReplyEntered(false);
+    setKapiReplyThinking(false);
+    setKapiReplyText("");
+    setShowKapiReplyCursor(false);
+    setShowCtaBtn(false);
+    setCtaBtnAnimate(false);
+  }
+
   useEffect(() => {
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (userRafRef.current) cancelAnimationFrame(userRafRef.current);
-      if (kapiRafRef.current) cancelAnimationFrame(kapiRafRef.current);
+      cancelled.current = true;
+      isAnimatingRef.current = false;
+      pendingWaits.current.forEach((entry) => {
+        clearTimeout(entry.id);
+        entry.resolve();
+      });
+      pendingWaits.current = [];
     };
   }, []);
 
@@ -220,131 +284,186 @@ export default function BrewCoachPage() {
     }
   }
 
-  // ── Typewriter: main coaching text (18ms/char, cursor blinks twice) ──────
-  const runTypewriter = useCallback((text: string): Promise<void> => {
-    return new Promise((resolve) => {
+  async function typeText(
+    text: string,
+    setText: (value: string) => void,
+    msPerChar: number,
+  ) {
+    setText("");
+    for (let i = 1; i <= text.length; i += 1) {
+      if (cancelled.current) return;
+      setText(text.slice(0, i));
+      await wait(msPerChar);
+    }
+  }
+
+  async function exitPillsAndSlider() {
+    if (cancelled.current) return;
+    [
+      sliderSectionRef.current,
+      symptomsSectionRef.current,
+      goalsSectionRef.current,
+      getCoachingBtnRef.current,
+    ].forEach((node) => setElementWillChange(node, true));
+    setSelectionExiting(true);
+    await wait(300);
+    [
+      sliderSectionRef.current,
+      symptomsSectionRef.current,
+      goalsSectionRef.current,
+      getCoachingBtnRef.current,
+    ].forEach((node) => setElementWillChange(node, false));
+    if (cancelled.current) return;
+    setSelectionHidden(true);
+    setSelectionExiting(false);
+  }
+
+  async function showKapiThinking() {
+    if (cancelled.current) return;
+    setCoachAvatarSrc("/coach/coffee_coach_thinking.png");
+    setCoachBubbleVisible(true);
+    setCoachIsThinking(true);
+    await wait(16);
+    setElementWillChange(coachingRef.current, true);
+    setCoachBubbleEntered(true);
+    coachingRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    await wait(350);
+    setElementWillChange(coachingRef.current, false);
+  }
+
+  async function typewriterCoachingText(text: string) {
+    if (cancelled.current) return;
+    await wait(1500);
+    if (cancelled.current) return;
+    setCoachAvatarSrc("/coach/coffee_coach_whispering.png");
+    setCoachIsThinking(false);
+    setShowCursor(true);
+    await typeText(text, setTypewriterText, 18);
+    if (cancelled.current) return;
+    await wait(400);
+    for (let i = 0; i < 2; i += 1) {
+      setShowCursor(false);
+      await wait(400);
+      if (cancelled.current) return;
       setShowCursor(true);
-      setTypewriterText("");
-      let charIdx = 0;
-      let lastTime: number | null = null;
-      const MS_PER_CHAR = 18;
-      function tick(timestamp: number) {
-        if (lastTime === null) lastTime = timestamp;
-        const elapsed = timestamp - lastTime;
-        const charsToAdd = Math.floor(elapsed / MS_PER_CHAR);
-        if (charsToAdd > 0) {
-          lastTime = timestamp - (elapsed % MS_PER_CHAR);
-          charIdx = Math.min(charIdx + charsToAdd, text.length);
-          setTypewriterText(text.slice(0, charIdx));
-        }
-        if (charIdx < text.length) {
-          rafRef.current = requestAnimationFrame(tick);
-        } else {
-          setTimeout(() => setShowCursor(false), 1060);
-          resolve();
-        }
-      }
-      rafRef.current = requestAnimationFrame(tick);
-    });
-  }, []);
+      await wait(400);
+      if (cancelled.current) return;
+    }
+    setShowCursor(false);
+  }
 
-  // ── Typewriter: user bubble (18ms/char, cursor blinks once) ─────────────
-  const runUserTypewriter = useCallback((text: string): Promise<void> => {
-    return new Promise((resolve) => {
-      setShowUserCursor(true);
-      setUserBubbleText("");
-      let charIdx = 0;
-      let lastTime: number | null = null;
-      const MS_PER_CHAR = 18;
-      function tick(timestamp: number) {
-        if (lastTime === null) lastTime = timestamp;
-        const elapsed = timestamp - lastTime;
-        const charsToAdd = Math.floor(elapsed / MS_PER_CHAR);
-        if (charsToAdd > 0) {
-          lastTime = timestamp - (elapsed % MS_PER_CHAR);
-          charIdx = Math.min(charIdx + charsToAdd, text.length);
-          setUserBubbleText(text.slice(0, charIdx));
-        }
-        if (charIdx < text.length) {
-          userRafRef.current = requestAnimationFrame(tick);
-        } else {
-          setTimeout(() => setShowUserCursor(false), 530);
-          resolve();
-        }
-      }
-      userRafRef.current = requestAnimationFrame(tick);
-    });
-  }, []);
-
-  // ── Typewriter: Kapi reply (22ms/char, cursor blinks once) ──────────────
-  const runKapiReplyTypewriter = useCallback((text: string): Promise<void> => {
-    return new Promise((resolve) => {
-      setShowKapiReplyCursor(true);
-      setKapiReplyText("");
-      let charIdx = 0;
-      let lastTime: number | null = null;
-      const MS_PER_CHAR = 22;
-      function tick(timestamp: number) {
-        if (lastTime === null) lastTime = timestamp;
-        const elapsed = timestamp - lastTime;
-        const charsToAdd = Math.floor(elapsed / MS_PER_CHAR);
-        if (charsToAdd > 0) {
-          lastTime = timestamp - (elapsed % MS_PER_CHAR);
-          charIdx = Math.min(charIdx + charsToAdd, text.length);
-          setKapiReplyText(text.slice(0, charIdx));
-        }
-        if (charIdx < text.length) {
-          kapiRafRef.current = requestAnimationFrame(tick);
-        } else {
-          setTimeout(() => setShowKapiReplyCursor(false), 530);
-          resolve();
-        }
-      }
-      kapiRafRef.current = requestAnimationFrame(tick);
-    });
-  }, []);
-
-  // ── Shared phases 3–8: typewriter → adjustments → user bubble → Kapi reply → CTA ──
-  const runRevealAnimation = useCallback(async (
-    feedbackText: string,
-    changes?: CoachingChangeApi[],
-  ) => {
-    // Phase 3: coaching typewriter
-    setAnimPhase("typing");
-    setTimeout(() => coachingRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
-    await runTypewriter(feedbackText);
-
-    // Phase 4: suggested adjustments
-    await delay(300);
+  async function revealSuggestedAdj() {
+    if (cancelled.current) return;
     setShowAdjustments(true);
-    const hasAdjustments = (changes ?? []).filter((c) => c.previousValue != null && c.newValue != null).length > 0;
-    if (hasAdjustments) await delay(400);
+    await wait(16);
+    setElementWillChange(adjustmentsRef.current, true);
+    setAdjustmentsEntered(true);
+    await wait(400);
+    setElementWillChange(adjustmentsRef.current, false);
+  }
 
-    // Phase 5: user bubble mounts + typewriter
-    await delay(400);
+  async function showUserBubble() {
+    if (cancelled.current) return;
     setUserBubbleVisible(true);
-    setTimeout(() => userBubbleRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
-    await delay(300); // let slide-in animation play
-    await runUserTypewriter("Help me brew this better.");
+    await wait(16);
+    setElementWillChange(userBubbleRef.current, true);
+    setElementWillChange(userAvatarRef.current, true);
+    setUserBubbleEntered(true);
+    userBubbleRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    await wait(350);
+    setElementWillChange(userBubbleRef.current, false);
+    setElementWillChange(userAvatarRef.current, false);
+  }
 
-    // Phase 6: Kapi reply bubble mounts with thinking dots
-    await delay(500);
+  async function typewriterUserText() {
+    if (cancelled.current) return;
+    await wait(200);
+    if (cancelled.current) return;
+    setShowUserCursor(true);
+    await typeText("Help me brew this better.", setUserBubbleText, 20);
+    if (cancelled.current) return;
+    await wait(300);
+    setShowUserCursor(false);
+    await wait(300);
+    setShowUserCursor(false);
+  }
+
+  async function showKapiReplyBubble() {
+    if (cancelled.current) return;
+    await wait(400);
+    if (cancelled.current) return;
     setKapiReplyVisible(true);
+    await wait(16);
+    setElementWillChange(kapiReplyRef.current, true);
+    setKapiReplyEntered(true);
+    kapiReplyRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    await wait(350);
+    setElementWillChange(kapiReplyRef.current, false);
+  }
+
+  async function showKapiThinkingDots() {
+    if (cancelled.current) return;
     setKapiReplyThinking(true);
-    setTimeout(() => kapiReplyRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
-    await delay(800);
-
-    // Phase 7: swap dots → typewriter
+    await wait(800);
     setKapiReplyThinking(false);
-    await runKapiReplyTypewriter("Sure, here you go!");
+  }
 
-    // Phase 8: CTA spring entrance
-    await delay(200);
+  async function typewriterReplyText() {
+    if (cancelled.current) return;
+    setShowKapiReplyCursor(true);
+    await typeText("Sure, here you go!", setKapiReplyText, 22);
+    if (cancelled.current) return;
+    await wait(300);
+    setShowKapiReplyCursor(false);
+  }
+
+  async function springInCTAButton() {
+    if (cancelled.current) return;
+    await wait(150);
+    if (cancelled.current) return;
     setShowCtaBtn(true);
+    await wait(16);
     setCtaBtnAnimate(true);
+    await wait(1000);
+  }
 
-    setAnimPhase("done");
-  }, [runTypewriter, runUserTypewriter, runKapiReplyTypewriter]);
+  async function runCoachingSequence(resultPromise: Promise<CoachingResponseApi | null>) {
+    if (cancelled.current || isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
+    setSequenceRunning(true);
+    setAnimationComplete(false);
+
+    try {
+      await exitPillsAndSlider();
+      await showKapiThinking();
+
+      const data = await resultPromise;
+      if (!data?.fix || cancelled.current) {
+        clearSequenceState();
+        return;
+      }
+
+      setTitleIsAdvice(true);
+      await typewriterCoachingText(data.fix);
+      await revealSuggestedAdj();
+      await wait(100);
+      await showUserBubble();
+      await typewriterUserText();
+      await showKapiReplyBubble();
+      await showKapiThinkingDots();
+      await typewriterReplyText();
+      await springInCTAButton();
+
+      if (!cancelled.current) {
+        setAnimationComplete(true);
+      }
+    } finally {
+      isAnimatingRef.current = false;
+      if (!cancelled.current) {
+        setSequenceRunning(false);
+      }
+    }
+  }
 
   // ── For already-coached brews: play the full animation on page load ──────
   useEffect(() => {
@@ -356,12 +475,13 @@ export default function BrewCoachPage() {
       !hasStartedAnimation.current
     ) {
       hasStartedAnimation.current = true;
-      setTitleIsAdvice(true);
-      setCoachBubbleVisible(true);
-      setCoachIsThinking(false);
-      void runRevealAnimation(brew.coachingFeedback, brew.coachingChanges ?? undefined);
+      clearSequenceState();
+      void runCoachingSequence(Promise.resolve({
+        fix: brew.coachingFeedback,
+        changes: brew.coachingChanges ?? undefined,
+      }));
     }
-  }, [dataLoaded, isLocked, brew?.coachingFeedback, isPerfect, runRevealAnimation]);
+  }, [dataLoaded, isLocked, brew?.coachingFeedback, brew?.coachingChanges, isPerfect]);
 
   function toggleSymptom(symptom: string) {
     setSelectedSymptoms((prev) =>
@@ -377,47 +497,15 @@ export default function BrewCoachPage() {
   }
 
   async function handleGetCoaching() {
+    if (isAnimatingRef.current) return;
     const payload: { symptoms?: string[]; goals?: string[] } = {};
     if (selectedSymptoms.length > 0) payload.symptoms = selectedSymptoms;
     if (selectedGoals.length > 0) payload.goals = selectedGoals;
     if (!Object.keys(payload).length) return;
 
-    // Phase 1: exit (0ms → 300ms)
-    setAnimPhase("exiting");
-    const apiPromise = requestCoaching(payload);
-    await delay(300);
-    setSelectionRemoved(true);
-
-    // Phase 2: Kapi thinking (350ms from tap)
-    await delay(50);
-    setCoachBubbleVisible(true);
-    setCoachIsThinking(true);
-    setAnimPhase("thinking");
-    setTimeout(() => coachingRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
-
-    // Wait for API + 2200ms minimum
-    const thinkStart = Date.now();
-    const data = await apiPromise;
-    const thinkElapsed = Date.now() - thinkStart;
-    if (thinkElapsed < 2200) await delay(2200 - thinkElapsed);
-
-    if (!data?.fix) {
-      setAnimPhase("idle");
-      setSelectionRemoved(false);
-      setCoachBubbleVisible(false);
-      setCoachIsThinking(false);
-      return;
-    }
-
-    // Title crossfade
-    setTitleFading(true);
-    await delay(200);
-    setTitleIsAdvice(true);
-    setTitleFading(false);
-    setCoachIsThinking(false);
-
-    // Phases 3–8
-    await runRevealAnimation(data.fix, data.changes);
+    clearSequenceState();
+    const requestPromise = requestCoaching(payload);
+    await runCoachingSequence(requestPromise);
   }
 
   async function handleSaveFavourite() {
@@ -449,12 +537,12 @@ export default function BrewCoachPage() {
 
   // ── Derived ──────────────────────────────────────────────────────────────
   const anySelected = selectedSymptoms.length > 0 || selectedGoals.length > 0;
-  const showSelectionUI = !isLocked && !isPerfect && !selectionRemoved && (animPhase === "idle" || animPhase === "exiting");
-  const showGetCoachingBtn = showSelectionUI;
+  const showSelectionUI = !selectionHidden && !isLocked && !isPerfect;
+  const showGetCoachingBtn = !selectionHidden && !isLocked && !isPerfect;
   const displayedTitle = (isLocked || titleIsAdvice || isRated) ? "Coach's Advice" : "How was this brew?";
-  const exitStyle = animPhase === "exiting"
-    ? { opacity: 0, transform: "translateY(-16px)", transition: "opacity 300ms ease-out, transform 300ms ease-out", willChange: "opacity, transform" as const }
-    : { opacity: 1, transform: "translateY(0)", transition: "none", willChange: "auto" as const };
+  const exitStyle = selectionExiting
+    ? { opacity: 0, transform: "translateY(-12px)", transition: "opacity 300ms ease-out, transform 300ms ease-out" }
+    : { opacity: 1, transform: "translateY(0)", transition: "opacity 300ms ease-out, transform 300ms ease-out" };
 
   // Loading state
   if (!dataLoaded) {
@@ -567,13 +655,8 @@ export default function BrewCoachPage() {
       {/* Page title */}
       <div className="px-4 pt-4 pb-2">
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Coaching</p>
-          <h1
-            className="text-2xl font-bold text-slate-100"
-            style={{ transition: "opacity 200ms ease", opacity: titleFading ? 0 : 1 }}
-          >
-            {displayedTitle}
-          </h1>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-normal">Coaching</p>
+          <h1 className="text-2xl font-normal text-slate-100">{displayedTitle}</h1>
         </div>
       </div>
 
@@ -586,10 +669,10 @@ export default function BrewCoachPage() {
               <Image src={imgSrc} alt="" width={28} height={28} className="w-7 h-7 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-100 leading-snug" style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>
+              <p className="text-sm font-normal text-slate-100 leading-snug" style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>
                 {beanName.length > 40 ? beanName.slice(0, 40) + "…" : beanName}
               </p>
-              <p className="text-xs text-slate-400 mt-0.5">{methodLabel(brew.methodId)}</p>
+              <p className="mt-0.5 text-xs font-normal text-slate-400">{methodLabel(brew.methodId)}</p>
             </div>
             {brew.rating != null && (
               <div className="shrink-0 text-right leading-none">
@@ -624,24 +707,30 @@ export default function BrewCoachPage() {
           </div>
         </div>
 
+        {!isPerfect && (
+          <div ref={sliderSectionRef} className="mt-5 mb-6" style={exitStyle}>
+            <RatingSlider value={rating} onChange={handleRatingChange} disabled={isLocked} />
+          </div>
+        )}
+
         {/* Symptoms + Goals — exit-animated, then removed from DOM */}
         {showSelectionUI && (
           <>
-            <div style={{ marginTop: 28, ...exitStyle }}>
+            <div ref={symptomsSectionRef} style={{ marginTop: 28, ...exitStyle }}>
               {isOscillating ? (
                 <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4 text-sm text-slate-300">
                   Keep brew inputs consistent for 2–3 brews before making new changes.
                 </div>
               ) : (
                 <>
-                  <p className="text-xs uppercase tracking-widest text-primary/70" style={{ marginBottom: 10 }}>What do you want to fix?</p>
+                  <p className="text-xs font-normal uppercase tracking-widest text-primary/70" style={{ marginBottom: 10 }}>What do you want to fix?</p>
                   <SymptomPicker selected={selectedSymptoms} onToggle={toggleSymptom} />
                 </>
               )}
             </div>
             {!isOscillating && (
-              <div style={{ marginTop: 28, ...exitStyle }}>
-                <p className="text-xs uppercase tracking-widest text-primary/70" style={{ marginBottom: 10 }}>Set a goal</p>
+              <div ref={goalsSectionRef} style={{ marginTop: 28, ...exitStyle }}>
+                <p className="text-xs font-normal uppercase tracking-widest text-primary/70" style={{ marginBottom: 10 }}>Set a goal</p>
                 <GoalPicker selected={selectedGoals} maxSelections={1} onToggle={toggleGoal} />
               </div>
             )}
@@ -685,10 +774,14 @@ export default function BrewCoachPage() {
           <div
             ref={coachingRef}
             className="mt-4 flex items-start gap-3"
-            style={{ animation: "slideInLeft 350ms ease-out both" }}
+            style={{
+              opacity: coachBubbleEntered ? 1 : 0,
+              transform: coachBubbleEntered ? "translateX(0)" : "translateX(-16px)",
+              transition: "opacity 350ms ease-out, transform 350ms ease-out",
+            }}
           >
             <img
-              src={coachIsThinking ? "/coach/coffee_coach_thinking.png" : "/coach/coffee_coach_whispering.png"}
+              src={coachAvatarSrc}
               alt="Coach Kapi"
               width={56}
               height={56}
@@ -719,9 +812,10 @@ export default function BrewCoachPage() {
                   )}
                   {response?.changes && (
                     <div
+                      ref={adjustmentsRef}
                       style={{
-                        opacity: showAdjustments ? 1 : 0,
-                        transform: showAdjustments ? "translateY(0)" : "translateY(8px)",
+                        opacity: adjustmentsEntered ? 1 : 0,
+                        transform: adjustmentsEntered ? "translateY(0)" : "translateY(6px)",
                         transition: "opacity 400ms ease-out, transform 400ms ease-out",
                       }}
                     >
@@ -737,27 +831,43 @@ export default function BrewCoachPage() {
         {/* ── BUBBLE 2: User reply — mounts only at Phase 5 ───────────────────── */}
         {!isPerfect && userBubbleVisible && (
           <div
-            ref={userBubbleRef}
             className="mt-4 flex items-center justify-end gap-3"
-            style={{ animation: "slideInRight 300ms ease-out both" }}
+            style={{ pointerEvents: "none" }}
           >
             <div
+              ref={userBubbleRef}
               className="user-bubble-tail relative"
-              style={{ background: "#1e1e2e", border: "1.5px solid rgba(244,157,37,0.5)", borderRadius: "16px 16px 4px 16px", padding: "10px 14px" }}
+              style={{
+                background: "#1e1e2e",
+                border: "1.5px solid rgba(244,157,37,0.5)",
+                borderRadius: "16px 16px 4px 16px",
+                padding: "10px 14px",
+                opacity: userBubbleEntered ? 1 : 0,
+                transform: userBubbleEntered ? "translateX(0)" : "translateX(16px)",
+                transition: "opacity 350ms ease-out, transform 350ms ease-out",
+              }}
             >
               <span className="text-slate-100" style={{ fontSize: 14 }}>
                 {userBubbleText}
                 {showUserCursor && <span className="typewriter-cursor">|</span>}
               </span>
             </div>
-            {userAvatar ? (
-              <img src={userAvatar} alt="You" width={36} height={36} className="rounded-full shrink-0 object-cover" />
-            ) : (
-              <div className="rounded-full shrink-0 flex items-center justify-center text-sm font-bold"
-                style={{ width: 36, height: 36, background: "#2a1a0a", border: "1px solid rgba(244,157,37,0.3)", color: "#f49d25" }}>
-                {userInitial}
-              </div>
-            )}
+            <div
+              ref={userAvatarRef}
+              style={{
+                opacity: userBubbleEntered ? 1 : 0,
+                transition: "opacity 300ms ease-out",
+              }}
+            >
+              {userAvatar ? (
+                <img src={userAvatar} alt="You" width={36} height={36} className="rounded-full shrink-0 object-cover" />
+              ) : (
+                <div className="rounded-full shrink-0 flex items-center justify-center text-sm font-bold"
+                  style={{ width: 36, height: 36, background: "#2a1a0a", border: "1px solid rgba(244,157,37,0.3)", color: "#f49d25" }}>
+                  {userInitial}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -766,7 +876,11 @@ export default function BrewCoachPage() {
           <div
             ref={kapiReplyRef}
             className="mt-4 flex items-start gap-3"
-            style={{ animation: "slideInLeft 300ms ease-out both" }}
+            style={{
+              opacity: kapiReplyEntered ? 1 : 0,
+              transform: kapiReplyEntered ? "translateX(0)" : "translateX(-16px)",
+              transition: "opacity 350ms ease-out, transform 350ms ease-out",
+            }}
           >
             <img
               src="/coach/coffee_coach_excited.png"
@@ -804,8 +918,17 @@ export default function BrewCoachPage() {
                       <button
                         type="button"
                         onClick={handleBrewWithCoach}
+                        disabled={!animationComplete}
                         className="cta-press w-full flex items-center justify-center gap-2 font-bold"
-                        style={{ background: "#f49d25", color: "#1a0f00", borderRadius: 10, padding: "10px 16px", fontSize: 14 }}
+                        style={{
+                          background: "#f49d25",
+                          color: "#1a0f00",
+                          borderRadius: 10,
+                          padding: "10px 16px",
+                          fontSize: 14,
+                          pointerEvents: animationComplete ? "auto" : "none",
+                          opacity: animationComplete ? 1 : 0.98,
+                        }}
                       >
                         <span className="material-symbols-outlined" style={{ fontSize: 16 }}>coffee_maker</span>
                         Brew with coach&apos;s help
@@ -865,27 +988,36 @@ export default function BrewCoachPage() {
 
       {/* ── Fixed Get Coaching button — spring reveal on any pill selection ── */}
       {showGetCoachingBtn && (
-        <div className="fixed bottom-36 left-0 right-0 max-w-phone mx-auto z-20 px-4">
+        <div
+          className="fixed bottom-36 left-0 right-0 max-w-phone mx-auto z-20 px-4"
+          style={{ pointerEvents: "none" }}
+        >
           <div style={{ height: 60, background: "linear-gradient(to bottom, transparent, #1a0f00)", pointerEvents: "none", marginBottom: -4 }} />
           <button
+            ref={getCoachingBtnRef}
             onClick={handleGetCoaching}
-            disabled={animPhase === "exiting" || isLoading}
+            disabled={selectionExiting || isLoading || sequenceRunning}
             className="w-full h-12 rounded-xl font-bold text-base"
             style={{
               backgroundColor: '#f49d25',
               color: '#1a0f00',
-              opacity: anySelected ? 1 : 0,
-              transform: anySelected ? "translateY(0)" : "translateY(80px)",
-              transition: anySelected
-                ? "opacity 400ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1)"
-                : "opacity 250ms ease-in, transform 250ms ease-in",
-              willChange: "opacity, transform",
-              pointerEvents: anySelected ? "auto" : "none",
+              opacity: selectionExiting ? 0 : anySelected ? 1 : 0,
+              transform: selectionExiting ? "translateY(-12px)" : anySelected ? "translateY(0)" : "translateY(80px)",
+              transition: selectionExiting
+                ? "opacity 300ms ease-out, transform 300ms ease-out"
+                : anySelected
+                  ? "opacity 400ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1)"
+                  : "opacity 250ms ease-in, transform 250ms ease-in",
+              pointerEvents: anySelected && !selectionExiting && !sequenceRunning ? "auto" : "none",
             }}
           >
             Get Coaching
           </button>
         </div>
+      )}
+
+      {sequenceRunning && !animationComplete && (
+        <div className="fixed inset-0 z-30" aria-hidden="true" />
       )}
     </main>
   );
