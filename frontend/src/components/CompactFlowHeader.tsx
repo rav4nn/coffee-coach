@@ -7,8 +7,9 @@ import { cn } from "@/lib/utils";
 type CompactFlowHeaderProps = {
   title: string;
   onBack: () => void;
-  progressCount: number;
-  currentStep: number;
+  progressCount?: number;
+  currentStep?: number;
+  showProgress?: boolean;
   action?: ReactNode;
   className?: string;
 };
@@ -16,8 +17,9 @@ type CompactFlowHeaderProps = {
 export function CompactFlowHeader({
   title,
   onBack,
-  progressCount,
-  currentStep,
+  progressCount = 0,
+  currentStep = 0,
+  showProgress = false,
   action,
   className,
 }: CompactFlowHeaderProps) {
@@ -33,12 +35,12 @@ export function CompactFlowHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-10 px-4 transition-colors duration-200",
+        "sticky top-0 z-10 transition-colors duration-200",
         isScrolled ? "bg-[#1a0f00cc] backdrop-blur-[8px]" : "bg-transparent",
         className,
       )}
     >
-      <div className="flex h-12 items-center justify-between">
+      <div className="relative flex h-11 items-center justify-between px-4">
         <button
           type="button"
           onClick={onBack}
@@ -48,7 +50,7 @@ export function CompactFlowHeader({
           <span aria-hidden="true">←</span>
         </button>
 
-        <h1 className="flex-1 px-2 text-center text-base font-semibold text-white">
+        <h1 className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-base font-normal text-white">
           {title}
         </h1>
 
@@ -57,24 +59,26 @@ export function CompactFlowHeader({
         </div>
       </div>
 
-      <div className="mb-[6px] mt-[6px] flex gap-1">
-        {Array.from({ length: progressCount }).map((_, index) => {
-          const stepNumber = index + 1;
-          const stateClass =
-            stepNumber === currentStep
-              ? "bg-[#f49d25]"
-              : stepNumber < currentStep
-                ? "bg-[#f49d25]/60"
-                : "bg-white/20";
+      {showProgress && progressCount > 0 && (
+        <div className="mx-4 mb-[6px] flex h-1 gap-1">
+          {Array.from({ length: progressCount }).map((_, index) => {
+            const stepNumber = index + 1;
+            const stateClass =
+              stepNumber === currentStep
+                ? "bg-[#f49d25]"
+                : stepNumber < currentStep
+                  ? "bg-[#f49d25]/60"
+                  : "bg-white/20";
 
-          return (
-            <div
-              key={stepNumber}
-              className={cn("h-1 flex-1 rounded-[2px]", stateClass)}
-            />
-          );
-        })}
-      </div>
+            return (
+              <div
+                key={stepNumber}
+                className={cn("h-1 flex-1 rounded-[2px]", stateClass)}
+              />
+            );
+          })}
+        </div>
+      )}
     </header>
   );
 }

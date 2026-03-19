@@ -37,11 +37,11 @@ function CoachHint({ change, originalValue }: { change: CoachingChange; original
         className="w-4 h-4 object-contain shrink-0 mt-0.5"
       />
       <p className="text-xs text-primary leading-relaxed">
-        <span className="font-semibold">Coach says:</span>{" "}
+        <span className="font-normal">Coach says:</span>{" "}
         {hasComputedValues ? (
           <>
             <span className="line-through text-primary/50">{change.previousValue}{isClicksGrind ? " clicks" : ""}</span>
-            <span className="font-semibold"> → {change.newValue}{isClicksGrind ? " clicks" : ""}</span>
+            <span className="font-normal"> → {change.newValue}{isClicksGrind ? " clicks" : ""}</span>
           </>
         ) : (
           <>
@@ -263,8 +263,6 @@ export default function FreestyleLogPage() {
       <CompactFlowHeader
         title="Log Your Brew"
         onBack={() => router.back()}
-        progressCount={3}
-        currentStep={3}
       />
 
       {/* Context bar */}
@@ -296,13 +294,13 @@ export default function FreestyleLogPage() {
         <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
           <div className="flex items-center gap-2 mb-1">
             <span className="material-symbols-outlined text-primary text-lg">coffee_maker</span>
-            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Brewing Essentials</h2>
+            <h2 className="text-xs font-normal uppercase tracking-widest text-slate-400">Brewing Essentials</h2>
           </div>
 
           {/* Row 1: Coffee + Water */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="coffee-grams" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+              <label htmlFor="coffee-grams" className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">
                 Coffee (g)
               </label>
               <Input id="coffee-grams" type="number" step="0.1" {...form.register("coffeeGrams")} />
@@ -315,7 +313,7 @@ export default function FreestyleLogPage() {
               )}
             </div>
             <div>
-              <label htmlFor="water-ml" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+              <label htmlFor="water-ml" className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">
                 Water (ml)
               </label>
               <Input id="water-ml" type="number" step="1" {...form.register("waterMl")} />
@@ -327,7 +325,7 @@ export default function FreestyleLogPage() {
           <div className={`grid gap-3 ${isColdBrew ? "grid-cols-1" : "grid-cols-2"}`}>
             {!isColdBrew && (
               <div>
-                <label htmlFor="water-temp" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <label htmlFor="water-temp" className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">
                   Temp (°C)
                 </label>
                 <Input id="water-temp" type="number" step="1" {...form.register("waterTempC")} />
@@ -341,7 +339,7 @@ export default function FreestyleLogPage() {
               </div>
             )}
             <div>
-              <label htmlFor="brew-time" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+              <label htmlFor="brew-time" className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">
                 {isColdBrew ? "Brew Time (h:mm)" : "Brew Time"}
               </label>
               <Input
@@ -368,13 +366,13 @@ export default function FreestyleLogPage() {
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-lg">tune</span>
-              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Grind Setting</h2>
+              <h2 className="text-xs font-normal uppercase tracking-widest text-slate-400">Grind Setting</h2>
             </div>
             {userGrinderName && (
               <button
                 type="button"
                 onClick={() => setUseClicks((v) => !v)}
-                className="text-[10px] font-semibold uppercase tracking-wider text-primary/70 hover:text-primary transition-colors"
+                className="text-[10px] font-normal uppercase tracking-wider text-primary/70 transition-colors hover:text-primary"
               >
                 {useClicks ? "Use grind size" : "Use clicks"}
               </button>
@@ -383,7 +381,7 @@ export default function FreestyleLogPage() {
 
           {useClicks && userGrinderName ? (
             <div>
-              <label htmlFor="grinder-clicks" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+              <label htmlFor="grinder-clicks" className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">
                 Clicks on {userGrinderName}
               </label>
               <Input
@@ -398,7 +396,7 @@ export default function FreestyleLogPage() {
             </div>
           ) : (
             <div>
-              <label htmlFor="grind-size" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+              <label htmlFor="grind-size" className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">
                 Grind Size
               </label>
               <select
@@ -433,7 +431,7 @@ export default function FreestyleLogPage() {
         <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-2">
           <div className="flex items-center gap-2 mb-1">
             <span className="material-symbols-outlined text-primary text-lg">edit_note</span>
-            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Notes</h2>
+            <h2 className="text-xs font-normal uppercase tracking-widest text-slate-400">Notes</h2>
           </div>
           <textarea
             id="notes"
@@ -446,7 +444,7 @@ export default function FreestyleLogPage() {
 
         {submitError ? <p className="text-xs text-red-700">{submitError}</p> : null}
 
-        <Button type="submit" disabled={submitting} className="h-12 w-full text-base">
+        <Button type="submit" disabled={submitting} className="h-12 w-full text-base font-normal">
           {submitting ? "Saving…" : "Log Brew"}
         </Button>
       </form>

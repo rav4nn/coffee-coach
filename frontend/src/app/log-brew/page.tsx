@@ -240,6 +240,7 @@ export default function LogBrewPage() {
         onBack={() => router.push("/")}
         progressCount={3}
         currentStep={1}
+        showProgress
       />
 
       {/* Bean Selection */}
@@ -258,7 +259,7 @@ export default function LogBrewPage() {
               <div className="text-left">
                 {selectedBean ? (
                   <>
-                    <p className="font-semibold text-slate-100">
+                    <p className="font-normal text-slate-100">
                       {selectedBean.roaster} — {selectedBean.name}
                     </p>
                     <p className="text-xs text-slate-500">
@@ -294,7 +295,7 @@ export default function LogBrewPage() {
                           : "hover:bg-primary/10"
                       }`}
                     >
-                      <p className="text-sm font-semibold text-slate-100">
+                      <p className="text-sm font-normal text-slate-100">
                         {bean.roaster} — {bean.name}
                       </p>
                       {bean.roast_date && (
@@ -370,7 +371,7 @@ export default function LogBrewPage() {
                   {active && <div className="absolute inset-0 bg-primary/25" />}
                 </div>
                 <div className="absolute bottom-0 inset-x-0 py-1.5 bg-background-dark/80 backdrop-blur-sm">
-                  <span className="text-[10px] font-bold uppercase text-center leading-tight block text-slate-100">
+                  <span className="block text-center text-[10px] font-normal uppercase leading-tight text-slate-100">
                     {METHOD_LABEL[method.method_id]}
                   </span>
                 </div>
@@ -391,7 +392,7 @@ export default function LogBrewPage() {
           isPourOver ? "max-h-64 opacity-100" : "max-h-0 opacity-0 mb-0"
         }`}
       >
-        <p className="text-sm font-medium text-slate-400 mb-3">Select Device</p>
+        <p className="mb-3 text-sm font-normal text-slate-400">Select Device</p>
         <div className="flex flex-wrap gap-2">
           {pourOverDevices.map((device) => {
             const active = selectedPourOverDeviceId === device.method_id;
@@ -400,7 +401,7 @@ export default function LogBrewPage() {
                 key={device.method_id}
                 type="button"
                 onClick={() => setSelectedPourOverDeviceId(device.method_id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                className={`rounded-full border px-4 py-2 text-sm font-normal transition-colors ${
                   active
                     ? "bg-primary/20 border-primary text-primary"
                     : "bg-white/5 border-white/10 text-slate-400 hover:border-primary/30"
@@ -426,7 +427,7 @@ export default function LogBrewPage() {
                 style={{ mixBlendMode: "screen" }}
               />
             </div>
-            <h2 className="text-xl font-bold text-slate-100 mb-2">
+            <h2 className="mb-2 text-xl font-normal text-slate-100">
               One quick step first.
             </h2>
             <p className="text-sm text-slate-400 mb-5">
@@ -434,7 +435,7 @@ export default function LogBrewPage() {
             </p>
             <Link
               href="/my-beans"
-              className="block w-full bg-primary text-background-dark font-bold py-3 rounded-xl text-center hover:scale-[1.01] transition-transform"
+              className="block w-full rounded-xl bg-primary py-3 text-center font-normal text-background-dark hover:scale-[1.01] transition-transform"
             >
               Go to My Beans
             </Link>
@@ -448,7 +449,7 @@ export default function LogBrewPage() {
           type="button"
           onClick={handleNext}
           disabled={!canContinue || isLoading}
-          className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl shadow-xl shadow-primary/30 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-normal text-background-dark shadow-xl shadow-primary/30 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
         >
           Next Step
           <span className="material-symbols-outlined">arrow_forward</span>

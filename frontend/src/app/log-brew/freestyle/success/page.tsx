@@ -18,7 +18,7 @@ function SuccessContent() {
         height={120}
         className="object-contain drop-shadow-lg mb-2"
       />
-      <h1 className="text-3xl font-bold text-slate-100">Brew Logged!</h1>
+      <h1 className="text-3xl font-normal text-slate-100">Brew Logged!</h1>
       <p className="text-sm text-slate-400">
         Your brew parameters were saved. Rate it and get coaching, or head home.
       </p>
@@ -26,7 +26,7 @@ function SuccessContent() {
         {brewId && (
           <Link
             href={`/coach/brew/${brewId}`}
-            className="h-12 w-full rounded-xl bg-primary text-background-dark font-bold text-base flex items-center justify-center gap-2"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary text-base font-normal text-background-dark"
           >
             <span className="material-symbols-outlined text-lg">psychology</span>
             Rate & Get Coaching
@@ -34,7 +34,7 @@ function SuccessContent() {
         )}
         <Link
           href="/"
-          className="h-12 w-full rounded-xl border border-primary/30 text-primary font-bold text-base flex items-center justify-center"
+          className="flex h-12 w-full items-center justify-center rounded-xl border border-primary/30 text-base font-normal text-primary"
         >
           Go Home
         </Link>

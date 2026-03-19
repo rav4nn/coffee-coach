@@ -657,8 +657,8 @@ export default function GuidedRecipeDetailPage() {
     return (
       <main className="flex-1 flex flex-col items-center justify-center px-6 gap-4">
         <span className="material-symbols-outlined text-5xl text-primary/40">error</span>
-        <h1 className="text-xl font-bold text-slate-100 text-center">Could not load this recipe</h1>
-        <Link href="/log-brew/guided" className="inline-flex items-center gap-2 text-sm font-bold text-primary">
+        <h1 className="text-xl font-normal text-slate-100 text-center">Could not load this recipe</h1>
+        <Link href="/log-brew/guided" className="inline-flex items-center gap-2 text-sm font-normal text-primary">
           <span className="material-symbols-outlined text-sm">arrow_back</span>
           Back to recipes
         </Link>
@@ -689,7 +689,7 @@ export default function GuidedRecipeDetailPage() {
           style={{ mixBlendMode: "screen" }}
         />
 
-        <h1 className="text-3xl font-bold text-slate-100 flex items-center gap-1.5">
+        <h1 className="flex items-center gap-1.5 text-3xl font-normal text-slate-100">
           Brew Complete!
           <span style={{ color: "#f49d25", fontSize: 20, lineHeight: 1 }}>✓</span>
         </h1>
@@ -706,7 +706,7 @@ export default function GuidedRecipeDetailPage() {
             <button
               type="button"
               onClick={() => router.push(`/coach/brew/${completedBrewId}`)}
-              className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center hover:brightness-110 transition-all"
+              className="flex w-full items-center justify-center rounded-xl bg-primary py-4 font-normal text-background-dark transition-all hover:brightness-110"
             >
               How was that brew?
             </button>
@@ -714,7 +714,7 @@ export default function GuidedRecipeDetailPage() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="w-full border border-white/15 text-slate-400 font-semibold py-4 rounded-xl flex items-center justify-center hover:border-white/30 hover:text-slate-200 transition-all"
+            className="flex w-full items-center justify-center rounded-xl border border-white/15 py-4 font-normal text-slate-400 transition-all hover:border-white/30 hover:text-slate-200"
           >
             Rate Later
           </button>
@@ -732,8 +732,6 @@ export default function GuidedRecipeDetailPage() {
         <CompactFlowHeader
           title={methodDisplayName(recipe.method)}
           onBack={() => router.back()}
-          progressCount={3}
-          currentStep={3}
           className="z-40"
         />
 
@@ -742,13 +740,13 @@ export default function GuidedRecipeDetailPage() {
           <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
             <div className="flex items-center gap-2 mb-1">
               <span className="material-symbols-outlined text-primary text-lg">coffee_maker</span>
-              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Brewing Essentials</h2>
+              <h2 className="text-xs font-normal uppercase tracking-widest text-slate-400">Brewing Essentials</h2>
             </div>
 
             {/* Row 1: Coffee + Water */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Coffee (g)</label>
+                <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">Coffee (g)</label>
                 <input
                   type="number"
                   step="0.1"
@@ -761,7 +759,7 @@ export default function GuidedRecipeDetailPage() {
                 )}
               </div>
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Water (ml)</label>
+                <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">Water (ml)</label>
                 <input
                   type="number"
                   step="1"
@@ -776,7 +774,7 @@ export default function GuidedRecipeDetailPage() {
             <div className={`grid gap-3 ${isColdBrew ? "grid-cols-1" : "grid-cols-2"}`}>
               {!isColdBrew && (
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Temp (°C)</label>
+                  <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">Temp (°C)</label>
                   <input
                     type="number"
                     step="1"
@@ -790,7 +788,7 @@ export default function GuidedRecipeDetailPage() {
                 </div>
               )}
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">
                   {isColdBrew ? "Brew Time (h:mm)" : "Brew Time"}
                 </label>
                 <input
@@ -814,13 +812,13 @@ export default function GuidedRecipeDetailPage() {
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-lg">tune</span>
-                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Grind Setting</h2>
+                <h2 className="text-xs font-normal uppercase tracking-widest text-slate-400">Grind Setting</h2>
               </div>
               {confirmGrinderName && (
                 <button
                   type="button"
                   onClick={() => setConfirmUseClicks((v) => !v)}
-                  className="text-[10px] font-semibold uppercase tracking-wider text-primary/70 hover:text-primary transition-colors"
+                  className="text-[10px] font-normal uppercase tracking-wider text-primary/70 transition-colors hover:text-primary"
                 >
                   {confirmUseClicks ? "Use grind size" : "Use clicks"}
                 </button>
@@ -828,7 +826,7 @@ export default function GuidedRecipeDetailPage() {
             </div>
             {confirmUseClicks && confirmGrinderName ? (
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">
                   Clicks on {confirmGrinderName}
                 </label>
                 <input
@@ -843,7 +841,7 @@ export default function GuidedRecipeDetailPage() {
               </div>
             ) : (
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Grind Size</label>
+                <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">Grind Size</label>
                 <select
                   value={confirmGrindSize}
                   onChange={(e) => setConfirmGrindSize(e.target.value as typeof GRIND_SIZES[number])}
@@ -864,7 +862,7 @@ export default function GuidedRecipeDetailPage() {
           <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-2">
             <div className="flex items-center gap-2 mb-1">
               <span className="material-symbols-outlined text-primary text-lg">edit_note</span>
-              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Notes</h2>
+              <h2 className="text-xs font-normal uppercase tracking-widest text-slate-400">Notes</h2>
             </div>
             <textarea
               rows={3}
@@ -881,7 +879,7 @@ export default function GuidedRecipeDetailPage() {
             type="button"
             onClick={handleConfirmSave}
             disabled={saving}
-            className="h-12 w-full bg-primary text-background-dark font-bold rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 hover:brightness-110 active:scale-[0.98] transition-all"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary font-normal text-background-dark shadow-lg shadow-primary/20 transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
           >
             {saving ? (
               "Saving…"
@@ -908,13 +906,11 @@ export default function GuidedRecipeDetailPage() {
 
   return (
     <>
-      <CompactFlowHeader
-        title={methodDisplayName(recipe.method)}
-        onBack={() => (isBrewing ? setShowCancelConfirm(true) : router.back())}
-        progressCount={3}
-        currentStep={3}
-        className="z-40"
-        action={!isBrewing ? (
+        <CompactFlowHeader
+          title={methodDisplayName(recipe.method)}
+          onBack={() => (isBrewing ? setShowCancelConfirm(true) : router.back())}
+          className="z-40"
+          action={!isBrewing ? (
           <button
             type="button"
             onClick={() => setIsSharing(true)}
@@ -932,19 +928,19 @@ export default function GuidedRecipeDetailPage() {
         <div className={`sticky top-[58px] z-30 overflow-hidden px-4 transition-all duration-300 ease-in-out ${isBrewing ? "max-h-16 pb-3 opacity-100" : "max-h-0 opacity-0"}`}>
           <div className="rounded-xl bg-[#1a0f00cc] px-3 py-2 backdrop-blur-[8px]">
             <div className="mb-1.5 flex items-center justify-between">
-              <p className="text-xs font-medium text-slate-400">Brewing Progress</p>
+              <p className="text-xs font-normal text-slate-400">Brewing Progress</p>
               {hasTimedSteps ? (
-                <p className="text-xs font-bold text-primary">
+                <p className="text-xs font-medium text-primary">
                   {formatTimer(brewElapsed)} / {formatTimer(totalTimerSeconds)}
                 </p>
               ) : (
                 <div className="flex items-center gap-2">
-                  <p className="text-xs font-bold text-primary">{formatTimer(manualElapsed)}</p>
+                  <p className="text-xs font-medium text-primary">{formatTimer(manualElapsed)}</p>
                   {manualBrewStartElapsed === null && (
                     <button
                       type="button"
                       onClick={() => setManualBrewStartElapsed(elapsedSeconds)}
-                      className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary transition-colors hover:bg-primary/30"
+                      className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-normal text-primary transition-colors hover:bg-primary/30"
                     >
                       Start
                     </button>
@@ -974,7 +970,7 @@ export default function GuidedRecipeDetailPage() {
           <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isBrewing ? "max-h-0 opacity-0" : "max-h-[1200px] opacity-100"}`}>
 
             {/* Recipe title */}
-            <h1 className="font-serif text-2xl font-bold text-slate-100 mb-4">{recipe.title}</h1>
+            <h1 className="mb-4 font-serif text-2xl font-normal text-slate-100">{recipe.title}</h1>
 
             {/* Coach mode banner with merged advice */}
             {isCoachMode && (
@@ -988,7 +984,7 @@ export default function GuidedRecipeDetailPage() {
                   />
                 </div>
                 <div className="flex-1 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Coach&apos;s Adjusted Recipe</p>
+                  <p className="mb-2 text-xs font-normal uppercase tracking-[0.2em] text-primary">Coach&apos;s Adjusted Recipe</p>
                   {coachChanges && coachChanges.filter((c) => c.suggestion).length > 0 && (
                     <p className="text-sm text-slate-200 leading-relaxed mb-1">
                       Coach asked you to {coachChanges.filter((c) => c.suggestion).map((c) => c.suggestion?.toLowerCase()).join(", ")}.
@@ -1043,7 +1039,7 @@ export default function GuidedRecipeDetailPage() {
                         <span className={`material-symbols-outlined ${hasChange ? "text-primary" : "text-slate-400"}`} style={{ fontSize: "14px" }}>{icon}</span>
                       </div>
                       <div className="min-w-0">
-                        <p className={`text-[9px] font-bold uppercase tracking-wider ${hasChange ? "text-primary/70" : "text-slate-500"}`}>{label}</p>
+                        <p className={`text-[9px] font-normal uppercase tracking-wider ${hasChange ? "text-primary/70" : "text-slate-500"}`}>{label}</p>
                         <p className="text-xs text-slate-100">
                           {hasChange && originalValue && originalValue !== value && (
                             <span className="line-through text-slate-500 text-[10px] mr-1">{originalValue}</span>
@@ -1061,10 +1057,10 @@ export default function GuidedRecipeDetailPage() {
           {/* === STEPS — always visible === */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
+              <h3 className="text-xs font-normal uppercase tracking-wider text-primary">
                 {isBrewing ? "Steps" : "Steps Preview"}
               </h3>
-              <span className="text-xs font-medium text-slate-500">{mergedSteps.length} Steps</span>
+              <span className="text-xs font-normal text-slate-500">{mergedSteps.length} Steps</span>
             </div>
 
             <div className="flex flex-col gap-3">
@@ -1089,7 +1085,7 @@ export default function GuidedRecipeDetailPage() {
                     }`}
                   >
                     {/* Step number bubble */}
-                    <div className={`rounded-full flex items-center justify-center font-bold shrink-0 transition-all duration-300 ${
+                    <div className={`rounded-full flex items-center justify-center font-normal shrink-0 transition-all duration-300 ${
                       isCurrent
                         ? "size-10 text-[18px] bg-primary text-background-dark"
                         : isPast
@@ -1105,11 +1101,11 @@ export default function GuidedRecipeDetailPage() {
                     {/* Step body */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <p className={`leading-snug ${isCurrent ? "text-lg text-slate-100" : "text-sm font-medium text-slate-300"}`}>
+                        <p className={`leading-snug ${isCurrent ? "text-lg text-slate-100" : "text-sm font-normal text-slate-300"}`}>
                           {resolveInstructionMath(step.instruction)}
                         </p>
                         {step.duration_seconds && (
-                          <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-normal ${
                             isCurrent ? "bg-primary/20 text-primary" : "bg-white/10 text-slate-500"
                           }`}>
                             {formatTimer(step.duration_seconds)}
@@ -1119,7 +1115,7 @@ export default function GuidedRecipeDetailPage() {
 
                       {/* Water amount badge */}
                       {step.target_water_g !== null && (
-                        <span className={`inline-flex items-center gap-1 font-bold bg-white/10 rounded mt-1 ${
+                        <span className={`mt-1 inline-flex items-center gap-1 rounded bg-white/10 font-normal ${
                           isCurrent ? "text-sm px-3.5 py-1.5" : "text-[10px] px-2 py-1"
                         }`}>
                           <span className="material-symbols-outlined text-xs">water_drop</span>
@@ -1131,13 +1127,13 @@ export default function GuidedRecipeDetailPage() {
                       {isCurrent && step.duration_seconds && stepCountdown !== null && (
                         <div className="mt-3">
                           <div className="flex items-center justify-between mb-2">
-                            <p className="font-mono text-2xl font-bold text-primary">
+                            <p className="font-mono text-2xl font-medium text-primary">
                               {formatTimer(stepCountdown)}
                             </p>
                             <button
                               type="button"
                               onClick={handleAdvance}
-                              className="text-xs font-bold text-slate-400 hover:text-slate-200 px-3 py-1 rounded-full border border-white/10 hover:border-white/30 transition-colors"
+                              className="rounded-full border border-white/10 px-3 py-1 text-xs font-normal text-slate-400 transition-colors hover:border-white/30 hover:text-slate-200"
                             >
                               Skip
                             </button>
@@ -1169,7 +1165,7 @@ export default function GuidedRecipeDetailPage() {
               type="button"
               onClick={handleAdvance}
               disabled={currentStep?.duration_seconds != null && countdownRemaining !== null && countdownRemaining > 0}
-              className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 active:scale-[0.98] transition-all"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-normal text-background-dark shadow-lg shadow-primary/20 transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
                 {currentIndex >= mergedSteps.length - 1 ? "check_circle" : "arrow_forward"}
@@ -1179,7 +1175,7 @@ export default function GuidedRecipeDetailPage() {
             <button
               type="button"
               onClick={() => setShowCancelConfirm(true)}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-300 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-normal text-slate-500 transition-colors hover:text-slate-300"
             >
               <span className="material-symbols-outlined text-sm">close</span>
               Cancel Brew
@@ -1190,7 +1186,7 @@ export default function GuidedRecipeDetailPage() {
             type="button"
             onClick={handleStart}
             disabled={mergedSteps.length === 0}
-            className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 active:scale-[0.98] transition-all"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-normal text-background-dark shadow-lg shadow-primary/20 transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
               play_arrow
@@ -1207,20 +1203,20 @@ export default function GuidedRecipeDetailPage() {
             <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
               <span className="material-symbols-outlined text-primary">warning</span>
             </div>
-            <h2 className="text-xl font-bold text-slate-100 mb-1">Cancel brew?</h2>
+            <h2 className="mb-1 text-xl font-normal text-slate-100">Cancel brew?</h2>
             <p className="text-sm text-slate-400 mb-6">Your brewing progress will be lost.</p>
             <div className="flex flex-col gap-3">
               <button
                 type="button"
                 onClick={() => setShowCancelConfirm(false)}
-                className="w-full bg-primary text-background-dark font-bold py-3 rounded-xl hover:brightness-110 transition-all"
+                className="w-full rounded-xl bg-primary py-3 font-normal text-background-dark transition-all hover:brightness-110"
               >
                 Keep Brewing
               </button>
               <button
                 type="button"
                 onClick={handleCancelConfirmed}
-                className="w-full border border-slate-600 text-slate-400 font-medium py-3 rounded-xl hover:text-slate-200 hover:border-slate-400 transition-colors"
+                className="w-full rounded-xl border border-slate-600 py-3 font-normal text-slate-400 transition-colors hover:border-slate-400 hover:text-slate-200"
               >
                 Yes, Cancel
               </button>

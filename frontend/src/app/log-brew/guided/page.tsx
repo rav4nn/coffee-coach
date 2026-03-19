@@ -83,11 +83,11 @@ export default function GuidedRecipesPage() {
     return (
       <main className="flex-1 flex flex-col items-center justify-center px-6 gap-4">
         <span className="material-symbols-outlined text-5xl text-primary/40">error</span>
-        <h1 className="text-xl font-bold text-slate-100 text-center">Could not load recipes</h1>
+        <h1 className="text-xl font-normal text-slate-100 text-center">Could not load recipes</h1>
         <p className="text-sm text-slate-400 text-center">Please go back and try again.</p>
         <Link
           href="/log-brew/step-2"
-          className="inline-flex items-center gap-2 text-sm font-bold text-primary"
+          className="inline-flex items-center gap-2 text-sm font-normal text-primary"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>
           Back
@@ -101,8 +101,6 @@ export default function GuidedRecipesPage() {
       <CompactFlowHeader
         title="Pick a Recipe"
         onBack={() => router.back()}
-        progressCount={3}
-        currentStep={3}
       />
 
       {/* Context bar */}
@@ -125,7 +123,7 @@ export default function GuidedRecipesPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-sm">favorite</span>
-                <p className="text-xs font-bold uppercase tracking-wider text-primary">Your Favourites</p>
+                <p className="text-xs font-normal uppercase tracking-wider text-primary">Your Favourites</p>
               </div>
               {favouriteBrews.map((entry) => {
                 const beanName = beans.find((b) => b.id === entry.beanId)?.beanName ?? "Unknown Bean";
@@ -138,7 +136,7 @@ export default function GuidedRecipesPage() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-slate-100 truncate">
+                        <p className="truncate text-sm font-normal text-slate-100">
                           Your {methodLabel(entry.methodId)} · {beanName}
                         </p>
                         <p className="text-xs text-slate-400 mt-0.5">
@@ -152,7 +150,7 @@ export default function GuidedRecipesPage() {
                 );
               })}
               <div className="border-t border-primary/10 pt-2">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-500">All Recipes</p>
+                <p className="text-xs font-normal uppercase tracking-wider text-slate-500">All Recipes</p>
               </div>
             </div>
           )}
@@ -206,25 +204,33 @@ export default function GuidedRecipesPage() {
               >
                 <div className="flex flex-col gap-3">
                   <div className="space-y-2 pr-10">
-                    <h3 className="text-xl font-bold leading-tight text-slate-100">
+                    <h3 className="text-base font-normal leading-tight text-slate-100">
                       {recipe.title}
                     </h3>
                     <div className="grid grid-cols-2 gap-y-2 pt-2 border-t border-primary/10">
                       <div className="flex items-center gap-2 text-slate-400">
                         <span className="material-symbols-outlined text-sm">scale</span>
-                        <span className="text-xs">{recipe.coffee_g}g coffee</span>
+                        <span className="text-[11px] font-normal text-slate-400">
+                          Coffee <span className="text-[13px] font-medium text-slate-100">{recipe.coffee_g}g</span>
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 text-slate-400">
                         <span className="material-symbols-outlined text-sm">water_drop</span>
-                        <span className="text-xs">{recipe.water_ml}ml water</span>
+                        <span className="text-[11px] font-normal text-slate-400">
+                          Water <span className="text-[13px] font-medium text-slate-100">{recipe.water_ml}ml</span>
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 text-slate-400">
                         <span className="material-symbols-outlined text-sm">thermostat</span>
-                        <span className="text-xs">{recipe.water_temp_c}°C</span>
+                        <span className="text-[11px] font-normal text-slate-400">
+                          Temp <span className="text-[13px] font-medium text-slate-100">{recipe.water_temp_c}°C</span>
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 text-slate-400">
                         <span className="material-symbols-outlined text-sm">timer</span>
-                        <span className="text-xs">{formatTime(recipe.brew_time_seconds)}</span>
+                        <span className="text-[11px] font-normal text-slate-400">
+                          Time <span className="text-[13px] font-medium text-slate-100">{formatTime(recipe.brew_time_seconds)}</span>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -243,12 +249,12 @@ export default function GuidedRecipesPage() {
       </main>
 
       {/* Start Brew button */}
-      <div className="fixed bottom-36 left-0 right-0 max-w-phone mx-auto px-4 pb-4 bg-gradient-to-t from-background-dark via-background-dark/90 to-transparent pt-8">
+      <div className="fixed bottom-36 left-0 right-0 z-30 max-w-phone mx-auto px-4">
         <button
           type="button"
           disabled={!selectedRecipeId}
           onClick={() => selectedRecipeId && router.push(`/log-brew/guided/${selectedRecipeId}`)}
-          className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 active:scale-[0.98] transition-all"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-normal text-background-dark shadow-lg shadow-primary/20 transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
         >
           Start Brew
           <span className="material-symbols-outlined">arrow_forward</span>

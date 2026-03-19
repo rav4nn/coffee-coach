@@ -147,6 +147,7 @@ export default function LogBrewStepTwoPage() {
         onBack={() => router.push("/log-brew")}
         progressCount={3}
         currentStep={2}
+        showProgress
       />
 
       {/* Context bar */}
@@ -162,7 +163,7 @@ export default function LogBrewStepTwoPage() {
           <p className="text-sm text-slate-400 mb-3">Step 1 selection is missing. Choose bean and method first.</p>
           <Link
             href="/log-brew"
-            className="inline-flex items-center gap-2 text-sm font-bold text-primary"
+            className="inline-flex items-center gap-2 text-sm font-normal text-primary"
           >
             <span className="material-symbols-outlined text-sm">arrow_back</span>
             Back to Step 1
@@ -193,14 +194,14 @@ export default function LogBrewStepTwoPage() {
                 style={{ mixBlendMode: "screen" }}
               />
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">Recommended</p>
-                <h3 className="text-base font-bold text-slate-100 leading-tight">Follow the Coach</h3>
+                <p className="mb-0.5 text-[10px] font-normal uppercase tracking-widest text-primary">Recommended</p>
+                <h3 className="text-base font-normal leading-tight text-slate-100">Follow the Coach</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Apply your coach&apos;s advice from your last {prettyMethodName(effectiveMethodId)} brew.</p>
                 {coachedBrew.coachingFeedback && (
                   <p className="text-xs text-primary/80 mt-1 italic line-clamp-1">&ldquo;{coachedBrew.coachingFeedback}&rdquo;</p>
                 )}
                 {coachedBrew.coachingChanges && coachedBrew.coachingChanges.length > 0 && (
-                  <span className="inline-block mt-1 bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest border border-primary/20">
+                  <span className="mt-1 inline-block rounded-full border border-primary/20 bg-primary/20 px-2 py-0.5 text-[10px] font-normal uppercase tracking-widest text-primary">
                     {coachedBrew.coachingChanges.length} {coachedBrew.coachingChanges.length === 1 ? "change" : "changes"}
                   </span>
                 )}
@@ -224,9 +225,9 @@ export default function LogBrewStepTwoPage() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2 mb-0.5">
-              <h3 className="text-base font-bold text-slate-100">Guide Me</h3>
+              <h3 className="text-base font-normal text-slate-100">Guide Me</h3>
               {recipeMethodKey && (
-                <span className="shrink-0 bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest border border-primary/20">
+                <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-normal uppercase tracking-widest text-primary">
                   {recipeCount} recipes
                 </span>
               )}
@@ -249,7 +250,7 @@ export default function LogBrewStepTwoPage() {
             <span className="material-symbols-outlined text-primary text-xl">edit_note</span>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-slate-100 mb-0.5">I'll Freestyle</h3>
+            <h3 className="mb-0.5 text-base font-normal text-slate-100">I'll Freestyle</h3>
             <p className="text-xs text-slate-400">Feeling confident? Just log what you brew as you go.</p>
           </div>
         </button>
@@ -261,7 +262,7 @@ export default function LogBrewStepTwoPage() {
           type="button"
           onClick={handleNext}
           disabled={!choice || !selectedMethodId}
-          className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl shadow-xl shadow-primary/30 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-normal text-background-dark shadow-xl shadow-primary/30 transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
         >
           Next
           <span className="material-symbols-outlined">arrow_forward</span>
