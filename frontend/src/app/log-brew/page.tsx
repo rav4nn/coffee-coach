@@ -232,11 +232,21 @@ export default function LogBrewPage() {
       <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
       {/* Step indicator */}
-      <div className="pt-8 pb-4 flex justify-center">
+      <div className="pt-8 pb-4 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors"
+          aria-label="Go back"
+        >
+          <span className="material-symbols-outlined text-slate-100">arrow_back</span>
+        </button>
         <div className="flex gap-1">
           <div className="h-1.5 w-12 rounded-full bg-primary" />
           <div className="h-1.5 w-12 rounded-full bg-primary/20" />
         </div>
+        {/* Spacer to balance the back button */}
+        <div className="size-10" />
       </div>
 
       {/* Title */}
