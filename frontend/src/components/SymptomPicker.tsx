@@ -1,10 +1,10 @@
 const DEFAULT_SYMPTOMS = [
-  "Sour",
-  "Bitter",
-  "Weak/Watery",
-  "Flat/No Sweetness",
-  "Muddy/Silty",
-  "Woody/Papery",
+  "sour",
+  "bitter",
+  "weak/watery",
+  "flat",
+  "muddy/silty",
+  "woody/papery",
 ];
 
 export function SymptomPicker({
@@ -17,7 +17,7 @@ export function SymptomPicker({
   onToggle?: (value: string) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
       {options.map((option) => {
         const active = selected.includes(option);
         return (
@@ -25,11 +25,18 @@ export function SymptomPicker({
             key={option}
             type="button"
             onClick={() => onToggle?.(option)}
-            className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
-              active
-                ? "border-primary bg-primary/20 text-primary"
-                : "border-primary/20 bg-primary/5 text-primary/70"
-            }`}
+            style={{
+              height: 44,
+              borderRadius: 22,
+              border: active ? "2px solid #f49d25" : "1px solid rgba(255,255,255,0.125)",
+              background: active ? "#3a2a1a" : "#2a1a0a",
+              color: active ? "#f49d25" : "#f1f5f9",
+              fontSize: 14,
+              fontWeight: 600,
+              textTransform: "capitalize",
+              transition: "all 150ms ease",
+              width: "100%",
+            }}
           >
             {option}
           </button>

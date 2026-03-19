@@ -391,19 +391,10 @@ export default function BrewCoachPage() {
             <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Coaching</p>
             <h1 className="text-2xl font-bold text-slate-100">{isRated ? "Coach's Advice" : "How was this brew?"}</h1>
           </div>
-          {(!isLocked && !response?.fix) && (
-            <Image
-              src={coachAvatar}
-              alt="Coach"
-              width={52}
-              height={52}
-              className={`object-contain drop-shadow-md transition-all duration-300 shrink-0${isThinking ? " animate-pulse" : ""}`}
-            />
-          )}
         </div>
       </div>
 
-      <div className="px-4 pb-6 space-y-4">
+      <div className="px-4 pb-6">
 
         {/* Brew Parameters Card */}
         <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
@@ -477,14 +468,14 @@ export default function BrewCoachPage() {
 
         {/* Symptoms — shown before coaching is requested */}
         {!isLocked && !isPerfect && !response?.fix && (
-          <div className="space-y-2">
+          <div style={{ marginTop: 28 }}>
             {isOscillating ? (
               <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4 text-sm text-slate-300">
                 Keep brew inputs consistent for 2–3 brews before making new changes.
               </div>
             ) : (
               <>
-                <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">What do you want to fix?</p>
+                <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold" style={{ marginBottom: 10 }}>What do you want to fix?</p>
                 <SymptomPicker selected={selectedSymptoms} onToggle={toggleSymptom} />
               </>
             )}
@@ -493,15 +484,15 @@ export default function BrewCoachPage() {
 
         {/* Goals — below symptoms */}
         {!isLocked && !isPerfect && !response?.fix && !isOscillating && (
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Set a goal</p>
+          <div style={{ marginTop: 28 }}>
+            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold" style={{ marginBottom: 10 }}>Set a goal</p>
             <GoalPicker selected={selectedGoals} maxSelections={1} onToggle={toggleGoal} />
           </div>
         )}
 
         {/* 10/10 perfect brew — already saved as favourite */}
         {isPerfect && isAlreadyFavourite && (
-          <div className="rounded-2xl bg-primary/10 border border-primary/30 p-5 text-center space-y-3">
+          <div className="mt-4 rounded-2xl bg-primary/10 border border-primary/30 p-5 text-center space-y-3">
             <span className="material-symbols-outlined text-primary text-4xl">star</span>
             <p className="font-bold text-slate-100 text-lg">Excellent brew!</p>
           </div>
@@ -509,7 +500,7 @@ export default function BrewCoachPage() {
 
         {/* 10/10 perfect brew — not yet saved */}
         {isPerfect && !isAlreadyFavourite && !isLocked && (
-          <div className="rounded-2xl bg-primary/10 border border-primary/30 p-5 text-center space-y-3">
+          <div className="mt-4 rounded-2xl bg-primary/10 border border-primary/30 p-5 text-center space-y-3">
             <span className="material-symbols-outlined text-primary text-4xl">star</span>
             <p className="font-bold text-slate-100 text-lg">Excellent brew!</p>
             <p className="text-sm text-slate-400">You&apos;ve nailed this one. Save it so you can repeat it.</p>
@@ -533,7 +524,7 @@ export default function BrewCoachPage() {
 
         {/* Kapi chat bubble */}
         {showCoachBubble && (
-          <div className="chat-bubble-wrapper flex items-start gap-3">
+          <div className="chat-bubble-wrapper mt-4 flex items-start gap-3">
             <img
               src="/coach/coffee_coach_whispering.png"
               alt="Coach Kapi"
@@ -570,7 +561,7 @@ export default function BrewCoachPage() {
 
         {/* User reply bubble (display only) */}
         {showUserReply && (
-          <div className="user-reply-wrapper flex items-center justify-end gap-3">
+          <div className="user-reply-wrapper mt-4 flex items-center justify-end gap-3">
             <div
               className="user-bubble-tail relative"
               style={{
@@ -599,7 +590,7 @@ export default function BrewCoachPage() {
 
         {/* Kapi reply bubble with CTA */}
         {showUserReply && (
-          <div className="kapi-reply-wrapper flex items-start gap-3">
+          <div className="kapi-reply-wrapper mt-4 flex items-start gap-3">
             <img
               src="/coach/coffee_coach_excited.png"
               alt="Coach Kapi"
@@ -644,7 +635,7 @@ export default function BrewCoachPage() {
 
         {/* Escalation warning */}
         {response?.escalation && (
-          <div className="rounded-2xl bg-amber-500/10 border border-amber-500/20 p-4 space-y-3">
+          <div className="mt-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 p-4 space-y-3">
             <div className="flex items-start gap-2.5">
               <span className="material-symbols-outlined text-amber-400 text-base shrink-0 mt-0.5">lightbulb</span>
               <div>
@@ -681,7 +672,7 @@ export default function BrewCoachPage() {
             onClick={handleGetCoaching}
             disabled={isLoading || isThinking}
             className="w-full h-12 rounded-xl font-bold text-base transition-colors"
-            style={{ backgroundColor: isThinking ? '#c47d10' : '#f49d25', color: '#1a0f00' }}
+            style={{ backgroundColor: isThinking ? '#c47d10' : '#f49d25', color: '#1a0f00', marginTop: 28 }}
           >
             {isThinking
               ? `Coach Kapi is thinking${'.'.repeat(dotCount)}`
@@ -695,7 +686,7 @@ export default function BrewCoachPage() {
           <button
             type="button"
             onClick={handleBrewWithCoach}
-            className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base flex items-center justify-center gap-2"
+            className="mt-4 w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined text-base">coffee_maker</span>
             Brew this again
@@ -706,7 +697,7 @@ export default function BrewCoachPage() {
         {isPerfect && !isAlreadyFavourite && !isLocked && (
           <button
             onClick={() => router.push("/coach")}
-            className={`w-full h-12 rounded-xl font-bold text-base ${isFavouriteSaved ? "bg-primary text-background-dark" : "border border-primary/30 text-primary"}`}
+            className={`mt-4 w-full h-12 rounded-xl font-bold text-base ${isFavouriteSaved ? "bg-primary text-background-dark" : "border border-primary/30 text-primary"}`}
           >
             {isFavouriteSaved ? "Done" : "Skip for Now"}
           </button>

@@ -166,7 +166,31 @@ export default function GuidedRecipesPage() {
           )}
 
           {isLoading && (
-            <p className="text-sm text-slate-400 text-center py-8">Loading recipes…</p>
+            <div className="space-y-4 animate-pulse">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="rounded-xl border border-primary/10 bg-background-dark p-4">
+                  <div className="h-6 bg-white/10 rounded-lg w-3/4 mb-3" />
+                  <div className="grid grid-cols-2 gap-y-3 pt-3 border-t border-primary/10">
+                    <div className="flex items-center gap-2">
+                      <div className="size-4 rounded bg-white/10 shrink-0" />
+                      <div className="h-3 bg-white/10 rounded w-20" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="size-4 rounded bg-white/10 shrink-0" />
+                      <div className="h-3 bg-white/10 rounded w-16" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="size-4 rounded bg-white/10 shrink-0" />
+                      <div className="h-3 bg-white/10 rounded w-14" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="size-4 rounded bg-white/10 shrink-0" />
+                      <div className="h-3 bg-white/10 rounded w-18" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
 
           {!isLoading && sorted.length === 0 && (

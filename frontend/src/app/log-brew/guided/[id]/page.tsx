@@ -585,9 +585,64 @@ export default function GuidedRecipeDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="flex-1 flex items-center justify-center">
-        <p className="text-sm text-slate-400">Loading recipe…</p>
-      </main>
+      <>
+        {/* Skeleton header */}
+        <header className="sticky top-0 z-40 bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
+          <div className="flex items-center justify-between px-4 pt-4 pb-3 animate-pulse">
+            <div className="size-10 rounded-full bg-white/10" />
+            <div className="h-5 bg-white/10 rounded-lg w-28" />
+            <div className="size-10 rounded-full bg-white/10" />
+          </div>
+        </header>
+
+        {/* Skeleton body */}
+        <main className="flex-1 overflow-y-auto pb-56">
+          <div className="p-4 animate-pulse">
+            {/* Title */}
+            <div className="h-7 bg-white/10 rounded-lg w-3/4 mb-6" />
+
+            {/* Method image + params */}
+            <div className="flex gap-4 mb-6">
+              <div className="w-1/3 shrink-0 aspect-square rounded-2xl bg-white/10" />
+              <div className="flex-1 grid grid-cols-2 gap-x-3 gap-y-3 content-center">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="size-6 rounded-full bg-white/10 shrink-0" />
+                    <div>
+                      <div className="h-2 bg-white/10 rounded w-10 mb-1.5" />
+                      <div className="h-3 bg-white/15 rounded w-14" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Steps header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-3 bg-white/10 rounded w-24" />
+              <div className="h-3 bg-white/10 rounded w-14" />
+            </div>
+
+            {/* Step skeletons */}
+            <div className="flex flex-col gap-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="rounded-xl border border-white/10 bg-white/5 p-4 flex gap-4 items-start">
+                  <div className="size-8 rounded-full bg-white/10 shrink-0" />
+                  <div className="flex-1">
+                    <div className="h-4 bg-white/10 rounded w-full mb-2" />
+                    <div className="h-4 bg-white/10 rounded w-2/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+
+        {/* Skeleton CTA */}
+        <div className="fixed bottom-36 left-0 right-0 max-w-phone mx-auto px-4 pb-4 pt-8 animate-pulse">
+          <div className="w-full h-14 rounded-xl bg-primary/20" />
+        </div>
+      </>
     );
   }
 
@@ -982,7 +1037,7 @@ export default function GuidedRecipeDetailPage() {
                       </div>
                       <div className="min-w-0">
                         <p className={`text-[9px] font-bold uppercase tracking-wider ${hasChange ? "text-primary/70" : "text-slate-500"}`}>{label}</p>
-                        <p className="text-xs font-bold text-slate-100">
+                        <p className="text-xs text-slate-100">
                           {hasChange && originalValue && originalValue !== value && (
                             <span className="line-through text-slate-500 text-[10px] mr-1">{originalValue}</span>
                           )}
@@ -1043,7 +1098,7 @@ export default function GuidedRecipeDetailPage() {
                     {/* Step body */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <p className={`leading-snug ${isCurrent ? "text-lg font-semibold text-slate-100" : "text-sm font-medium text-slate-300"}`}>
+                        <p className={`leading-snug ${isCurrent ? "text-lg text-slate-100" : "text-sm font-medium text-slate-300"}`}>
                           {resolveInstructionMath(step.instruction)}
                         </p>
                         {step.duration_seconds && (
