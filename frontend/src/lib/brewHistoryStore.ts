@@ -14,6 +14,7 @@ export type FreestyleBrewEntry = {
   rating?: number | null;
   coachingFeedback?: string | null;
   coachingChanges?: CoachingChange[] | null;
+  coached?: boolean;
   isFavourite?: boolean;
   coffeeGrams: number;
   waterMl: number;
@@ -50,6 +51,7 @@ function toEntry(raw: Record<string, unknown>): FreestyleBrewEntry {
     rating: (raw.rating as number | null) ?? null,
     coachingFeedback: (raw.coaching_feedback as string | null) ?? null,
     coachingChanges: (raw.coaching_changes as CoachingChange[] | null) ?? null,
+    coached: (raw.coached as boolean) ?? false,
     isFavourite: (raw.is_favourite as boolean) ?? false,
     coffeeGrams: (raw.coffee_grams as number) ?? 0,
     waterMl: (raw.water_ml as number) ?? 0,
@@ -117,6 +119,7 @@ export const useBrewHistoryStore = create<BrewHistoryStore>()((set) => ({
     if (patch.rating !== undefined) apiPatch.rating = patch.rating;
     if (patch.coachingFeedback !== undefined) apiPatch.coaching_feedback = patch.coachingFeedback;
     if (patch.coachingChanges !== undefined) apiPatch.coaching_changes = patch.coachingChanges;
+    if (patch.coached !== undefined) apiPatch.coached = patch.coached;
     if (patch.isFavourite !== undefined) apiPatch.is_favourite = patch.isFavourite;
     if (patch.coffeeGrams !== undefined) apiPatch.coffee_grams = patch.coffeeGrams;
     if (patch.waterMl !== undefined) apiPatch.water_ml = patch.waterMl;

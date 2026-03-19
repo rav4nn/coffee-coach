@@ -152,7 +152,7 @@ export default function LogBrewStepTwoPage() {
 
       {/* Context bar */}
       {selectedBean && effectiveMethodId && (
-        <p className="mb-3 mt-2 text-center text-xs text-[#ffffff60]">
+        <p className="mb-4 mt-4 text-center text-xs text-[#ffffff60]">
           {selectedBean.beanName} <span className="text-[#ffffff60]">·</span> {prettyMethodName(effectiveMethodId)}
         </p>
       )}

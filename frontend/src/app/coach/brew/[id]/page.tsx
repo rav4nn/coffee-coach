@@ -52,11 +52,11 @@ function CoachingChanges({ changes }: { changes: CoachingChangeApi[] }) {
   if (displayable.length === 0) return null;
   return (
     <div className="mt-3 pt-3 space-y-1.5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-      <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Suggested adjustments</p>
+      <p className="text-[10px] uppercase tracking-widest text-slate-500 font-normal">Suggested adjustments</p>
       {displayable.map((change, i) => (
         <div key={i} className="flex items-center justify-between gap-2">
-          <span className="text-xs text-slate-400">{PARAM_LABELS[change.param] ?? change.param}</span>
-          <span className="text-xs font-semibold text-primary">{formatChangeDisplay(change)}</span>
+          <span className="text-xs font-normal text-slate-400">{PARAM_LABELS[change.param] ?? change.param}</span>
+          <span className="text-xs font-normal text-primary">{formatChangeDisplay(change)}</span>
         </div>
       ))}
     </div>
@@ -120,6 +120,8 @@ export default function BrewCoachPage() {
 
   const [showCtaBtn, setShowCtaBtn] = useState(false);
   const [ctaBtnAnimate, setCtaBtnAnimate] = useState(false);
+  const [showStatsBtn, setShowStatsBtn] = useState(false);
+  const [statsBtnVisible, setStatsBtnVisible] = useState(false);
 
   const [titleIsAdvice, setTitleIsAdvice] = useState(false);
 
@@ -179,6 +181,7 @@ export default function BrewCoachPage() {
   }, [brew]);
 
   const isLocked = !!brew?.coachingFeedback;
+  const hasStoredCoaching = !!brew?.coachingFeedback;
   const isPerfect = rating === 10;
   const isAlreadyFavourite = !!brew?.isFavourite;
   const isOscillating = response?.trend === "oscillating";
@@ -230,6 +233,37 @@ export default function BrewCoachPage() {
     setShowKapiReplyCursor(false);
     setShowCtaBtn(false);
     setCtaBtnAnimate(false);
+    setShowStatsBtn(false);
+    setStatsBtnVisible(false);
+  }
+
+  function applyStaticAdviceState(result: CoachingResponseApi) {
+    setSelectionExiting(false);
+    setSelectionHidden(true);
+    setSequenceRunning(false);
+    setAnimationComplete(true);
+    setTitleIsAdvice(true);
+    setCoachBubbleVisible(true);
+    setCoachBubbleEntered(true);
+    setCoachIsThinking(false);
+    setCoachAvatarSrc("/coach/coffee_coach_whispering.png");
+    setTypewriterText(result.fix);
+    setShowCursor(false);
+    setShowAdjustments(true);
+    setAdjustmentsEntered(true);
+    setUserBubbleVisible(true);
+    setUserBubbleEntered(true);
+    setUserBubbleText("Help me brew this better.");
+    setShowUserCursor(false);
+    setKapiReplyVisible(true);
+    setKapiReplyEntered(true);
+    setKapiReplyThinking(false);
+    setKapiReplyText("Sure, here you go!");
+    setShowKapiReplyCursor(false);
+    setShowCtaBtn(true);
+    setCtaBtnAnimate(false);
+    setShowStatsBtn(true);
+    setStatsBtnVisible(true);
   }
 
   function resetRatingFlow() {
@@ -444,6 +478,16 @@ export default function BrewCoachPage() {
     await wait(1000);
   }
 
+  async function revealStatsButton() {
+    if (cancelled.current) return;
+    await wait(200);
+    if (cancelled.current) return;
+    setShowStatsBtn(true);
+    await wait(16);
+    setStatsBtnVisible(true);
+    await wait(300);
+  }
+
   async function runCoachingSequence(resultPromise: Promise<CoachingResponseApi | null>) {
     if (cancelled.current || isAnimatingRef.current) return;
     isAnimatingRef.current = true;
@@ -470,8 +514,16 @@ export default function BrewCoachPage() {
       await showKapiThinkingDots();
       await typewriterReplyText();
       await springInCTAButton();
+      await revealStatsButton();
 
       if (!cancelled.current) {
+        if (brewId) {
+          await updateEntry(brewId, {
+            coached: true,
+            coachingFeedback: data.fix,
+            coachingChanges: data.changes ?? null,
+          });
+        }
         setAnimationComplete(true);
       }
     } finally {
@@ -482,23 +534,26 @@ export default function BrewCoachPage() {
     }
   }
 
-  // ── For already-coached brews: play the full animation on page load ──────
+  // ── For already-coached brews: render the final state immediately ────────
   useEffect(() => {
     if (
       dataLoaded &&
-      isLocked &&
+      hasStoredCoaching &&
       brew?.coachingFeedback &&
       !isPerfect &&
       !hasStartedAnimation.current
     ) {
       hasStartedAnimation.current = true;
       clearSequenceState();
-      void runCoachingSequence(Promise.resolve({
+      applyStaticAdviceState({
         fix: brew.coachingFeedback,
         changes: brew.coachingChanges ?? undefined,
-      }));
+      });
+      if (brewId && brew.coached !== true) {
+        void updateEntry(brewId, { coached: true });
+      }
     }
-  }, [dataLoaded, isLocked, brew?.coachingFeedback, brew?.coachingChanges, isPerfect]);
+  }, [dataLoaded, hasStoredCoaching, brew?.coachingFeedback, brew?.coachingChanges, brew?.coached, brewId, isPerfect, updateEntry]);
 
   function toggleSymptom(symptom: string) {
     setSelectedSymptoms((prev) =>
@@ -583,6 +638,10 @@ export default function BrewCoachPage() {
     } else {
       router.push("/log-brew/freestyle");
     }
+  }
+
+  function handleSeeBrewStats() {
+    router.push("/history?view=stats");
   }
 
   // ── Derived ──────────────────────────────────────────────────────────────
@@ -887,7 +946,7 @@ export default function BrewCoachPage() {
               className="chat-bubble-tail relative flex-1 p-4"
               style={{ background: "#2a1a0a", border: "1px solid rgba(244,157,37,0.3)", borderRadius: "4px 16px 16px 16px" }}
             >
-              <p className="text-[10px] uppercase tracking-wider font-semibold mb-2" style={{ color: "#f49d25" }}>
+              <p className="text-[10px] uppercase tracking-wider font-normal mb-2" style={{ color: "#f49d25" }}>
                 Coach Kapi
               </p>
               {coachIsThinking ? (
@@ -898,7 +957,7 @@ export default function BrewCoachPage() {
                 </div>
               ) : (
                 <>
-                  <p className="text-base font-medium text-slate-100 leading-relaxed">
+                  <p className="text-base font-normal text-slate-100 leading-relaxed">
                     {typewriterText}
                     {showCursor && <span className="typewriter-cursor">|</span>}
                   </p>
@@ -942,7 +1001,7 @@ export default function BrewCoachPage() {
                 transition: "opacity 350ms ease-out, transform 350ms ease-out",
               }}
             >
-              <span className="text-slate-100" style={{ fontSize: 14 }}>
+              <span className="text-slate-100" style={{ fontSize: 14, fontWeight: 400 }}>
                 {userBubbleText}
                 {showUserCursor && <span className="typewriter-cursor">|</span>}
               </span>
@@ -989,7 +1048,7 @@ export default function BrewCoachPage() {
               className="chat-bubble-tail relative flex-1"
               style={{ background: "#2a1a0a", border: "1px solid rgba(244,157,37,0.3)", borderRadius: "4px 16px 16px 16px", padding: "12px 14px" }}
             >
-              <p className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: "#f49d25" }}>Coach Kapi</p>
+              <p className="text-[10px] uppercase tracking-wider font-normal mb-1" style={{ color: "#f49d25" }}>Coach Kapi</p>
               {kapiReplyThinking ? (
                 <div className="flex gap-2 items-center py-1">
                   <span className="thinking-dot thinking-dot-1" />
@@ -998,7 +1057,7 @@ export default function BrewCoachPage() {
                 </div>
               ) : (
                 <>
-                  <p className="text-slate-100 mb-2.5" style={{ fontSize: 14, fontWeight: 500 }}>
+                  <p className="text-slate-100 mb-2.5" style={{ fontSize: 14, fontWeight: 400 }}>
                     {kapiReplyText}
                     {showKapiReplyCursor && <span className="typewriter-cursor">|</span>}
                   </p>
@@ -1014,7 +1073,7 @@ export default function BrewCoachPage() {
                         type="button"
                         onClick={handleBrewWithCoach}
                         disabled={!animationComplete}
-                        className="cta-press w-full flex items-center justify-center gap-2 font-bold"
+                        className="cta-press w-full flex items-center justify-center gap-2 font-normal"
                         style={{
                           background: "#f49d25",
                           color: "#1a0f00",
@@ -1029,6 +1088,25 @@ export default function BrewCoachPage() {
                         Brew with coach&apos;s help
                       </button>
                     </div>
+                  )}
+                  {showStatsBtn && (
+                    <button
+                      type="button"
+                      onClick={handleSeeBrewStats}
+                      disabled={!animationComplete}
+                      className="mt-3 w-full rounded-xl border bg-transparent px-4 py-3 text-center font-normal"
+                      style={{
+                        borderColor: "rgba(255,255,255,0.18)",
+                        color: "rgba(255,255,255,0.6)",
+                        fontSize: 14,
+                        opacity: statsBtnVisible ? 1 : 0,
+                        transition: "opacity 300ms ease-out",
+                        pointerEvents: animationComplete ? "auto" : "none",
+                        marginBottom: 24,
+                      }}
+                    >
+                      See Brew Stats →
+                    </button>
                   )}
                 </>
               )}

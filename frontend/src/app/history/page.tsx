@@ -192,7 +192,9 @@ export default function JournalPage() {
   const [sharingBrewId, setSharingBrewId] = useState<string | null>(null);
   const [isSharingStats, setIsSharingStats] = useState(false);
   const [filters, setFilters] = useState<FilterState>({ methods: [], beanIds: [] });
-  const [view, setView] = useState<"journal" | "stats">("journal");
+  const [view, setView] = useState<"journal" | "stats">(
+    searchParams.get("view") === "stats" ? "stats" : "journal",
+  );
   const statsWrapperRef = useRef<HTMLDivElement>(null);
 
   const entries = useBrewHistoryStore((state) => state.entries);
@@ -205,6 +207,10 @@ export default function JournalPage() {
     void fetchEntries();
     void fetchBeans();
   }, [fetchEntries, fetchBeans]);
+
+  useEffect(() => {
+    setView(searchParams.get("view") === "stats" ? "stats" : "journal");
+  }, [searchParams]);
 
   const recentFirst = useMemo(
     () => [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
