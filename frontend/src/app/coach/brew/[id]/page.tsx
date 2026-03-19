@@ -167,7 +167,7 @@ export default function BrewCoachPage() {
   useEffect(() => {
     if (brew) {
       setRating(brew.rating ?? 5);
-      setRatingLocked(!!brew.coachingFeedback);
+      setRatingLocked(brew.rating != null || !!brew.coachingFeedback);
       setShowSelections(!!brew.coachingFeedback);
       if (brew.coachingFeedback) {
         setResponse({
@@ -255,7 +255,6 @@ export default function BrewCoachPage() {
 
   function handleRatingChange(value: number) {
     setRating(value);
-    if (brewId) void updateEntry(brewId, { rating: value });
   }
 
   const recentBrewsForTrend = useMemo(() => {
@@ -547,6 +546,9 @@ export default function BrewCoachPage() {
   async function handleDoneRating() {
     if (ratingLocked || isLocked || isAnimatingRef.current) return;
 
+    if (brewId) {
+      await updateEntry(brewId, { rating });
+    }
     setRatingLocked(true);
 
     if (rating === 10) {
@@ -729,9 +731,9 @@ export default function BrewCoachPage() {
               </p>
               <p className="mt-0.5 text-xs font-normal text-slate-400">{methodLabel(brew.methodId)}</p>
             </div>
-            {brew.rating != null && (
+            {(ratingLocked || brew.rating != null) && (
               <div className="shrink-0 text-right leading-none">
-                <span style={{ color: '#f49d25', fontSize: 20, fontWeight: 700 }}>{brew.rating}</span>
+                <span style={{ color: '#f49d25', fontSize: 20, fontWeight: 700 }}>{ratingLocked ? rating : brew.rating}</span>
                 <span style={{ color: 'rgba(244,157,37,0.5)', fontSize: 14, fontWeight: 600 }}>/10</span>
               </div>
             )}

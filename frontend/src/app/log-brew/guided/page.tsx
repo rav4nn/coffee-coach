@@ -101,6 +101,9 @@ export default function GuidedRecipesPage() {
       <CompactFlowHeader
         title="Pick a Recipe"
         onBack={() => router.back()}
+        progressCount={3}
+        currentStep={3}
+        showProgress
       />
 
       {/* Context bar */}

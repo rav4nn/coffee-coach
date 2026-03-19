@@ -244,7 +244,7 @@ export default function LogBrewPage() {
       />
 
       {/* Bean Selection */}
-      <section className="mb-8 mt-3">
+      <section className="mb-8 mt-5">
         {isLoading ? (
           <div className="h-[60px] rounded-xl bg-primary/5 border border-primary/20 animate-pulse" />
         ) : null}
