@@ -8,8 +8,8 @@ export type FreestyleBrewEntry = {
   id: string;
   createdAt: string;
   beanId: string | null;
-  beanName: string | null;
-  roasterName: string | null;
+  beanName?: string | null;
+  roasterName?: string | null;
   methodId: string | null;
   rating?: number | null;
   coachingFeedback?: string | null;
