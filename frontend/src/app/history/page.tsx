@@ -11,7 +11,7 @@ import { FilterDropdown, ALL_METHODS, type FilterState, methodLabelFromId } from
 import { BrewShareCard } from "@/components/share/BrewShareCard";
 import { useBeansStore } from "@/lib/beansStore";
 import { useBrewHistoryStore, type FreestyleBrewEntry } from "@/lib/brewHistoryStore";
-import { captureAsBlob, captureStatsAndShare, shareOrDownload, SHARE_CAPTION } from "@/lib/shareUtils";
+import { captureAsBlob, captureStatsAndShare, generateBrewCaption, generateStatsCaption, shareOrDownload } from "@/lib/shareUtils";
 
 function methodImage(methodId: string | null | undefined): string {
   if (!methodId) return "/methods/pour_over.png";
@@ -56,9 +56,10 @@ interface BrewCardProps {
   onToggle: () => void;
   onEdit: () => void;
   onShare: () => void;
+  isSharing?: boolean;
 }
 
-function BrewCard({ entry, beanName, isOpen, onToggle, onEdit, onShare }: BrewCardProps) {
+function BrewCard({ entry, beanName, isOpen, onToggle, onEdit, onShare, isSharing }: BrewCardProps) {
   const imgSrc = methodImage(entry.methodId);
   const chips = entry.tastingNotes ?? [];
   const visibleChips = chips.slice(0, 3);
@@ -159,14 +160,24 @@ function BrewCard({ entry, beanName, isOpen, onToggle, onEdit, onShare }: BrewCa
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={onShare}
-            className="flex items-center gap-2 text-xs font-semibold text-primary/70 hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-base">share</span>
-            Share this brew
-          </button>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={onShare}
+              disabled={isSharing}
+              className="flex items-center gap-1 disabled:opacity-50 transition-colors"
+              style={{
+                padding: '4px 10px',
+                borderRadius: 9999,
+                border: '1px solid rgba(244,157,37,0.6)',
+                color: '#f49d25',
+                fontSize: 12,
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>share</span>
+              {isSharing ? "Sharing…" : "Share this brew"}
+            </button>
+          </div>
 
         </div>
       )}
@@ -245,6 +256,7 @@ export default function JournalPage() {
         onToggle={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
         onEdit={() => setEditBrewId(entry.id)}
         onShare={() => setSharingBrewId(entry.id)}
+        isSharing={sharingBrewId === entry.id}
       />
     );
   }
@@ -299,13 +311,25 @@ export default function JournalPage() {
                 type="button"
                 onClick={() => {
                   if (!statsWrapperRef.current) return;
+                  const rated = entries.filter((e) => e.rating != null);
+                  const avgRating = rated.length > 0
+                    ? Math.round((rated.reduce((s, e) => s + (e.rating ?? 0), 0) / rated.length) * 10) / 10
+                    : null;
+                  const caption = generateStatsCaption(entries.length, avgRating);
                   setIsSharingStats(true);
-                  captureStatsAndShare(statsWrapperRef.current).finally(() => setIsSharingStats(false));
+                  captureStatsAndShare(statsWrapperRef.current, caption).finally(() => setIsSharingStats(false));
                 }}
                 disabled={isSharingStats}
-                className="flex items-center gap-1.5 text-xs font-semibold text-primary/70 hover:text-primary transition-colors disabled:opacity-50"
+                className="flex items-center gap-1 disabled:opacity-50 transition-colors"
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 9999,
+                  border: '1px solid rgba(244,157,37,0.6)',
+                  color: '#f49d25',
+                  fontSize: 12,
+                }}
               >
-                <span className="material-symbols-outlined text-base">share</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>share</span>
                 {isSharingStats ? "Sharing…" : "Share Stats"}
               </button>
             </div>
@@ -359,14 +383,15 @@ export default function JournalPage() {
         const entry = entries.find((e) => e.id === sharingBrewId);
         if (!entry) return null;
         const bean = beans.find((b) => b.id === entry.beanId);
-        const beanName = bean ? `${bean.roaster} — ${bean.beanName}` : undefined;
+        const beanName = bean ? `${bean.roaster} — ${bean.beanName}` : (entry.beanName ?? undefined);
+        const caption = generateBrewCaption({ rating: entry.rating, methodId: entry.methodId, beanName });
         return (
           <div
             style={{ position: "fixed", left: -9999, top: 0, pointerEvents: "none" }}
             ref={(el) => {
               if (!el) return;
               captureAsBlob(el)
-                .then((blob) => shareOrDownload(blob, "coffee-coach-brew.png", SHARE_CAPTION))
+                .then((blob) => shareOrDownload(blob, "coffee-coach-brew.png", caption))
                 .finally(() => setSharingBrewId(null));
             }}
           >

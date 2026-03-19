@@ -6,12 +6,10 @@ import { useParams, useRouter } from "next/navigation";
 
 import { GoalPicker } from "@/components/GoalPicker";
 import { SymptomPicker } from "@/components/SymptomPicker";
-import { BrewShareCard } from "@/components/share/BrewShareCard";
 import { postCoachingApi, postFavouriteBrewApi, type CoachingResponseApi, type CoachingChangeApi } from "@/lib/api";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useBeansStore } from "@/lib/beansStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
-import { captureAsBlob, shareOrDownload, SHARE_CAPTION } from "@/lib/shareUtils";
 
 function methodLabel(methodId: string | null | undefined) {
   if (!methodId) return "Unknown Method";
@@ -87,7 +85,6 @@ export default function BrewCoachPage() {
   const [isSavingFavourite, setIsSavingFavourite] = useState(false);
   const [isFavouriteSaved, setIsFavouriteSaved] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [userInitial, setUserInitial] = useState("U");
 
@@ -444,26 +441,6 @@ export default function BrewCoachPage() {
             </div>
           </div>
 
-          {/* Share pill button */}
-          <div className="mt-3 flex justify-end">
-            <button
-              type="button"
-              onClick={() => setIsSharing(true)}
-              disabled={isSharing}
-              className="flex items-center gap-1 disabled:opacity-50 transition-colors"
-              style={{
-                padding: '4px 10px',
-                borderRadius: 9999,
-                border: '1px solid rgba(244,157,37,0.6)',
-                color: '#f49d25',
-                fontSize: 12,
-                fontWeight: 600,
-              }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>share</span>
-              Share brew
-            </button>
-          </div>
         </div>
 
         {/* Symptoms — shown before coaching is requested */}
@@ -475,7 +452,7 @@ export default function BrewCoachPage() {
               </div>
             ) : (
               <>
-                <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold" style={{ marginBottom: 10 }}>What do you want to fix?</p>
+                <p className="text-xs uppercase tracking-widest text-primary/70" style={{ marginBottom: 10 }}>What do you want to fix?</p>
                 <SymptomPicker selected={selectedSymptoms} onToggle={toggleSymptom} />
               </>
             )}
@@ -704,20 +681,6 @@ export default function BrewCoachPage() {
         )}
       </div>
 
-      {/* Off-screen brew share card capture */}
-      {isSharing && (
-        <div
-          style={{ position: "fixed", left: -9999, top: 0, pointerEvents: "none" }}
-          ref={(el) => {
-            if (!el) return;
-            captureAsBlob(el)
-              .then((blob) => shareOrDownload(blob, "coffee-coach-brew.png", SHARE_CAPTION))
-              .finally(() => setIsSharing(false));
-          }}
-        >
-          <BrewShareCard entry={brew} beanName={beanName} />
-        </div>
-      )}
     </main>
   );
 }

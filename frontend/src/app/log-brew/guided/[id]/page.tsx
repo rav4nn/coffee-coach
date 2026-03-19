@@ -10,7 +10,7 @@ import { useBrewSessionStore } from "@/lib/brewSessionStore";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 import { RecipeShareCard } from "@/components/share/RecipeShareCard";
-import { captureAsBlob, shareOrDownload, SHARE_CAPTION } from "@/lib/shareUtils";
+import { captureAsBlob, generateRecipeCaption, shareOrDownload } from "@/lib/shareUtils";
 
 type Phase = "preview" | "brewing" | "confirm" | "complete";
 
@@ -235,6 +235,9 @@ export default function GuidedRecipeDetailPage() {
             const grindVal = ep?.grind_size ?? data.grind_size;
             const grind = GRIND_SIZES.find((g) => g.toLowerCase() === grindVal?.toLowerCase()) ?? "Medium";
             setConfirmGrindSize(grind);
+            if (ep?.grinder_clicks != null) {
+              setConfirmGrinderClicks(String(ep.grinder_clicks));
+            }
             setConfirmBrewTime(formatTimer(existingSession.total_brew_time_seconds));
             setConfirmBrewTimeDisplay(formatTimer(existingSession.total_brew_time_seconds));
             setPhase("confirm");
@@ -482,6 +485,9 @@ export default function GuidedRecipeDetailPage() {
         const grindVal = ep?.grind_size ?? recipe.grind_size;
         const grind = GRIND_SIZES.find((g) => g.toLowerCase() === grindVal?.toLowerCase()) ?? "Medium";
         setConfirmGrindSize(grind);
+        if (coachModifiedParams?.grinder_clicks != null) {
+          setConfirmGrinderClicks(String(coachModifiedParams.grinder_clicks));
+        }
       }
       // Default brew time: sum of timed steps, or manual timer if used, or total elapsed
       const defaultBrewSecs = totalTimerSeconds > 0
@@ -845,7 +851,7 @@ export default function GuidedRecipeDetailPage() {
                 </select>
               </div>
             )}
-            {coachChangeMap.has("grindSize") && (
+            {coachChangeMap.has("grindSize") && coachModifiedParams?.grinder_clicks == null && (
               <CoachHintInline label={coachChangeMap.get("grindSize")!.suggestion} param="grindSize" />
             )}
           </div>
@@ -1228,8 +1234,15 @@ export default function GuidedRecipeDetailPage() {
           style={{ position: "fixed", left: -9999, top: 0, pointerEvents: "none" }}
           ref={(el) => {
             if (!el) return;
+            const caption = generateRecipeCaption({
+              title: recipe.title,
+              method: recipe.method,
+              coffeeG: recipe.coffee_g,
+              waterMl: recipe.water_ml,
+              waterTempC: recipe.water_temp_c,
+            });
             captureAsBlob(el)
-              .then((blob) => shareOrDownload(blob, "coffee-coach-recipe.png", SHARE_CAPTION))
+              .then((blob) => shareOrDownload(blob, "coffee-coach-recipe.png", caption))
               .finally(() => setIsSharing(false));
           }}
         >

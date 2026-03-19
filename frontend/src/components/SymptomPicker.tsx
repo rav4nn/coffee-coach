@@ -32,7 +32,7 @@ export function SymptomPicker({
               background: active ? "#3a2a1a" : "#2a1a0a",
               color: active ? "#f49d25" : "#f1f5f9",
               fontSize: 14,
-              fontWeight: 600,
+              fontWeight: 400,
               textTransform: "capitalize",
               transition: "all 150ms ease",
               width: "100%",

@@ -58,11 +58,53 @@ function loadImg(src: string): Promise<HTMLImageElement> {
   });
 }
 
+/** Generate a dynamic caption for a single brew share. */
+export function generateBrewCaption(opts: {
+  rating?: number | null;
+  methodId?: string | null;
+  beanName?: string | null;
+}): string {
+  const method = opts.methodId
+    ? opts.methodId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : "coffee";
+  const bean = opts.beanName ?? "my beans";
+  let caption = opts.rating != null
+    ? `Coach Kapi helped me brew a ${opts.rating}/10 ${method} ☕\n`
+    : `Brewing ${method} with Coach Kapi ☕\n`;
+  caption += `Dialling in my ${bean} one cup at a time.`;
+  if (opts.rating != null && opts.rating >= 9) caption += `\nGetting close to perfect! 🏆`;
+  caption += `\nJoin me at coffeecoach.app 🎯`;
+  return caption;
+}
+
+/** Generate a dynamic caption for a stats share. */
+export function generateStatsCaption(totalBrews: number, avgRating: number | null): string {
+  let caption = `I've logged ${totalBrews} brew${totalBrews !== 1 ? "s" : ""} on Coffee Coach ☕`;
+  if (avgRating != null) caption += `\nAverage rating: ${avgRating}/10`;
+  caption += `\nBrewing better every cup — join me at coffeecoach.app 🎯`;
+  if (avgRating != null && avgRating >= 8) caption += `\nAlmost dialled in! 🏆`;
+  if (totalBrews >= 10) caption += `\n10+ brews logged 📊`;
+  return caption;
+}
+
+/** Generate a caption for a recipe share. */
+export function generateRecipeCaption(opts: {
+  title: string;
+  method: string;
+  coffeeG: number;
+  waterMl: number;
+  waterTempC?: number | null;
+}): string {
+  const method = opts.method.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const temp = opts.waterTempC ? ` · ${opts.waterTempC}°C` : "";
+  return `Just brewed ${opts.title} on Coffee Coach ☕\n${method} · ${opts.coffeeG}g coffee · ${opts.waterMl}ml water${temp}\nCoach Kapi helped me dial it in 🎯\nFind this recipe at coffeecoach.app`;
+}
+
 /**
  * Captures the stats DOM element and composites it between a Coffee Coach
  * branding header and footer using Canvas API, then shares.
  */
-export async function captureStatsAndShare(statsEl: HTMLElement) {
+export async function captureStatsAndShare(statsEl: HTMLElement, caption?: string) {
   const HEADER_H = 64; // CSS px
   const FOOTER_H = 44; // CSS px
 
@@ -130,5 +172,5 @@ export async function captureStatsAndShare(statsEl: HTMLElement) {
   ctx.fillText("coffeecoach.app", W / 2, canvas.height - 14 * scale);
 
   const finalBlob = await canvasToBlob(canvas);
-  await shareOrDownload(finalBlob, "coffee-coach-stats.png");
+  await shareOrDownload(finalBlob, "coffee-coach-stats.png", caption ?? SHARE_CAPTION);
 }
