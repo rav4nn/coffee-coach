@@ -27,6 +27,7 @@ export default function Home() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [primaryMethod, setPrimaryMethod] = useState<string | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const entries = useBrewHistoryStore((state) => state.entries);
   const loading = useBrewHistoryStore((state) => state.loading);
@@ -48,6 +49,16 @@ export default function Home() {
       })
       .catch(() => {})
       .finally(() => setProfileLoaded(true));
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const message = window.sessionStorage.getItem("coffee-coach-home-toast");
+    if (!message) return;
+    setToastMessage(message);
+    window.sessionStorage.removeItem("coffee-coach-home-toast");
+    const timer = window.setTimeout(() => setToastMessage(null), 2400);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const isLoading = loading || !profileLoaded;
@@ -188,6 +199,12 @@ export default function Home() {
       </main>
 
       <ProfileDrawer open={profileOpen} onClose={() => setProfileOpen(false)} />
+
+      {toastMessage && (
+        <div className="fixed left-1/2 top-4 z-30 -translate-x-1/2 rounded-full border border-primary/30 bg-[#2a1a0a] px-4 py-2 text-sm text-slate-100 shadow-lg">
+          {toastMessage}
+        </div>
+      )}
     </>
   );
 }

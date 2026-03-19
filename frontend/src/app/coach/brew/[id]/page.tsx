@@ -86,6 +86,12 @@ export default function BrewCoachPage() {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [userInitial, setUserInitial] = useState("U");
+  const [ratingLocked, setRatingLocked] = useState(false);
+  const [showSelections, setShowSelections] = useState(false);
+  const [symptomsEntered, setSymptomsEntered] = useState(false);
+  const [goalsEntered, setGoalsEntered] = useState(false);
+  const [showPerfectCelebration, setShowPerfectCelebration] = useState(false);
+  const [perfectCelebrationEntered, setPerfectCelebrationEntered] = useState(false);
 
   // ── Animation state ──────────────────────────────────────────────────────
   const [selectionExiting, setSelectionExiting] = useState(false);
@@ -126,6 +132,7 @@ export default function BrewCoachPage() {
   const sliderSectionRef = useRef<HTMLDivElement>(null);
   const symptomsSectionRef = useRef<HTMLDivElement>(null);
   const goalsSectionRef = useRef<HTMLDivElement>(null);
+  const perfectCelebrationRef = useRef<HTMLDivElement>(null);
   const getCoachingBtnRef = useRef<HTMLButtonElement>(null);
   // Prevents locked-brew animation from firing twice (StrictMode / re-renders)
   const hasStartedAnimation = useRef(false);
@@ -153,12 +160,15 @@ export default function BrewCoachPage() {
   useEffect(() => {
     hasStartedAnimation.current = false;
     clearSequenceState();
+    resetRatingFlow();
   }, [brewId]);
 
   // Hydrate response state from existing brew data
   useEffect(() => {
     if (brew) {
       setRating(brew.rating ?? 5);
+      setRatingLocked(!!brew.coachingFeedback);
+      setShowSelections(!!brew.coachingFeedback);
       if (brew.coachingFeedback) {
         setResponse({
           fix: brew.coachingFeedback,
@@ -169,7 +179,6 @@ export default function BrewCoachPage() {
   }, [brew]);
 
   const isLocked = !!brew?.coachingFeedback;
-  const isRated = brew?.rating != null;
   const isPerfect = rating === 10;
   const isAlreadyFavourite = !!brew?.isFavourite;
   const isOscillating = response?.trend === "oscillating";
@@ -221,6 +230,15 @@ export default function BrewCoachPage() {
     setShowKapiReplyCursor(false);
     setShowCtaBtn(false);
     setCtaBtnAnimate(false);
+  }
+
+  function resetRatingFlow() {
+    setRatingLocked(false);
+    setShowSelections(false);
+    setSymptomsEntered(false);
+    setGoalsEntered(false);
+    setShowPerfectCelebration(false);
+    setPerfectCelebrationEntered(false);
   }
 
   useEffect(() => {
@@ -517,9 +535,36 @@ export default function BrewCoachPage() {
         updateEntry(brewId, { rating: 10, isFavourite: true }),
       ]);
       setIsFavouriteSaved(true);
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem("coffee-coach-home-toast", "Added to your Best Brews! ☕");
+      }
+      router.push("/");
     } finally {
       setIsSavingFavourite(false);
     }
+  }
+
+  async function handleDoneRating() {
+    if (ratingLocked || isLocked || isAnimatingRef.current) return;
+
+    setRatingLocked(true);
+
+    if (rating === 10) {
+      setShowPerfectCelebration(true);
+      await wait(16);
+      setPerfectCelebrationEntered(true);
+      await wait(200);
+      perfectCelebrationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    setShowSelections(true);
+    await wait(16);
+    setSymptomsEntered(true);
+    await wait(150);
+    setGoalsEntered(true);
+    await wait(50);
+    symptomsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function handleBrewWithCoach() {
@@ -537,9 +582,19 @@ export default function BrewCoachPage() {
 
   // ── Derived ──────────────────────────────────────────────────────────────
   const anySelected = selectedSymptoms.length > 0 || selectedGoals.length > 0;
-  const showSelectionUI = !selectionHidden && !isLocked && !isPerfect;
-  const showGetCoachingBtn = !selectionHidden && !isLocked && !isPerfect;
-  const displayedTitle = (isLocked || titleIsAdvice || isRated) ? "Coach's Advice" : "How was this brew?";
+  const showSelectionUI =
+    !selectionHidden &&
+    !isLocked &&
+    ratingLocked &&
+    showSelections &&
+    !showPerfectCelebration;
+  const showGetCoachingBtn =
+    !selectionHidden &&
+    !isLocked &&
+    ratingLocked &&
+    showSelections &&
+    !showPerfectCelebration;
+  const displayedTitle = (isLocked || titleIsAdvice) ? "Coach's Advice" : "How was this brew?";
   const exitStyle = selectionExiting
     ? { opacity: 0, transform: "translateY(-12px)", transition: "opacity 300ms ease-out, transform 300ms ease-out" }
     : { opacity: 1, transform: "translateY(0)", transition: "opacity 300ms ease-out, transform 300ms ease-out" };
@@ -707,16 +762,44 @@ export default function BrewCoachPage() {
           </div>
         </div>
 
-        {!isPerfect && (
+        {!selectionHidden && !isPerfect && (
           <div ref={sliderSectionRef} className="mt-5 mb-6" style={exitStyle}>
-            <RatingSlider value={rating} onChange={handleRatingChange} disabled={isLocked} />
+            <RatingSlider
+              value={rating}
+              onChange={handleRatingChange}
+              disabled={isLocked || ratingLocked}
+              locked={ratingLocked}
+            />
+            {!isLocked && !ratingLocked && (
+              <button
+                type="button"
+                onClick={handleDoneRating}
+                className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary font-normal text-background-dark"
+              >
+                Done
+                <span className="material-symbols-outlined text-base">arrow_forward</span>
+              </button>
+            )}
+            {!isLocked && ratingLocked && (
+              <div className="mt-4 flex h-12 w-full items-center justify-center rounded-xl border border-primary text-center text-primary">
+                {rating}/10 <span className="ml-1">✓</span>
+              </div>
+            )}
           </div>
         )}
 
         {/* Symptoms + Goals — exit-animated, then removed from DOM */}
         {showSelectionUI && (
           <>
-            <div ref={symptomsSectionRef} style={{ marginTop: 28, ...exitStyle }}>
+            <div
+              ref={symptomsSectionRef}
+              style={{
+                marginTop: 28,
+                opacity: symptomsEntered ? 1 : 0,
+                transform: symptomsEntered ? "translateY(0)" : "translateY(12px)",
+                transition: "opacity 400ms ease-out, transform 400ms ease-out",
+              }}
+            >
               {isOscillating ? (
                 <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4 text-sm text-slate-300">
                   Keep brew inputs consistent for 2–3 brews before making new changes.
@@ -729,7 +812,15 @@ export default function BrewCoachPage() {
               )}
             </div>
             {!isOscillating && (
-              <div ref={goalsSectionRef} style={{ marginTop: 28, ...exitStyle }}>
+              <div
+                ref={goalsSectionRef}
+                style={{
+                  marginTop: 28,
+                  opacity: goalsEntered ? 1 : 0,
+                  transform: goalsEntered ? "translateY(0)" : "translateY(12px)",
+                  transition: "opacity 400ms ease-out, transform 400ms ease-out",
+                }}
+              >
                 <p className="text-xs font-normal uppercase tracking-widest text-primary/70" style={{ marginBottom: 10 }}>Set a goal</p>
                 <GoalPicker selected={selectedGoals} maxSelections={1} onToggle={toggleGoal} />
               </div>
@@ -737,35 +828,39 @@ export default function BrewCoachPage() {
           </>
         )}
 
-        {/* 10/10 perfect brew — already saved */}
-        {isPerfect && isAlreadyFavourite && (
-          <div className="mt-4 rounded-2xl bg-primary/10 border border-primary/30 p-5 text-center space-y-3">
-            <span className="material-symbols-outlined text-primary text-4xl">star</span>
-            <p className="font-bold text-slate-100 text-lg">Excellent brew!</p>
-          </div>
-        )}
-
-        {/* 10/10 perfect brew — not yet saved */}
-        {isPerfect && !isAlreadyFavourite && !isLocked && (
-          <div className="mt-4 rounded-2xl bg-primary/10 border border-primary/30 p-5 text-center space-y-3">
-            <span className="material-symbols-outlined text-primary text-4xl">star</span>
-            <p className="font-bold text-slate-100 text-lg">Excellent brew!</p>
-            <p className="text-sm text-slate-400">You&apos;ve nailed this one. Save it so you can repeat it.</p>
-            {isFavouriteSaved ? (
-              <div className="flex items-center justify-center gap-2 text-primary font-semibold">
-                <span className="material-symbols-outlined text-sm">favorite</span>
-                Saved as Favourite
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={handleSaveFavourite}
-                disabled={isSavingFavourite}
-                className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-sm disabled:opacity-50"
-              >
-                {isSavingFavourite ? "Saving\u2026" : "Save this Recipe"}
-              </button>
-            )}
+        {showPerfectCelebration && (
+          <div
+            ref={perfectCelebrationRef}
+            className="mt-8 text-center"
+            style={{
+              opacity: perfectCelebrationEntered ? 1 : 0,
+              transform: perfectCelebrationEntered ? "scale(1)" : "scale(0.8)",
+              transition: "opacity 500ms ease-out, transform 500ms ease-out",
+            }}
+          >
+            <div className="flex justify-center">
+              <img
+                src="/coach/coffee_coach_excited.png"
+                alt="Coach Kapi celebrating"
+                width={140}
+                height={140}
+                style={{ mixBlendMode: "screen" }}
+              />
+            </div>
+            <h2 className="mt-3 text-[22px] font-normal text-slate-100">
+              Perfect Brew! <span className="text-primary">✓</span>
+            </h2>
+            <p className="mt-2 text-xs text-slate-400">
+              Coach Kapi is saving this to your Best Brews.
+            </p>
+            <button
+              type="button"
+              onClick={handleSaveFavourite}
+              disabled={isSavingFavourite || isFavouriteSaved || isAlreadyFavourite}
+              className="mt-6 flex h-12 w-full items-center justify-center rounded-xl bg-primary font-normal text-background-dark disabled:opacity-60"
+            >
+              {isSavingFavourite ? "Saving…" : isFavouriteSaved || isAlreadyFavourite ? "Saved to Best Brews" : "Save to Best Brews"}
+            </button>
           </div>
         )}
 
@@ -969,19 +1064,11 @@ export default function BrewCoachPage() {
         )}
 
         {/* Brew this again */}
-        {isPerfect && isAlreadyFavourite && (
+        {isPerfect && isAlreadyFavourite && isLocked && (
           <button type="button" onClick={handleBrewWithCoach}
             className="mt-4 w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base flex items-center justify-center gap-2">
             <span className="material-symbols-outlined text-base">coffee_maker</span>
             Brew this again
-          </button>
-        )}
-
-        {/* Done / Skip */}
-        {isPerfect && !isAlreadyFavourite && !isLocked && (
-          <button onClick={() => router.push("/coach")}
-            className={`mt-4 w-full h-12 rounded-xl font-bold text-base ${isFavouriteSaved ? "bg-primary text-background-dark" : "border border-primary/30 text-primary"}`}>
-            {isFavouriteSaved ? "Done" : "Skip for Now"}
           </button>
         )}
       </div>
@@ -992,7 +1079,6 @@ export default function BrewCoachPage() {
           className="fixed bottom-36 left-0 right-0 max-w-phone mx-auto z-20 px-4"
           style={{ pointerEvents: "none" }}
         >
-          <div style={{ height: 60, background: "linear-gradient(to bottom, transparent, #1a0f00)", pointerEvents: "none", marginBottom: -4 }} />
           <button
             ref={getCoachingBtnRef}
             onClick={handleGetCoaching}

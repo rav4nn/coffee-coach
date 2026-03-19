@@ -143,7 +143,7 @@ export default function LogBrewStepTwoPage() {
       <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
       <CompactFlowHeader
-        title="How do you want to brew?"
+        title="Choose how to brew"
         onBack={() => router.push("/log-brew")}
         progressCount={3}
         currentStep={2}

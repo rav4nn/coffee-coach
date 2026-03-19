@@ -2,10 +2,12 @@ export function RatingSlider({
   value,
   onChange,
   disabled = false,
+  locked = false,
 }: {
   value: number;
   onChange: (value: number) => void;
   disabled?: boolean;
+  locked?: boolean;
 }) {
   return (
     <div>
@@ -29,8 +31,8 @@ export function RatingSlider({
         .coach-rating-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 20px;
-          height: 20px;
+          width: var(--thumb-size);
+          height: var(--thumb-size);
           border-radius: 999px;
           background: #f49d25;
           border: 0;
@@ -38,8 +40,8 @@ export function RatingSlider({
           cursor: pointer;
         }
         .coach-rating-slider::-moz-range-thumb {
-          width: 20px;
-          height: 20px;
+          width: var(--thumb-size);
+          height: var(--thumb-size);
           border-radius: 999px;
           background: #f49d25;
           border: 0;
@@ -67,7 +69,11 @@ export function RatingSlider({
         disabled={disabled}
         onChange={(event) => onChange(Number(event.target.value))}
         className="coach-rating-slider mt-3"
-        style={{ ["--value" as string]: value, opacity: disabled ? 0.6 : 1 }}
+        style={{
+          ["--value" as string]: value,
+          ["--thumb-size" as string]: locked ? "16px" : "20px",
+          opacity: locked ? 0.7 : disabled ? 0.6 : 1,
+        }}
       />
       <div className="mt-2 flex justify-between">
         <span className="text-[11px] font-normal text-slate-500">Poor</span>
