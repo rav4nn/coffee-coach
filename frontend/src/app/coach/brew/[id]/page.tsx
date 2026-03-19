@@ -52,12 +52,12 @@ function CoachingChanges({ changes }: { changes: CoachingChangeApi[] }) {
   const displayable = changes.filter((c) => c.previousValue != null && c.newValue != null);
   if (displayable.length === 0) return null;
   return (
-    <div className="mt-3 pt-3 border-t border-primary/15 space-y-1.5">
-      <p className="text-[10px] uppercase tracking-widest text-primary/50 font-semibold">Suggested adjustments</p>
+    <div className="mt-3 pt-3 space-y-1.5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Suggested adjustments</p>
       {displayable.map((change, i) => (
         <div key={i} className="flex items-center justify-between gap-2">
           <span className="text-xs text-slate-400">{PARAM_LABELS[change.param] ?? change.param}</span>
-          <span className="text-xs font-semibold text-slate-200">{formatChangeDisplay(change)}</span>
+          <span className="text-xs font-semibold text-primary">{formatChangeDisplay(change)}</span>
         </div>
       ))}
     </div>
@@ -285,9 +285,48 @@ export default function BrewCoachPage() {
     ? `${brew.roasterName} — ${brew.beanName}`
     : brew.beanName ?? "Archived Bean";
   const imgSrc = methodImage(brew.methodId);
+  const showCoachBubble = isLocked || (!isLocked && (!!response?.fix || isLoading));
 
   return (
     <main className="overflow-y-auto pb-28">
+      <style>{`
+        @keyframes kapiPulse {
+          0%, 100% { transform: scale(1); }
+          50%       { transform: scale(1.08); }
+        }
+        .kapi-pulse { animation: kapiPulse 1s ease-in-out infinite; }
+
+        @keyframes chatFadeIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .chat-bubble-wrapper {
+          animation: chatFadeIn 0.5s ease-out 0.2s both;
+        }
+        .chat-bubble-tail::before {
+          content: '';
+          position: absolute;
+          left: -9px;
+          top: 14px;
+          width: 0;
+          height: 0;
+          border-top: 8px solid transparent;
+          border-bottom: 8px solid transparent;
+          border-right: 8px solid rgba(244,157,37,0.3);
+        }
+        .chat-bubble-tail::after {
+          content: '';
+          position: absolute;
+          left: -7px;
+          top: 14px;
+          width: 0;
+          height: 0;
+          border-top: 8px solid transparent;
+          border-bottom: 8px solid transparent;
+          border-right: 8px solid #2a1a0a;
+        }
+      `}</style>
+
       {/* Header */}
       <div className="px-4 pt-4 pb-2">
         <button
@@ -316,17 +355,19 @@ export default function BrewCoachPage() {
       </div>
 
       <div className="px-4 py-4 space-y-4">
-        <style>{`
-          @keyframes kapiPulse {
-            0%, 100% { transform: scale(1); }
-            50%       { transform: scale(1.08); }
-          }
-          .kapi-pulse { animation: kapiPulse 1s ease-in-out infinite; }
-        `}</style>
 
-        {/* Brew Parameters Summary */}
-        <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
-          <div className="flex items-center gap-3 mb-3">
+        {/* Brew Parameters Card */}
+        <div className="relative rounded-2xl border border-primary/15 bg-primary/5 p-4">
+          {/* Rating badge — top right */}
+          {brew.rating != null && (
+            <div className="absolute top-3 right-4 text-right leading-none">
+              <span style={{ color: '#f49d25', fontSize: 20, fontWeight: 700 }}>{brew.rating}</span>
+              <span style={{ color: 'rgba(244,157,37,0.5)', fontSize: 14, fontWeight: 600 }}>/10</span>
+            </div>
+          )}
+
+          {/* Method + bean header */}
+          <div className="flex items-center gap-3 mb-3 pr-12">
             <div className="w-10 h-10 rounded-lg bg-espresso/20 border border-espresso/30 flex items-center justify-center shrink-0 overflow-hidden">
               <Image src={imgSrc} alt="" width={28} height={28} className="w-7 h-7 object-contain" />
             </div>
@@ -335,32 +376,34 @@ export default function BrewCoachPage() {
               <p className="text-xs text-slate-400">{methodLabel(brew.methodId)}</p>
             </div>
           </div>
-          <div className="grid grid-cols-4 gap-2 text-center">
-            <div className="bg-background-dark/40 rounded-lg py-2">
+
+          {/* Parameter grid: 3 across, then 2 centered */}
+          <div className="grid grid-cols-6 gap-2 text-center">
+            <div className="col-span-2 bg-background-dark/40 rounded-lg py-2">
               <p className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Dose</p>
               <p className="text-xs font-bold text-slate-200 mt-0.5">{brew.coffeeGrams}g</p>
             </div>
-            <div className="bg-background-dark/40 rounded-lg py-2">
+            <div className="col-span-2 bg-background-dark/40 rounded-lg py-2">
               <p className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Water</p>
               <p className="text-xs font-bold text-slate-200 mt-0.5">{brew.waterMl}ml</p>
             </div>
-            <div className="bg-background-dark/40 rounded-lg py-2">
+            <div className="col-span-2 bg-background-dark/40 rounded-lg py-2">
               <p className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Temp</p>
               <p className="text-xs font-bold text-slate-200 mt-0.5">{brew.waterTempC ? `${brew.waterTempC}°C` : "—"}</p>
             </div>
-            <div className="bg-background-dark/40 rounded-lg py-2">
+            <div className="col-span-3 bg-background-dark/40 rounded-lg py-2">
               <p className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Grind</p>
               <p className="text-xs font-bold text-slate-200 mt-0.5">
                 {brew.grinderClicks ? `${brew.grinderClicks} clicks` : brew.grindSize}
               </p>
             </div>
-          </div>
-          {brew.brewTime && (
-            <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-slate-400">
-              <span className="material-symbols-outlined text-sm">timer</span>
-              {brew.brewTime} brew time
+            <div className="col-span-3 bg-background-dark/40 rounded-lg py-2">
+              <p className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Brew Time</p>
+              <p className="text-xs font-bold text-slate-200 mt-0.5">{brew.brewTime || "—"}</p>
             </div>
-          )}
+          </div>
+
+          {/* Share button */}
           <div className="mt-3 flex justify-end">
             <button
               type="button"
@@ -374,7 +417,7 @@ export default function BrewCoachPage() {
           </div>
         </div>
 
-        {/* Symptoms — above slider */}
+        {/* Symptoms — shown before coaching is requested */}
         {!isLocked && !isPerfect && !response?.fix && (
           <div className="space-y-2">
             {isOscillating ? (
@@ -390,30 +433,7 @@ export default function BrewCoachPage() {
           </div>
         )}
 
-        {/* Rating Slider */}
-        <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-semibold text-slate-100">Rate This Brew</p>
-            <span className="text-primary font-bold text-lg">
-              {rating}<span className="text-xs text-slate-400">/10</span>
-            </span>
-          </div>
-          <input
-            type="range"
-            min={1}
-            max={10}
-            value={rating}
-            onChange={(e) => !isLocked && !isAlreadyFavourite && handleRatingChange(Number(e.target.value))}
-            disabled={isLocked || isAlreadyFavourite}
-            className="w-full accent-primary disabled:opacity-60"
-          />
-          <div className="flex justify-between mt-1">
-            <span className="text-xs text-slate-500">Poor</span>
-            <span className="text-xs text-slate-500">Excellent</span>
-          </div>
-        </div>
-
-        {/* Goals — below slider */}
+        {/* Goals — below symptoms */}
         {!isLocked && !isPerfect && !response?.fix && !isOscillating && (
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">Set a goal</p>
@@ -453,45 +473,28 @@ export default function BrewCoachPage() {
           </div>
         )}
 
-        {/* Locked: read-only feedback */}
-        {isLocked && response?.fix && (
-          <>
-            <div className="flex justify-center">
-              <img
-                src="/coach/coffee_coach_whispering.png"
-                alt="Coach Kapi"
-                width={100}
-                height={100}
-                style={{ mixBlendMode: "screen" }}
-              />
-            </div>
-            <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4" style={{ borderLeft: '3px solid #f49d25' }}>
-              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Coach Says</p>
-              <p className="text-base font-medium text-slate-100 leading-relaxed">{response.fix}</p>
-              {response.freshness_caveat && (
-                <p className="mt-2 text-xs text-slate-400">Freshness note: {response.freshness_caveat}</p>
-              )}
-              {response.changes && <CoachingChanges changes={response.changes} />}
-            </div>
-          </>
-        )}
-
-        {/* Coaching response */}
-        {!isLocked && (response?.fix || isLoading) && (
-          <>
-            {response?.fix && !isLoading && (
-              <div className="flex justify-center">
-                <img
-                  src="/coach/coffee_coach_whispering.png"
-                  alt="Coach Kapi"
-                  width={100}
-                  height={100}
-                  style={{ mixBlendMode: "screen" }}
-                />
-              </div>
-            )}
-            <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4" style={response?.fix && !isLoading ? { borderLeft: '3px solid #f49d25' } : {}}>
-              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Coach Says</p>
+        {/* Chat bubble coaching response */}
+        {showCoachBubble && (
+          <div className="chat-bubble-wrapper flex items-start gap-3">
+            <img
+              src="/coach/coffee_coach_whispering.png"
+              alt="Coach Kapi"
+              width={56}
+              height={56}
+              className="shrink-0"
+              style={{ mixBlendMode: "screen" }}
+            />
+            <div
+              className="chat-bubble-tail relative flex-1 p-4"
+              style={{
+                background: "#2a1a0a",
+                border: "1px solid rgba(244,157,37,0.3)",
+                borderRadius: "4px 16px 16px 16px",
+              }}
+            >
+              <p className="text-[10px] uppercase tracking-wider font-semibold mb-2" style={{ color: "#f49d25" }}>
+                Coach Kapi
+              </p>
               {isLoading ? (
                 <p className="text-sm text-slate-400 animate-pulse">Getting your coaching tip…</p>
               ) : (
@@ -504,7 +507,7 @@ export default function BrewCoachPage() {
                 </>
               )}
             </div>
-          </>
+          </div>
         )}
 
         {/* Escalation warning */}
@@ -572,7 +575,7 @@ export default function BrewCoachPage() {
           <button
             type="button"
             onClick={handleBrewWithCoach}
-            className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base flex items-center justify-center gap-2"
+            className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base flex items-center justify-center gap-2 mt-6"
           >
             <span className="material-symbols-outlined text-base">coffee_maker</span>
             Brew with the coach&apos;s help
