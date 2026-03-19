@@ -88,6 +88,8 @@ export default function BrewCoachPage() {
   const [isFavouriteSaved, setIsFavouriteSaved] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [userInitial, setUserInitial] = useState("U");
 
   useEffect(() => {
     if (!isThinking) return;
@@ -98,6 +100,16 @@ export default function BrewCoachPage() {
   useEffect(() => {
     Promise.all([fetchEntries(), fetchBeans()]).finally(() => setDataLoaded(true));
   }, [fetchEntries, fetchBeans]);
+
+  useEffect(() => {
+    fetch("/api/users/me", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((user) => {
+        if (typeof user.picture === "string" && user.picture) setUserAvatar(user.picture);
+        if (typeof user.name === "string" && user.name) setUserInitial(user.name.charAt(0).toUpperCase());
+      })
+      .catch(() => {});
+  }, []);
 
   const brew = useMemo(() => entries.find((e) => e.id === brewId) ?? null, [entries, brewId]);
   const bean = useMemo(() => (brew?.beanId ? beans.find((b) => b.id === brew.beanId) : null), [brew, beans]);
@@ -286,6 +298,7 @@ export default function BrewCoachPage() {
     : brew.beanName ?? "Archived Bean";
   const imgSrc = methodImage(brew.methodId);
   const showCoachBubble = isLocked || (!isLocked && (!!response?.fix || isLoading));
+  const showUserReply = !isPerfect && (!!response?.fix || isLocked);
 
   return (
     <main className="overflow-y-auto pb-28">
@@ -325,18 +338,46 @@ export default function BrewCoachPage() {
           border-bottom: 8px solid transparent;
           border-right: 8px solid #2a1a0a;
         }
+
+        @keyframes userBubbleFadeIn {
+          from { opacity: 0; transform: translateX(12px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .user-reply-wrapper {
+          animation: userBubbleFadeIn 0.4s ease-out 0.6s both;
+        }
+        .user-bubble-btn {
+          transition: transform 100ms ease;
+        }
+        .user-bubble-btn:active {
+          transform: scale(0.97);
+        }
+        .user-bubble-tail::before {
+          content: '';
+          position: absolute;
+          right: -9px;
+          top: 14px;
+          width: 0;
+          height: 0;
+          border-top: 8px solid transparent;
+          border-bottom: 8px solid transparent;
+          border-left: 8px solid rgba(244,157,37,0.7);
+        }
+        .user-bubble-tail::after {
+          content: '';
+          position: absolute;
+          right: -7px;
+          top: 14px;
+          width: 0;
+          height: 0;
+          border-top: 8px solid transparent;
+          border-bottom: 8px solid transparent;
+          border-left: 8px solid #1a1a2e;
+        }
       `}</style>
 
-      {/* Header */}
+      {/* Page title — back arrow lives in AppHeader */}
       <div className="px-4 pt-4 pb-2">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="flex items-center justify-center size-10 -ml-2 mb-1 rounded-full hover:bg-primary/10 transition-colors"
-          aria-label="Go back"
-        >
-          <span className="material-symbols-outlined text-slate-100">arrow_back</span>
-        </button>
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1 min-w-0">
             <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Coaching</p>
@@ -354,20 +395,13 @@ export default function BrewCoachPage() {
         </div>
       </div>
 
-      <div className="px-4 py-4 space-y-4">
+      <div className="px-4 pb-6 space-y-4">
 
         {/* Brew Parameters Card */}
-        <div className="relative rounded-2xl border border-primary/15 bg-primary/5 p-4">
-          {/* Rating badge — top right */}
-          {brew.rating != null && (
-            <div className="absolute top-3 right-4 text-right leading-none">
-              <span style={{ color: '#f49d25', fontSize: 20, fontWeight: 700 }}>{brew.rating}</span>
-              <span style={{ color: 'rgba(244,157,37,0.5)', fontSize: 14, fontWeight: 600 }}>/10</span>
-            </div>
-          )}
+        <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
 
-          {/* Method + bean header */}
-          <div className="flex items-center gap-3 mb-3 pr-12">
+          {/* Method + bean header row with inline rating badge */}
+          <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-lg bg-espresso/20 border border-espresso/30 flex items-center justify-center shrink-0 overflow-hidden">
               <Image src={imgSrc} alt="" width={28} height={28} className="w-7 h-7 object-contain" />
             </div>
@@ -375,6 +409,12 @@ export default function BrewCoachPage() {
               <p className="text-sm font-bold text-slate-100 truncate">{beanName}</p>
               <p className="text-xs text-slate-400">{methodLabel(brew.methodId)}</p>
             </div>
+            {brew.rating != null && (
+              <div className="shrink-0 text-right leading-none">
+                <span style={{ color: '#f49d25', fontSize: 20, fontWeight: 700 }}>{brew.rating}</span>
+                <span style={{ color: 'rgba(244,157,37,0.5)', fontSize: 14, fontWeight: 600 }}>/10</span>
+              </div>
+            )}
           </div>
 
           {/* Parameter grid: 3 across, then 2 centered */}
@@ -403,13 +443,19 @@ export default function BrewCoachPage() {
             </div>
           </div>
 
-          {/* Share button */}
+          {/* Share pill button */}
           <div className="mt-3 flex justify-end">
             <button
               type="button"
               onClick={() => setIsSharing(true)}
               disabled={isSharing}
-              className="flex items-center gap-1.5 text-xs font-semibold text-primary/60 hover:text-primary transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 text-xs font-semibold disabled:opacity-50 transition-colors"
+              style={{
+                padding: '6px 14px',
+                borderRadius: 9999,
+                border: '1px solid rgba(244,157,37,0.6)',
+                color: '#f49d25',
+              }}
             >
               <span className="material-symbols-outlined text-base">share</span>
               Share brew
@@ -473,7 +519,7 @@ export default function BrewCoachPage() {
           </div>
         )}
 
-        {/* Chat bubble coaching response */}
+        {/* Kapi chat bubble */}
         {showCoachBubble && (
           <div className="chat-bubble-wrapper flex items-start gap-3">
             <img
@@ -507,6 +553,47 @@ export default function BrewCoachPage() {
                 </>
               )}
             </div>
+          </div>
+        )}
+
+        {/* User reply chat bubble — replaces "Brew with the coach's help" button */}
+        {showUserReply && (
+          <div className="user-reply-wrapper flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={handleBrewWithCoach}
+              className="user-bubble-btn user-bubble-tail relative"
+              style={{
+                background: "#1a1a2e",
+                border: "1.5px solid rgba(244,157,37,0.7)",
+                borderRadius: "16px 16px 4px 16px",
+                boxShadow: "0 0 8px rgba(244,157,37,0.19)",
+                padding: "12px 16px",
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-slate-300" style={{ fontSize: 16 }}>coffee_maker</span>
+                <span className="text-slate-100" style={{ fontSize: 15, fontWeight: 500 }}>
+                  Brew with coach&apos;s help <span style={{ color: "#f49d25" }}>→</span>
+                </span>
+              </div>
+            </button>
+            {userAvatar ? (
+              <img
+                src={userAvatar}
+                alt="You"
+                width={40}
+                height={40}
+                className="rounded-full shrink-0 object-cover"
+              />
+            ) : (
+              <div
+                className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-base font-bold"
+                style={{ background: "#2a1a0a", border: "1px solid rgba(244,157,37,0.3)", color: "#f49d25" }}
+              >
+                {userInitial}
+              </div>
+            )}
           </div>
         )}
 
@@ -567,18 +654,6 @@ export default function BrewCoachPage() {
           >
             <span className="material-symbols-outlined text-base">coffee_maker</span>
             Brew this again
-          </button>
-        )}
-
-        {/* Brew with coach's help button — for coached brews (not already-favourite 10/10) */}
-        {!isPerfect && (response?.fix || isLocked) && (
-          <button
-            type="button"
-            onClick={handleBrewWithCoach}
-            className="w-full h-12 rounded-xl bg-primary text-background-dark font-bold text-base flex items-center justify-center gap-2 mt-6"
-          >
-            <span className="material-symbols-outlined text-base">coffee_maker</span>
-            Brew with the coach&apos;s help
           </button>
         )}
 

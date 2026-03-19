@@ -1,15 +1,18 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { useBrewSessionStore } from "@/lib/brewSessionStore";
 
 export function AppHeader() {
   const isBrewingActive = useBrewSessionStore((state) => state.isBrewingActive);
   const pathname = usePathname();
+  const router = useRouter();
 
   if (pathname.startsWith("/log-brew")) return null;
   if (pathname === "/") return null;
+
+  const isBrewCoachPage = pathname.startsWith("/coach/brew/");
 
   return (
     <header
@@ -17,7 +20,17 @@ export function AppHeader() {
         isBrewingActive ? "max-h-0 opacity-0" : "max-h-24 opacity-100"
       }`}
     >
-      <div className="flex items-center justify-center px-6 py-5 max-w-phone mx-auto w-full">
+      <div className="relative flex items-center justify-center px-6 py-5 max-w-phone mx-auto w-full">
+        {isBrewCoachPage && (
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="absolute left-4 flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors"
+            aria-label="Go back"
+          >
+            <span className="material-symbols-outlined text-slate-100">arrow_back</span>
+          </button>
+        )}
         <h1 className="text-2xl text-slate-100 tracking-wide" style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300 }}>Coffee Coach</h1>
       </div>
     </header>

@@ -619,7 +619,7 @@ export default function GuidedRecipeDetailPage() {
         `}</style>
 
         <img
-          src="/coach/coffee_coach_excited.png"
+          src="/coach/coffee_coach_waving.png"
           alt="Coach Kapi celebrating"
           width={180}
           height={180}
@@ -627,35 +627,36 @@ export default function GuidedRecipeDetailPage() {
           style={{ mixBlendMode: "screen" }}
         />
 
-        <div className="w-20 h-20 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center mb-2">
-          <span className="material-symbols-outlined text-5xl text-primary">check_circle</span>
-        </div>
-        <h1 className="text-3xl font-bold text-slate-100">Brew Complete!</h1>
+        <h1 className="text-3xl font-bold text-slate-100 flex items-center gap-1.5">
+          Brew Complete!
+          <span style={{ color: "#f49d25", fontSize: 20, lineHeight: 1 }}>✓</span>
+        </h1>
         <div>
-          <p className="text-sm text-slate-300">Great work. Enjoy your cup.</p>
-          <p className="text-sm text-slate-500 mt-1">
+          <p style={{ fontSize: 18, fontWeight: 500, color: "#f1f5f9" }}>Great work. Enjoy your cup.</p>
+          <p className="text-sm text-slate-500 mt-2">
             Come back once you&apos;ve tasted it —<br />
             Coach Kapi will tell you what to tweak next.
           </p>
         </div>
 
-        {completedBrewId && (
+        <div className="w-full max-w-xs flex flex-col gap-3 mt-4">
+          {completedBrewId && (
+            <button
+              type="button"
+              onClick={() => router.push(`/coach/brew/${completedBrewId}`)}
+              className="w-full bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center hover:brightness-110 transition-all"
+            >
+              How was that brew?
+            </button>
+          )}
           <button
             type="button"
-            onClick={() => router.push(`/coach/brew/${completedBrewId}`)}
-            className="w-full max-w-xs bg-primary text-background-dark font-bold py-4 rounded-xl flex items-center justify-center gap-2 mt-4 hover:brightness-110 transition-all"
+            onClick={() => router.push("/")}
+            className="w-full border border-white/15 text-slate-400 font-semibold py-4 rounded-xl flex items-center justify-center hover:border-white/30 hover:text-slate-200 transition-all"
           >
-            <span className="material-symbols-outlined">psychology</span>
-            How was that brew?
+            Rate Later
           </button>
-        )}
-        <button
-          type="button"
-          onClick={() => router.push("/")}
-          className="w-full max-w-xs border border-white/15 text-slate-400 font-semibold py-4 rounded-xl flex items-center justify-center gap-2 hover:border-white/30 hover:text-slate-200 transition-all"
-        >
-          Rate Later
-        </button>
+        </div>
       </main>
     );
   }

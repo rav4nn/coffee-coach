@@ -487,7 +487,7 @@ export default function CoachPage() {
           </div>
           <div className="rounded-xl border border-primary/10 bg-primary/5 p-4 flex items-center gap-3">
             <Image
-              src="/coffee_coach_thinking.png"
+              src="/coach/coffee_coach_thinking.png"
               alt="Coach Kapi"
               width={52}
               height={52}
