@@ -316,11 +316,16 @@ export default function CoachPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entries.length, equipment.length, recentMethodId]);
 
-  function getBeanName(beanId: string | null) {
-    if (!beanId) return "Unknown Bean";
-    const bean = beans.find((b) => b.id === beanId);
-    if (!bean) return "Unknown Bean";
-    return `${bean.roaster} — ${bean.beanName}`;
+  function getBeanName(entry: FreestyleBrewEntry) {
+    // Try live bean data first
+    if (entry.beanId) {
+      const bean = beans.find((b) => b.id === entry.beanId);
+      if (bean) return `${bean.roaster} — ${bean.beanName}`;
+    }
+    // Fall back to snapshot captured at brew time
+    if (entry.roasterName && entry.beanName) return `${entry.roasterName} — ${entry.beanName}`;
+    if (entry.beanName) return entry.beanName;
+    return "Archived Bean";
   }
 
   if (!initialFetchDone && loading) {
@@ -463,7 +468,7 @@ export default function CoachPage() {
                   <CoachBrewCard
                     key={entry.id}
                     entry={entry}
-                    beanName={getBeanName(entry.beanId)}
+                    beanName={getBeanName(entry)}
                     onClick={() => router.push(`/coach/brew/${entry.id}`)}
                   />
                 ))}
@@ -475,13 +480,20 @@ export default function CoachPage() {
 
       {/* Did you know? — training tab only */}
       {activeTab === "training" && displayTip && (
-        <section className="px-4 py-3">
+        <section className="px-4 py-3 mt-6">
           <div className="flex items-center gap-2 mb-3">
             <Image src="/coach/img2_reading_book.png" alt="Coach" width={32} height={32} className="object-contain" />
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Did you know?</h3>
           </div>
-          <div className="rounded-xl border border-primary/10 bg-primary/5 p-4 flex gap-3">
-            <span className="material-symbols-outlined text-primary text-lg shrink-0 mt-0.5">lightbulb</span>
+          <div className="rounded-xl border border-primary/10 bg-primary/5 p-4 flex items-center gap-3">
+            <Image
+              src="/coffee_coach_thinking.png"
+              alt="Coach Kapi"
+              width={52}
+              height={52}
+              className="shrink-0"
+              style={{ mixBlendMode: "screen" }}
+            />
             <p className="text-sm text-slate-300 leading-relaxed">{displayTip}</p>
           </div>
         </section>

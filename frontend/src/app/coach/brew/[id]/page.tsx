@@ -279,7 +279,11 @@ export default function BrewCoachPage() {
     );
   }
 
-  const beanName = bean ? `${bean.roaster} — ${bean.beanName}` : "Unknown Bean";
+  const beanName = bean
+    ? `${bean.roaster} — ${bean.beanName}`
+    : brew.roasterName && brew.beanName
+    ? `${brew.roasterName} — ${brew.beanName}`
+    : brew.beanName ?? "Archived Bean";
   const imgSrc = methodImage(brew.methodId);
 
   return (

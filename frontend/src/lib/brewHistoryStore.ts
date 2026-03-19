@@ -8,6 +8,8 @@ export type FreestyleBrewEntry = {
   id: string;
   createdAt: string;
   beanId: string | null;
+  beanName: string | null;
+  roasterName: string | null;
   methodId: string | null;
   rating?: number | null;
   coachingFeedback?: string | null;
@@ -42,6 +44,8 @@ function toEntry(raw: Record<string, unknown>): FreestyleBrewEntry {
     id: String(raw.id),
     createdAt: String(raw.created_at),
     beanId: (raw.bean_id as string | null) ?? null,
+    beanName: (raw.bean_name as string | null) ?? null,
+    roasterName: (raw.roaster_name as string | null) ?? null,
     methodId: (raw.method_id as string | null) ?? null,
     rating: (raw.rating as number | null) ?? null,
     coachingFeedback: (raw.coaching_feedback as string | null) ?? null,
