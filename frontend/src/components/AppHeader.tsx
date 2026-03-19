@@ -20,12 +20,12 @@ export function AppHeader() {
         isBrewingActive ? "max-h-0 opacity-0" : "max-h-24 opacity-100"
       }`}
     >
-      <div className="relative flex items-center justify-center px-6 py-5 max-w-phone mx-auto w-full">
+      <div className="relative flex items-center justify-center px-4 py-3 max-w-phone mx-auto w-full">
         {isBrewCoachPage && (
           <button
             type="button"
             onClick={() => router.back()}
-            className="absolute left-4 flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors"
+            className="absolute left-3 flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors"
             aria-label="Go back"
           >
             <span className="material-symbols-outlined text-slate-100">arrow_back</span>

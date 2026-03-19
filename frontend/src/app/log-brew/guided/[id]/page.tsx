@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
+import { CompactFlowHeader } from "@/components/CompactFlowHeader";
 import { getRecipeByIdApi, postBrewApi, type GuidedRecipe, type CoachingChangeApi } from "@/lib/api";
 import { useBrewSessionStore } from "@/lib/brewSessionStore";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
@@ -669,7 +670,7 @@ export default function GuidedRecipeDetailPage() {
 
   if (phase === "complete") {
     return (
-      <main className="flex-1 flex flex-col items-center justify-center px-6 gap-4 text-center pt-16">
+      <main className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center">
         <style>{`
           @keyframes kapiBouncIn {
             0%   { transform: scale(0.5); opacity: 0; }
@@ -728,12 +729,15 @@ export default function GuidedRecipeDetailPage() {
     const isColdBrew = recipe.method === "cold_brew";
     return (
       <main className="flex-1 overflow-y-auto pb-28">
-        {/* Minimal header */}
-        <header className="sticky top-0 z-40 bg-background-dark/90 backdrop-blur-md border-b border-primary/10 px-4 py-4">
-          <h2 className="text-base font-bold text-slate-100 text-center">Confirm Your Brew</h2>
-        </header>
+        <CompactFlowHeader
+          title={methodDisplayName(recipe.method)}
+          onBack={() => router.back()}
+          progressCount={3}
+          currentStep={3}
+          className="z-40"
+        />
 
-        <div className="px-4 pt-4 space-y-4">
+        <div className="space-y-4 px-4 pt-3">
           {/* ── Brewing Essentials ── */}
           <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
             <div className="flex items-center gap-2 mb-1">
@@ -904,37 +908,30 @@ export default function GuidedRecipeDetailPage() {
 
   return (
     <>
-      {/* ── Sticky page header ── */}
-      <header className="sticky top-0 z-40 bg-background-dark/90 backdrop-blur-md border-b border-primary/10">
-        <div className="flex items-center justify-between px-4 pt-4 pb-3">
+      <CompactFlowHeader
+        title={methodDisplayName(recipe.method)}
+        onBack={() => (isBrewing ? setShowCancelConfirm(true) : router.back())}
+        progressCount={3}
+        currentStep={3}
+        className="z-40"
+        action={!isBrewing ? (
           <button
             type="button"
-            onClick={() => isBrewing ? setShowCancelConfirm(true) : router.back()}
-            className="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors"
-            aria-label={isBrewing ? "Cancel brew" : "Go back"}
+            onClick={() => setIsSharing(true)}
+            disabled={isSharing}
+            className="flex h-11 w-11 items-center justify-center rounded-full text-slate-100 transition-colors hover:bg-primary/10 disabled:opacity-50"
+            aria-label="Share recipe"
           >
-            <span className="material-symbols-outlined text-slate-100">arrow_back</span>
+            <span className="material-symbols-outlined">share</span>
           </button>
-          <h2 className="text-base font-bold text-slate-100 text-center flex-1 px-2">{methodDisplayName(recipe.method)}</h2>
-          {!isBrewing ? (
-            <button
-              type="button"
-              onClick={() => setIsSharing(true)}
-              disabled={isSharing}
-              className="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors disabled:opacity-50"
-              aria-label="Share recipe"
-            >
-              <span className="material-symbols-outlined text-slate-100">share</span>
-            </button>
-          ) : (
-            <div className="size-10" />
-          )}
-        </div>
+        ) : undefined}
+      />
 
-        {/* Brewing progress bar — hidden for cold brew, otherwise slides in when brewing starts */}
-        {!isColdBrew && (
-          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isBrewing ? "max-h-16 opacity-100 pb-3 px-4" : "max-h-0 opacity-0"}`}>
-            <div className="flex justify-between items-center mb-1.5">
+      {/* Brewing progress bar — hidden for cold brew, otherwise slides in when brewing starts */}
+      {!isColdBrew && (
+        <div className={`sticky top-[58px] z-30 overflow-hidden px-4 transition-all duration-300 ease-in-out ${isBrewing ? "max-h-16 pb-3 opacity-100" : "max-h-0 opacity-0"}`}>
+          <div className="rounded-xl bg-[#1a0f00cc] px-3 py-2 backdrop-blur-[8px]">
+            <div className="mb-1.5 flex items-center justify-between">
               <p className="text-xs font-medium text-slate-400">Brewing Progress</p>
               {hasTimedSteps ? (
                 <p className="text-xs font-bold text-primary">
@@ -947,7 +944,7 @@ export default function GuidedRecipeDetailPage() {
                     <button
                       type="button"
                       onClick={() => setManualBrewStartElapsed(elapsedSeconds)}
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
+                      className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary transition-colors hover:bg-primary/30"
                     >
                       Start
                     </button>
@@ -955,18 +952,22 @@ export default function GuidedRecipeDetailPage() {
                 </div>
               )}
             </div>
-            <div className="h-2 w-full rounded-full bg-primary/20 overflow-hidden">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-primary/20">
               <div
-                className="h-full bg-primary rounded-full transition-all duration-1000"
+                className="h-full rounded-full bg-primary transition-all duration-1000"
                 style={{ width: `${progressPct}%` }}
               />
             </div>
           </div>
-        )}
-      </header>
+        </div>
+      )}
 
       {/* ── Scrollable content ── */}
-      <main ref={scrollContainerRef} className="flex-1 overflow-y-auto pb-56">
+      <main
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto pb-56"
+        style={{ scrollPaddingBottom: "88px" }}
+      >
         <div className="p-4">
 
           {/* === COLLAPSIBLE: Recipe info + Image + Brew params === */}

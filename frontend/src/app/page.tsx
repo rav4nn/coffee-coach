@@ -98,7 +98,7 @@ export default function Home() {
         ) : isNewUser ? (
           /* ── NEW USER STATE ── */
           <>
-            <div className="flex flex-col items-center px-6 pt-8 pb-2">
+            <div className="flex flex-col items-center px-6 pt-4 pb-2">
               <div className="w-60 h-60">
                 <Image
                   src="/coach/img3_waving.png"
@@ -128,7 +128,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="px-6 pt-6 pb-4 space-y-3">
+            <div className="px-6 pt-4 pb-4 space-y-3">
               <Link
                 href="/log-brew"
                 className="flex items-center justify-center gap-2 w-full bg-primary text-background-dark font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.01] transition-transform"
@@ -148,7 +148,7 @@ export default function Home() {
         ) : (
           /* ── RETURNING USER STATE ── */
           <>
-            <div className="flex flex-col items-center px-6 pt-8 pb-2">
+            <div className="flex flex-col items-center px-6 pt-4 pb-2">
               <div className="w-52 h-52">
                 <Image
                   src="/coach/img3_hero_thumbs_up.png"
@@ -167,7 +167,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="px-6 pt-6 pb-4 space-y-3">
+            <div className="px-6 pt-4 pb-4 space-y-3">
               <Link
                 href="/log-brew"
                 className="flex items-center justify-center gap-2 w-full bg-primary text-background-dark font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.01] transition-transform"

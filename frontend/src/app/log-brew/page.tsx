@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { CompactFlowHeader } from "@/components/CompactFlowHeader";
 import {
   getBrewMethodsApi,
   getUserBeansApi,
@@ -226,35 +227,23 @@ export default function LogBrewPage() {
   }
 
   return (
-    <main className="relative px-6 pb-56 overflow-y-auto">
+    <main
+      className="relative overflow-y-auto px-4 pb-56"
+      style={{ scrollPaddingBottom: "88px" }}
+    >
       {/* Ambient glow blobs */}
       <div className="fixed top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
-      {/* Step indicator */}
-      <div className="pt-8 pb-4 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors"
-          aria-label="Go back"
-        >
-          <span className="material-symbols-outlined text-slate-100">arrow_back</span>
-        </button>
-        <div className="flex gap-1">
-          <div className="h-1.5 w-12 rounded-full bg-primary" />
-          <div className="h-1.5 w-12 rounded-full bg-primary/20" />
-        </div>
-        {/* Spacer to balance the back button */}
-        <div className="size-10" />
-      </div>
-
-      {/* Title */}
-      <h1 className="text-3xl font-bold text-slate-100 mt-4 mb-8">Log a New Brew</h1>
+      <CompactFlowHeader
+        title="Log a New Brew"
+        onBack={() => router.push("/")}
+        progressCount={3}
+        currentStep={1}
+      />
 
       {/* Bean Selection */}
-      <section className="mb-8">
-        <p className="text-sm font-medium text-slate-400 mb-3">Bean Selection</p>
+      <section className="mb-8 mt-3">
         {isLoading ? (
           <div className="h-[60px] rounded-xl bg-primary/5 border border-primary/20 animate-pulse" />
         ) : null}
@@ -338,9 +327,8 @@ export default function LogBrewPage() {
 
       {/* Brew Method Grid */}
       <section className="mb-8">
-        <p className="text-sm font-medium text-slate-400 mb-4">Brew Method</p>
         {isLoading ? (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="mt-4 grid grid-cols-3 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="rounded-xl bg-primary/5 border border-white/5 animate-pulse overflow-hidden">
                 <div className="aspect-[4/5]" />
@@ -348,7 +336,7 @@ export default function LogBrewPage() {
             ))}
           </div>
         ) : null}
-        <div className={`grid grid-cols-3 gap-3 ${isLoading ? "hidden" : ""}`}>
+        <div className={`mt-4 grid grid-cols-3 gap-3 ${isLoading ? "hidden" : ""}`}>
           {visibleMethodCards.map((method) => {
             const active = selectedMethodId === method.method_id;
             return (

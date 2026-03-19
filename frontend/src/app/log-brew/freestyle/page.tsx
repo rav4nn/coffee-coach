@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { CompactFlowHeader } from "@/components/CompactFlowHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBrewHistoryStore, type FreestyleBrewEntry, type CoachingChange } from "@/lib/brewHistoryStore";
@@ -259,42 +260,38 @@ export default function FreestyleLogPage() {
 
   return (
     <main className="overflow-y-auto pb-28">
-      {/* Header */}
-      <div className="px-4 pt-4 pb-2">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="flex items-center justify-center size-10 -ml-2 mb-1 rounded-full hover:bg-primary/10 transition-colors"
-          aria-label="Go back"
-        >
-          <span className="material-symbols-outlined text-slate-100">arrow_back</span>
-        </button>
-        {isCoachMode ? (
-          <>
-            <div className="flex items-center gap-2">
-              <Image src="/coach/img3_whistle_blowing.png" alt="Coach" width={24} height={24} className="w-6 h-6 object-contain" />
-              <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Follow the Coach</p>
-            </div>
-            <h1 className="text-2xl font-bold text-slate-100 mt-1">Coach&apos;s Recipe</h1>
-            <p className="mt-1 text-sm text-slate-400">Your last brew&apos;s params with the coach&apos;s adjustments applied.</p>
-          </>
-        ) : (
-          <>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Freestyle Brew</p>
-            <h1 className="text-2xl font-bold text-slate-100">Log Your Brew Parameters</h1>
-            <p className="mt-1 text-sm text-slate-400">Capture this brew so we can coach your next one.</p>
-          </>
-        )}
-      </div>
+      <CompactFlowHeader
+        title="Log Your Brew"
+        onBack={() => router.back()}
+        progressCount={3}
+        currentStep={3}
+      />
 
       {/* Context bar */}
       {selectedBean && effectiveMethodLabel && (
-        <p className="text-xs text-slate-500 text-center pb-2 px-4">
-          {selectedBean.beanName} <span className="text-primary">·</span> {effectiveMethodLabel}
+        <p className="mb-3 mt-2 px-4 text-center text-xs text-[#ffffff60]">
+          {selectedBean.beanName} <span className="text-[#ffffff60]">·</span> {effectiveMethodLabel}
         </p>
       )}
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="px-4 space-y-4 pt-2">
+      {isCoachMode && (
+        <div className="px-4 pb-1">
+          <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+            <Image
+              src="/coach/img3_whistle_blowing.png"
+              alt="Coach"
+              width={32}
+              height={32}
+              className="h-8 w-8 shrink-0 object-contain"
+            />
+            <p className="text-xs leading-relaxed text-slate-300">
+              Coach&apos;s adjustments are pre-filled from your last brew so you can log the updated version quickly.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-4 pt-2">
         {/* ── Brewing Essentials ──────────────────────────────────── */}
         <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
           <div className="flex items-center gap-2 mb-1">

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { CompactFlowHeader } from "@/components/CompactFlowHeader";
 import { getRecipesApi, type GuidedRecipe } from "@/lib/api";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
@@ -97,36 +98,27 @@ export default function GuidedRecipesPage() {
 
   return (
     <>
-      {/* Sticky header */}
-      <header className="flex items-center justify-between px-4 pt-4 pb-3 sticky top-0 bg-background-dark/80 backdrop-blur-md z-10 border-b border-primary/10">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors"
-          aria-label="Go back"
-        >
-          <span className="material-symbols-outlined text-slate-100">arrow_back</span>
-        </button>
-        <div className="flex flex-col items-center">
-          <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">
-            Guided Brew
-          </span>
-          <h1 className="text-lg font-bold text-slate-100">Pick a Recipe</h1>
-        </div>
-        <div className="size-10" />
-      </header>
+      <CompactFlowHeader
+        title="Pick a Recipe"
+        onBack={() => router.back()}
+        progressCount={3}
+        currentStep={3}
+      />
 
       {/* Context bar */}
       {selectedBean && (selectedMethodId || selectedPourOverDeviceId) && (
-        <p className="text-xs text-slate-500 text-center py-2 border-b border-primary/10">
-          {selectedBean.beanName} <span className="text-primary">·</span>{" "}
+        <p className="mb-3 mt-2 px-4 text-center text-xs text-[#ffffff60]">
+          {selectedBean.beanName} <span className="text-[#ffffff60]">·</span>{" "}
           {methodLabel(selectedMethodId === "pour_over" ? (selectedPourOverDeviceId ?? selectedMethodId) : selectedMethodId)}
         </p>
       )}
 
       {/* Recipe list */}
-      <main className="flex-1 overflow-y-auto pb-56">
-        <div className="px-4 py-6 space-y-4">
+      <main
+        className="flex-1 overflow-y-auto pb-56"
+        style={{ scrollPaddingBottom: "88px" }}
+      >
+        <div className="space-y-4 px-4 pb-6">
 
           {/* ── Favourite brews ── */}
           {favouriteBrews.length > 0 && (

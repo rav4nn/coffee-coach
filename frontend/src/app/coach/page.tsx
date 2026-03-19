@@ -331,7 +331,7 @@ export default function CoachPage() {
   if (!initialFetchDone && loading) {
     return (
       <main className="pb-28">
-        <div className="px-4 pt-6 space-y-4">
+        <div className="space-y-4 px-4 pt-4">
           <div className="h-32 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" />
           <div className="h-24 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" />
           <div className="h-24 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" />
@@ -345,7 +345,7 @@ export default function CoachPage() {
   return (
     <main className="overflow-y-auto pb-28">
       {/* Toggle */}
-      <div className="px-4 pt-4 pb-2">
+      <div className="px-4 pt-3 pb-2">
         <div className="flex items-center rounded-full border border-primary/20 bg-primary/5 p-1">
           <button
             onClick={() => setActiveTab("training")}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { CompactFlowHeader } from "@/components/CompactFlowHeader";
 import { useBrewHistoryStore } from "@/lib/brewHistoryStore";
 import { useBeansStore } from "@/lib/beansStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
@@ -133,41 +134,27 @@ export default function LogBrewStepTwoPage() {
   }
 
   return (
-    <main className="relative flex flex-col min-h-full px-6 pb-56 overflow-y-auto">
+    <main
+      className="relative flex min-h-full flex-col overflow-y-auto px-4 pb-56"
+      style={{ scrollPaddingBottom: "88px" }}
+    >
       {/* Ambient glow blobs */}
       <div className="fixed top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
-      {/* Step indicator */}
-      <div className="pt-8 pb-4 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors"
-          aria-label="Go back"
-        >
-          <span className="material-symbols-outlined text-slate-100">arrow_back</span>
-        </button>
-        <div className="flex gap-1">
-          <div className="h-1.5 w-12 rounded-full bg-primary" />
-          <div className="h-1.5 w-12 rounded-full bg-primary" />
-        </div>
-        {/* Spacer to balance the back button */}
-        <div className="size-10" />
-      </div>
+      <CompactFlowHeader
+        title="How do you want to brew?"
+        onBack={() => router.push("/log-brew")}
+        progressCount={3}
+        currentStep={2}
+      />
 
       {/* Context bar */}
       {selectedBean && effectiveMethodId && (
-        <p className="text-xs text-slate-500 text-center mb-3">
-          {selectedBean.beanName} <span className="text-primary">·</span> {prettyMethodName(effectiveMethodId)}
+        <p className="mb-3 mt-2 text-center text-xs text-[#ffffff60]">
+          {selectedBean.beanName} <span className="text-[#ffffff60]">·</span> {prettyMethodName(effectiveMethodId)}
         </p>
       )}
-
-      {/* Title */}
-      <h1 className="text-3xl font-bold text-slate-100 mt-2 mb-1">
-        How do you want to brew your {prettyMethodName(effectiveMethodId)}?
-      </h1>
-      <p className="text-sm text-slate-400 mb-4">Coach Kapi will adjust your recipe after you rate it.</p>
 
       {/* Missing step 1 guard */}
       {!selectedMethodId && (
@@ -184,27 +171,28 @@ export default function LogBrewStepTwoPage() {
       )}
 
       {/* Option cards */}
-      <div className="flex flex-col gap-3 flex-1">
+      <div className="flex flex-1 flex-col gap-2.5">
         {/* Follow the Coach — conditional */}
         {coachedBrew && (
           <button
             type="button"
             onClick={() => setChoice("coach")}
-            className={`w-full rounded-xl border-2 text-left transition-all overflow-hidden ${
+            className={`w-full overflow-hidden rounded-xl border-2 text-left transition-all ${
               choice === "coach"
                 ? "border-primary bg-primary/10"
                 : "border-primary/30 bg-primary/5 hover:border-primary/50"
             }`}
           >
-            <div className="flex items-center gap-0">
+            <div className="flex items-center gap-3 px-4 py-[14px]">
               <Image
-                src="/coach/img2_reading_book.png"
+                src="/coach/img3_hero_thumbs_up.png"
                 alt="Coach"
-                width={80}
-                height={80}
-                className="w-20 h-20 object-contain shrink-0"
+                width={40}
+                height={40}
+                className="h-10 w-10 shrink-0 object-contain"
+                style={{ mixBlendMode: "screen" }}
               />
-              <div className="flex-1 min-w-0 py-3 pr-3">
+              <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">Recommended</p>
                 <h3 className="text-base font-bold text-slate-100 leading-tight">Follow the Coach</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Apply your coach&apos;s advice from your last {prettyMethodName(effectiveMethodId)} brew.</p>
@@ -225,7 +213,7 @@ export default function LogBrewStepTwoPage() {
         <button
           type="button"
           onClick={() => setChoice("guided")}
-          className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
+          className={`w-full flex items-center gap-3 rounded-xl border-2 px-4 py-[14px] text-left transition-all ${
             choice === "guided"
               ? "border-primary bg-primary/10"
               : "border-transparent bg-primary/5 hover:border-primary/30"
@@ -251,7 +239,7 @@ export default function LogBrewStepTwoPage() {
         <button
           type="button"
           onClick={() => setChoice("freestyle")}
-          className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
+          className={`w-full flex items-center gap-3 rounded-xl border-2 px-4 py-[14px] text-left transition-all ${
             choice === "freestyle"
               ? "border-primary bg-primary/10"
               : "border-transparent bg-primary/5 hover:border-primary/30"
@@ -265,17 +253,6 @@ export default function LogBrewStepTwoPage() {
             <p className="text-xs text-slate-400">Feeling confident? Just log what you brew as you go.</p>
           </div>
         </button>
-      </div>
-
-      {/* Kapi illustration */}
-      <div className="flex justify-center mt-6">
-        <img
-          src="/coach/coffee_coach_thinking.png"
-          alt="Coach Kapi thinking"
-          width={120}
-          height={120}
-          style={{ mixBlendMode: "screen" }}
-        />
       </div>
 
       {/* Floating Next button */}
