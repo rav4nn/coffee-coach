@@ -163,9 +163,21 @@ export default function MyBeansPage() {
   useEffect(() => { fetchBeans(); }, [fetchBeans]);
 
   useEffect(() => {
-    getCatalogRoasters()
-      .then(setCatalogRoasters)
-      .catch(() => setCatalogRoasters([]));
+    Promise.all([
+      getCatalogRoasters().catch(() => [] as string[]),
+      searchRoastersApi("").catch(() => [] as RoasterSearchResultApi[]),
+    ]).then(([catalog, visible]) => {
+      setCatalogRoasters([...catalog].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" })));
+      setRoasterSearchResults(dedupeRoasters([
+        ...visible.map(mapRoasterResult),
+        ...catalog.map((name) => ({
+          id: null,
+          name,
+          source: "catalog" as const,
+          status: null,
+        })),
+      ]));
+    });
   }, []);
 
   useEffect(() => {
@@ -176,11 +188,6 @@ export default function MyBeansPage() {
 
   useEffect(() => {
     const trimmed = roasterSearchQuery.trim();
-    if (!trimmed) {
-      setRoasterSearchResults([]);
-      return;
-    }
-
     const timeout = window.setTimeout(() => {
       searchRoastersApi(trimmed)
         .then((results) => setRoasterSearchResults(results.map(mapRoasterResult)))
@@ -198,10 +205,16 @@ export default function MyBeansPage() {
 
     const trimmed = beanSearchQuery.trim();
     if (!trimmed) {
-      if (selectedRoaster.source === "catalog") {
-        setCatalogLoading(true);
-        getCatalogBeansByRoaster(selectedRoaster.name)
-          .then((beans) =>
+      setCatalogLoading(true);
+      searchBeansApi({
+        query: "",
+        roaster_id: selectedRoaster.source === "catalog" ? selectedRoaster.name : null,
+        submitted_roaster_id: selectedRoaster.source === "submitted" ? selectedRoaster.id : null,
+      })
+        .then((results) => setBeanResults(results.map((result) => mapBeanResult(result, selectedRoaster))))
+        .catch(async () => {
+          if (selectedRoaster.source === "catalog") {
+            const beans = await getCatalogBeansByRoaster(selectedRoaster.name).catch(() => []);
             setBeanResults(
               beans.map((bean) => ({
                 id: bean.coffee_id,
@@ -215,13 +228,12 @@ export default function MyBeansPage() {
                 roastDate: null,
                 roasterName: selectedRoaster.name,
               })),
-            ),
-          )
-          .catch(() => setBeanResults([]))
-          .finally(() => setCatalogLoading(false));
-      } else {
-        setBeanResults([]);
-      }
+            );
+          } else {
+            setBeanResults([]);
+          }
+        })
+        .finally(() => setCatalogLoading(false));
       return;
     }
 
@@ -241,17 +253,17 @@ export default function MyBeansPage() {
   }, [beanSearchQuery, selectedRoaster]);
 
   const roasterChoices = useMemo(() => {
-    const baseCatalogChoices = catalogRoasters.map((name) => ({
-      id: null,
-      name,
-      source: "catalog" as const,
-      status: null,
-    }));
     return dedupeRoasters([
       ...(selectedRoaster ? [selectedRoaster] : []),
-      ...(roasterSearchQuery.trim() ? roasterSearchResults : baseCatalogChoices),
-    ]);
-  }, [catalogRoasters, roasterSearchQuery, roasterSearchResults, selectedRoaster]);
+      ...roasterSearchResults,
+      ...catalogRoasters.map((name) => ({
+        id: null,
+        name,
+        source: "catalog" as const,
+        status: null,
+      })),
+    ]).sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+  }, [catalogRoasters, roasterSearchResults, selectedRoaster]);
 
   const roasterOptionMap = useMemo(
     () => new Map(roasterChoices.map((choice) => [roasterValue(choice), choice])),
@@ -264,7 +276,9 @@ export default function MyBeansPage() {
   );
 
   const beanChoices = useMemo(
-    () => dedupeBeans([...(selectedBean ? [selectedBean] : []), ...beanResults]),
+    () => dedupeBeans([...(selectedBean ? [selectedBean] : []), ...beanResults]).sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+    ),
     [beanResults, selectedBean],
   );
 
@@ -303,6 +317,8 @@ export default function MyBeansPage() {
       if (error instanceof ApiConflictError) {
         const matches = ((error.data as { matches?: RoasterSearchResultApi[] }).matches ?? []).map(mapRoasterResult);
         setRoasterDuplicate({ query: name, matches });
+      } else {
+        setRoasterSelectionError("Failed to save roaster. Please try again.");
       }
     } finally {
       setIsSubmittingRoaster(false);
@@ -353,6 +369,8 @@ export default function MyBeansPage() {
           mapBeanResult(match, selectedRoaster),
         );
         setBeanDuplicate({ query: name, matches });
+      } else {
+        setBeanSelectionError("Failed to save bean. Please try again.");
       }
     } finally {
       setIsSubmittingBeanDraft(false);
