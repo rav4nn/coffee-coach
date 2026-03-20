@@ -248,7 +248,7 @@ export async function submitBeanApi(payload: BeanSubmitPayload) {
   if (!response.ok) {
     throw new Error("Failed to submit bean");
   }
-  return data as BeanSearchResultApi & { created_at: string };
+  return { ...data, source: "submitted" } as BeanSearchResultApi & { created_at: string };
 }
 
 export async function patchUserBeanApi(id: string, payload: { remaining_grams: number }) {
