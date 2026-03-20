@@ -274,7 +274,7 @@ export default function JournalPage() {
         <div className="flex items-center rounded-full border border-primary/20 bg-primary/5 p-1">
           <button
             onClick={() => setView("journal")}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-sm font-semibold transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-sm font-normal transition-colors ${
               view === "journal"
                 ? "bg-primary text-background-dark"
                 : "text-primary/70"
@@ -285,7 +285,7 @@ export default function JournalPage() {
           </button>
           <button
             onClick={() => setView("stats")}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-sm font-semibold transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-sm font-normal transition-colors ${
               view === "stats"
                 ? "bg-primary text-background-dark"
                 : "text-primary/70"

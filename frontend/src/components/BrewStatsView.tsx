@@ -304,13 +304,15 @@ export function BrewStatsView({ entries, beans }: BrewStatsViewProps) {
           {/* Legend */}
           <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-3">
             {donutData.map((item, i) => (
-              <div key={item.name} className="flex items-center gap-1.5 min-w-0">
+              <div key={item.name} className="flex items-start gap-1.5 min-w-0">
                 <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  className="mt-1 w-2.5 h-2.5 rounded-full shrink-0"
                   style={{ backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] }}
                 />
-                <span className="text-xs text-slate-300 truncate">{item.name}</span>
-                <span className="text-[10px] text-slate-500 shrink-0">({item.pct}%)</span>
+                <div className="min-w-0">
+                  <p className="text-xs leading-snug text-slate-300 whitespace-normal break-words">{item.name}</p>
+                  <p className="text-[10px] text-slate-500">({item.pct}%)</p>
+                </div>
               </div>
             ))}
           </div>
@@ -325,7 +327,9 @@ export function BrewStatsView({ entries, beans }: BrewStatsViewProps) {
         </div>
         <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3 text-center">
           <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Top Bean</p>
-          <p className="text-sm font-bold text-slate-100 mt-1 truncate">{topBean}</p>
+          <p className="mt-1 text-sm font-bold leading-snug text-slate-100 whitespace-normal break-words">
+            {topBean}
+          </p>
         </div>
       </div>
     </div>

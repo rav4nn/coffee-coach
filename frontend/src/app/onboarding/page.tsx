@@ -41,10 +41,18 @@ export default function OnboardingPage() {
   const [customGrinderInput, setCustomGrinderInput] = useState("");
   const [grinderError, setGrinderError] = useState<string | null>(null);
   const grinderSectionRef = useRef<HTMLDivElement>(null);
+  const sessionName = session?.user?.name?.trim() ?? "";
+  const firstName = sessionName.split(" ")[0] ?? "Brewer";
 
   useEffect(() => {
     getGrindersApi().then(setGrinderList).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (sessionName && name.trim().length === 0) {
+      setName(sessionName);
+    }
+  }, [sessionName, name]);
 
   const toggleEquipment = (id: MethodCardId) => {
     setEquipment((prev) =>
@@ -75,17 +83,6 @@ export default function OnboardingPage() {
 
   return (
     <div className="relative flex min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden bg-background-dark font-display">
-      <style>{`
-        @keyframes kapiFloat {
-          0%   { transform: translateY(0px); }
-          50%  { transform: translateY(-6px); }
-          100% { transform: translateY(0px); }
-        }
-        .kapi-float {
-          animation: kapiFloat 2s ease-in-out infinite;
-        }
-      `}</style>
-
       {/* Coffee Coach title */}
       <div className="pt-10 text-center">
         <span
@@ -96,20 +93,8 @@ export default function OnboardingPage() {
         </span>
       </div>
 
-      {/* Kapi image */}
-      <div className="flex justify-center mt-4">
-        <Image
-          src="/coach/img2_reading_book.png"
-          alt="Coach Kapi"
-          width={90}
-          height={90}
-          className="kapi-float object-contain"
-          style={{ mixBlendMode: "screen" }}
-        />
-      </div>
-
       {/* Profile section */}
-      <div className="flex px-6 pb-4 pt-4">
+      <div className="flex px-6 pb-4 pt-8">
         <div className="flex w-full flex-col gap-4 items-center">
           <div className="flex gap-4 flex-col items-center">
             {/* Google profile picture */}
@@ -132,7 +117,7 @@ export default function OnboardingPage() {
 
             <div className="flex flex-col items-center">
               <p className="text-slate-100 text-2xl font-bold text-center">
-                Welcome, {session?.user?.name?.split(" ")[0] ?? "Brewer"}
+                Welcome, {firstName}
               </p>
               <p className="text-primary/70 text-sm text-center mt-1">
                 Tell Kapi how you brew.
