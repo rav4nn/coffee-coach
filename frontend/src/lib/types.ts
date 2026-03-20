@@ -8,7 +8,8 @@ export type BrewMethod =
 
 export type UserBean = {
   id: string;
-  coffeeId?: string;
+  coffeeId?: string | null;
+  submittedBeanId?: string | null;
   roaster: string;
   beanName: string;
   roastDate: string | null;
@@ -16,6 +17,8 @@ export type UserBean = {
   imageUrl: string | null;
   bagWeightGrams: number | null;
   remainingGrams: number | null;
+  source?: "catalog" | "submitted";
+  status?: "pending" | "approved" | "rejected" | null;
 };
 
 export type RecipeSummary = {

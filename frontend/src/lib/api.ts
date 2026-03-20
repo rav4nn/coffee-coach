@@ -27,13 +27,17 @@ export async function apiFetch(path: string, init?: RequestInit) {
 
 export type ApiUserBean = {
   id: string;
-  coffee_id: string;
+  coffee_id: string | null;
+  submitted_bean_id?: string | null;
   name: string;
   roaster: string;
+  roast_profile?: string | null;
   roast_date: string | null;
   is_pre_ground: boolean;
   bag_weight_grams: number | null;
   remaining_grams: number | null;
+  source?: "catalog" | "submitted";
+  status?: "pending" | "approved" | "rejected" | null;
 };
 
 export type BrewMethodApi = {
@@ -83,12 +87,59 @@ export type UserPreferencesApi = {
 
 export type CreateUserBeanPayload = {
   coffee_id?: string | null;
-  name?: string;
-  roaster?: string;
+  submitted_bean_id?: string | null;
   roast_date?: string | null;
   is_pre_ground: boolean;
   bag_weight_grams: number;
 };
+
+export type RoasterSearchResultApi = {
+  id: string | null;
+  name: string;
+  source: "catalog" | "submitted";
+  status: "pending" | "approved" | "rejected" | null;
+  similarity: number;
+};
+
+export type BeanSearchResultApi = {
+  id: string;
+  name: string;
+  source: "catalog" | "submitted";
+  status: "pending" | "approved" | "rejected" | null;
+  similarity: number;
+  roaster_id: string | null;
+  submitted_roaster_id: string | null;
+  whole_or_ground?: "whole" | "ground" | null;
+  roast_profile?: "Light" | "Light-Medium" | "Medium" | "Medium-Dark" | "Dark" | null;
+  roast_date?: string | null;
+};
+
+export type RoasterSubmitPayload = {
+  name: string;
+  force?: boolean;
+};
+
+export type BeanSubmitPayload = {
+  name: string;
+  whole_or_ground: "whole" | "ground";
+  roast_date?: string | null;
+  roast_profile?: "Light" | "Light-Medium" | "Medium" | "Medium-Dark" | "Dark" | null;
+  roaster_id?: string | null;
+  submitted_roaster_id?: string | null;
+  force?: boolean;
+};
+
+export class ApiConflictError<T = unknown> extends Error {
+  status: number;
+  data: T;
+
+  constructor(message: string, status: number, data: T) {
+    super(message);
+    this.name = "ApiConflictError";
+    this.status = status;
+    this.data = data;
+  }
+}
 
 function requestInit(init?: RequestInit): RequestInit {
   return {
@@ -143,6 +194,61 @@ export async function postUserBeanApi(payload: CreateUserBeanPayload) {
   }
 
   return (await response.json()) as ApiUserBean;
+}
+
+export async function searchRoastersApi(query: string) {
+  const response = await fetch(`/api/roasters/search?q=${encodeURIComponent(query)}`, requestInit());
+  if (!response.ok) {
+    throw new Error("Failed to search roasters");
+  }
+  return (await response.json()) as RoasterSearchResultApi[];
+}
+
+export async function submitRoasterApi(payload: RoasterSubmitPayload) {
+  const response = await fetch(
+    "/api/roasters/submit",
+    requestInit({
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  );
+  const data = await response.json();
+  if (response.status === 409) {
+    throw new ApiConflictError("Roaster looks like a duplicate", 409, data as { matches: RoasterSearchResultApi[] });
+  }
+  if (!response.ok) {
+    throw new Error("Failed to submit roaster");
+  }
+  return data as { id: string; name: string; status: "pending" | "approved" | "rejected"; created_at: string };
+}
+
+export async function searchBeansApi(params: { query: string; roaster_id?: string | null; submitted_roaster_id?: string | null }) {
+  const search = new URLSearchParams({ q: params.query });
+  if (params.roaster_id) search.set("roaster_id", params.roaster_id);
+  if (params.submitted_roaster_id) search.set("submitted_roaster_id", params.submitted_roaster_id);
+  const response = await fetch(`/api/beans/search?${search.toString()}`, requestInit());
+  if (!response.ok) {
+    throw new Error("Failed to search beans");
+  }
+  return (await response.json()) as BeanSearchResultApi[];
+}
+
+export async function submitBeanApi(payload: BeanSubmitPayload) {
+  const response = await fetch(
+    "/api/beans/submit",
+    requestInit({
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  );
+  const data = await response.json();
+  if (response.status === 409) {
+    throw new ApiConflictError("Bean looks like a duplicate", 409, data as { matches: BeanSearchResultApi[] });
+  }
+  if (!response.ok) {
+    throw new Error("Failed to submit bean");
+  }
+  return data as BeanSearchResultApi & { created_at: string };
 }
 
 export async function patchUserBeanApi(id: string, payload: { remaining_grams: number }) {

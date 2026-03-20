@@ -4,8 +4,8 @@ import { deleteUserBeanApi, getUserBeansApi, patchUserBeanApi, postUserBeanApi, 
 import type { UserBean } from "@/lib/types";
 
 type AddUserBeanInput = CreateUserBeanPayload & {
-  name: string;
-  roaster: string;
+  name?: string;
+  roaster?: string;
 };
 
 type BeansStore = {
@@ -21,6 +21,7 @@ function normalize(beans: Awaited<ReturnType<typeof getUserBeansApi>>): UserBean
   return beans.map((bean) => ({
     id: bean.id,
     coffeeId: bean.coffee_id,
+    submittedBeanId: bean.submitted_bean_id ?? null,
     beanName: bean.name,
     roaster: bean.roaster,
     roastDate: bean.roast_date ?? null,
@@ -28,6 +29,8 @@ function normalize(beans: Awaited<ReturnType<typeof getUserBeansApi>>): UserBean
     imageUrl: (bean as { image_url?: string | null }).image_url ?? null,
     bagWeightGrams: bean.bag_weight_grams ?? null,
     remainingGrams: bean.remaining_grams ?? null,
+    source: bean.source ?? "catalog",
+    status: bean.status ?? null,
   }));
 }
 
@@ -54,6 +57,7 @@ export const useBeansStore = create<BeansStore>()((set, get) => ({
         {
           id: saved.id,
           coffeeId: saved.coffee_id,
+          submittedBeanId: saved.submitted_bean_id ?? null,
           beanName: saved.name,
           roaster: saved.roaster,
           roastDate: saved.roast_date ?? null,
@@ -61,6 +65,8 @@ export const useBeansStore = create<BeansStore>()((set, get) => ({
           imageUrl: (saved as { image_url?: string | null }).image_url ?? null,
           bagWeightGrams: saved.bag_weight_grams ?? null,
           remainingGrams: saved.remaining_grams ?? null,
+          source: saved.source ?? "catalog",
+          status: saved.status ?? null,
         },
         ...state.userBeans.filter((item) => item.id !== saved.id),
       ],

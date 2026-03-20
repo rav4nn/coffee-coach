@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -18,6 +18,8 @@ type SearchableComboboxProps = {
   options: ComboboxOption[];
   onChange: (value: string) => void;
   onAddNew?: (query: string) => void;
+  onQueryChange?: (query: string) => void;
+  renderTopContent?: (args: { query: string; close: () => void }) => ReactNode;
   disabled?: boolean;
   showEscapeHatch?: boolean;
 };
@@ -30,6 +32,8 @@ export function SearchableCombobox({
   options,
   onChange,
   onAddNew,
+  onQueryChange,
+  renderTopContent,
   disabled,
   showEscapeHatch,
 }: SearchableComboboxProps) {
@@ -46,10 +50,16 @@ export function SearchableCombobox({
   const selected = options.find((o) => o.value === value);
 
   const filtered = useMemo(() => {
+    if (onQueryChange) return options;
     if (!query.trim()) return options;
     const term = query.trim().toLowerCase();
     return options.filter((o) => o.label.toLowerCase().includes(term));
-  }, [options, query]);
+  }, [onQueryChange, options, query]);
+
+  useEffect(() => {
+    if (!open || !onQueryChange) return;
+    onQueryChange(query.trim());
+  }, [open, onQueryChange, query]);
 
   function close() {
     setOpen(false);
@@ -101,6 +111,12 @@ export function SearchableCombobox({
                 <X className="h-4 w-4" />
               </button>
             </div>
+
+            {renderTopContent ? (
+              <div className="px-4 pb-2 shrink-0">
+                {renderTopContent({ query: query.trim(), close })}
+              </div>
+            ) : null}
 
             {/* Results list */}
             <div className="overflow-y-auto flex-1 px-4 pb-2">
