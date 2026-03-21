@@ -6,6 +6,7 @@ REDUNDANT/
 **/testing/
 frontend/stitch/
 coffee-coach-rebuild-prompts-v2.md
+**/assessment/
 
 # Debug/test endpoints (not for production)
 frontend/src/app/api/test-auth/
