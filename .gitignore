@@ -12,18 +12,8 @@ coffee-coach-rebuild-prompts-v2.md
 frontend/src/app/api/test-auth/
 
 # Private — coaching logic & data (lives in separate private repo)
-backend/app/routers/coaching.py
-backend/app/schemas/coaching.py
-backend/data/recipes_v4.json
-backend/data/beans_AI.json
-backend/data/coffee_knowledge_rag_filtered.jsonl
-backend/data/hand_grinders.json
-backend/data/brew_methods.json
 backend/data/images/
-frontend/src/data/recipes.json
-frontend/src/data/beans_catalog.json
-frontend/src/data/hand_grinders.json
-frontend/src/data/brew_methods.json
+
 
 # Project specs and personal notes
 design_spec.md

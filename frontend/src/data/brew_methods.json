@@ -1,0 +1,14 @@
+[
+  { "method_id": "v60", "display_name": "V60", "parent_method": "pour_over" },
+  { "method_id": "chemex", "display_name": "Chemex", "parent_method": "pour_over" },
+  { "method_id": "kalita_wave", "display_name": "Kalita Wave", "parent_method": "pour_over" },
+  { "method_id": "clever_dripper", "display_name": "Clever Dripper", "parent_method": "pour_over" },
+  { "method_id": "hario_switch", "display_name": "Hario Switch", "parent_method": "pour_over" },
+  { "method_id": "wilfa_pour_over", "display_name": "Wilfa Pour Over", "parent_method": "pour_over" },
+  { "method_id": "origami_dripper", "display_name": "Origami Dripper", "parent_method": "pour_over" },
+  { "method_id": "aeropress", "display_name": "AeroPress", "parent_method": null },
+  { "method_id": "french_press", "display_name": "French Press", "parent_method": null },
+  { "method_id": "moka_pot", "display_name": "Moka Pot", "parent_method": null },
+  { "method_id": "cold_brew", "display_name": "Cold Brew", "parent_method": null },
+  { "method_id": "south_indian_filter", "display_name": "South Indian Filter", "parent_method": null }
+]
