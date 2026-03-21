@@ -170,7 +170,12 @@ export default function BrewCoachPage() {
     if (brew) {
       setRating(brew.rating ?? 5);
       setRatingLocked(brew.rating != null || !!brew.coachingFeedback);
-      setShowSelections(!!brew.coachingFeedback);
+      setShowSelections(brew.rating != null || !!brew.coachingFeedback);
+      // If rated but not yet coached, show pickers immediately (no slide-in animation)
+      if (brew.rating != null && !brew.coachingFeedback) {
+        setSymptomsEntered(true);
+        setGoalsEntered(true);
+      }
       if (brew.coachingFeedback) {
         setResponse({
           fix: brew.coachingFeedback,
