@@ -394,7 +394,14 @@ export default function BrewCoachPage() {
     setCoachAvatarSrc("/coach/coffee_coach_whispering.png");
     setCoachIsThinking(false);
     setShowCursor(true);
-    await typeText(text, setTypewriterText, 18);
+    // Inline typewriter with periodic scroll-to-bottom so the viewport follows growing text
+    setTypewriterText("");
+    for (let i = 1; i <= text.length; i += 1) {
+      if (cancelled.current) return;
+      setTypewriterText(text.slice(0, i));
+      if (i % 50 === 0) window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      await wait(18);
+    }
     if (cancelled.current) return;
     await wait(400);
     for (let i = 0; i < 2; i += 1) {
@@ -425,7 +432,7 @@ export default function BrewCoachPage() {
     setElementWillChange(userBubbleRef.current, true);
     setElementWillChange(userAvatarRef.current, true);
     setUserBubbleEntered(true);
-    userBubbleRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    userBubbleRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     await wait(350);
     setElementWillChange(userBubbleRef.current, false);
     setElementWillChange(userAvatarRef.current, false);
@@ -452,7 +459,7 @@ export default function BrewCoachPage() {
     await wait(16);
     setElementWillChange(kapiReplyRef.current, true);
     setKapiReplyEntered(true);
-    kapiReplyRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    kapiReplyRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     await wait(350);
     setElementWillChange(kapiReplyRef.current, false);
   }
