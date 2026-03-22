@@ -107,6 +107,11 @@ export default function BrewCoachPage() {
   const [showAdjustments, setShowAdjustments] = useState(false);
   const [adjustmentsEntered, setAdjustmentsEntered] = useState(false);
 
+  const [userRequestBubbleVisible, setUserRequestBubbleVisible] = useState(false);
+  const [userRequestBubbleEntered, setUserRequestBubbleEntered] = useState(false);
+  const [userRequestText, setUserRequestText] = useState("");
+  const [showUserRequestCursor, setShowUserRequestCursor] = useState(false);
+
   const [userBubbleVisible, setUserBubbleVisible] = useState(false);
   const [userBubbleEntered, setUserBubbleEntered] = useState(false);
   const [userBubbleText, setUserBubbleText] = useState("");
@@ -128,6 +133,8 @@ export default function BrewCoachPage() {
   // ── Refs ─────────────────────────────────────────────────────────────────
   const coachingRef = useRef<HTMLDivElement>(null);
   const adjustmentsRef = useRef<HTMLDivElement>(null);
+  const userRequestBubbleRef = useRef<HTMLDivElement>(null);
+  const userRequestAvatarRef = useRef<HTMLDivElement>(null);
   const userBubbleRef = useRef<HTMLDivElement>(null);
   const userAvatarRef = useRef<HTMLDivElement>(null);
   const kapiReplyRef = useRef<HTMLDivElement>(null);
@@ -227,6 +234,10 @@ export default function BrewCoachPage() {
     setShowCursor(false);
     setShowAdjustments(false);
     setAdjustmentsEntered(false);
+    setUserRequestBubbleVisible(false);
+    setUserRequestBubbleEntered(false);
+    setUserRequestText("");
+    setShowUserRequestCursor(false);
     setUserBubbleVisible(false);
     setUserBubbleEntered(false);
     setUserBubbleText("");
@@ -374,6 +385,45 @@ export default function BrewCoachPage() {
     setSelectionExiting(false);
   }
 
+  function buildUserRequestMessage(symptoms: string[], goals: string[]): string {
+    const symText = symptoms.length === 0 ? "" :
+      symptoms.length === 1 ? symptoms[0] :
+      symptoms.slice(0, -1).join(", ") + " and " + symptoms[symptoms.length - 1];
+    const goalText = goals.length > 0 ? goals[0] : "";
+    if (symText && goalText) return `I had ${symText} in my cup. I want ${goalText} in my next brew.`;
+    if (symText) return `I had ${symText} in my cup.`;
+    if (goalText) return `I want ${goalText} in my next brew.`;
+    return "Help me brew this better.";
+  }
+
+  async function showUserRequestBubble() {
+    if (cancelled.current) return;
+    setUserRequestBubbleVisible(true);
+    await wait(16);
+    setElementWillChange(userRequestBubbleRef.current, true);
+    setElementWillChange(userRequestAvatarRef.current, true);
+    setUserRequestBubbleEntered(true);
+    userRequestBubbleRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    await wait(350);
+    setElementWillChange(userRequestBubbleRef.current, false);
+    setElementWillChange(userRequestAvatarRef.current, false);
+  }
+
+  async function typewriterUserRequestText(text: string) {
+    if (cancelled.current) return;
+    await wait(150);
+    if (cancelled.current) return;
+    setShowUserRequestCursor(true);
+    setUserRequestText("");
+    for (let i = 1; i <= text.length; i += 1) {
+      if (cancelled.current) return;
+      setUserRequestText(text.slice(0, i));
+      await wait(20);
+    }
+    await wait(300);
+    setShowUserRequestCursor(false);
+  }
+
   async function showKapiThinking() {
     if (cancelled.current) return;
     setCoachAvatarSrc("/coach/coffee_coach_thinking.png");
@@ -382,7 +432,7 @@ export default function BrewCoachPage() {
     await wait(16);
     setElementWillChange(coachingRef.current, true);
     setCoachBubbleEntered(true);
-    coachingRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    coachingRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     await wait(350);
     setElementWillChange(coachingRef.current, false);
   }
@@ -507,7 +557,11 @@ export default function BrewCoachPage() {
     setAnimationComplete(false);
 
     try {
+      const requestMsg = buildUserRequestMessage(selectedSymptoms, selectedGoals);
       await exitPillsAndSlider();
+      await showUserRequestBubble();
+      await typewriterUserRequestText(requestMsg);
+      await wait(400);
       await showKapiThinking();
 
       const data = await resultPromise;
@@ -932,6 +986,44 @@ export default function BrewCoachPage() {
             >
               {isSavingFavourite ? "Saving…" : isFavouriteSaved || isAlreadyFavourite ? "Saved to Best Brews" : "Save to Best Brews"}
             </button>
+          </div>
+        )}
+
+        {/* ── BUBBLE 0: User request — symptoms + goals ────────────────────── */}
+        {userRequestBubbleVisible && (
+          <div className="mt-4 flex items-center justify-end gap-3" style={{ pointerEvents: "none" }}>
+            <div
+              ref={userRequestBubbleRef}
+              className="user-bubble-tail relative"
+              style={{
+                background: "#1e1e2e",
+                border: "1.5px solid rgba(244,157,37,0.5)",
+                borderRadius: "16px 16px 4px 16px",
+                padding: "10px 14px",
+                maxWidth: "80%",
+                opacity: userRequestBubbleEntered ? 1 : 0,
+                transform: userRequestBubbleEntered ? "translateX(0)" : "translateX(16px)",
+                transition: "opacity 350ms ease-out, transform 350ms ease-out",
+              }}
+            >
+              <span className="text-slate-100" style={{ fontSize: 14, fontWeight: 400 }}>
+                {userRequestText}
+                {showUserRequestCursor && <span className="typewriter-cursor">|</span>}
+              </span>
+            </div>
+            <div
+              ref={userRequestAvatarRef}
+              style={{ opacity: userRequestBubbleEntered ? 1 : 0, transition: "opacity 300ms ease-out" }}
+            >
+              {userAvatar ? (
+                <img src={userAvatar} alt="You" width={36} height={36} className="rounded-full shrink-0 object-cover" />
+              ) : (
+                <div className="rounded-full shrink-0 flex items-center justify-center text-sm font-bold"
+                  style={{ width: 36, height: 36, background: "#2a1a0a", border: "1px solid rgba(244,157,37,0.3)", color: "#f49d25" }}>
+                  {userInitial}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

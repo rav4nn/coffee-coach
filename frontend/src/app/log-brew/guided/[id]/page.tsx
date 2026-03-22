@@ -980,7 +980,7 @@ export default function GuidedRecipeDetailPage() {
                     src="/coach/img3_whistle_blowing.png"
                     alt="Coach"
                     fill
-                    className="object-cover object-top"
+                    className="object-contain"
                   />
                 </div>
                 <div className="flex-1 p-4">
