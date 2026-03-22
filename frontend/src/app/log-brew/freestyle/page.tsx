@@ -444,18 +444,7 @@ export default function FreestyleLogPage() {
 
         {submitError ? <p className="text-xs text-red-700">{submitError}</p> : null}
 
-        <Button
-          type="submit"
-          disabled={submitting}
-          className="h-12 w-full text-base font-normal"
-          onClick={() => {
-            const errs = form.formState.errors;
-            if (Object.keys(errs).length > 0) {
-              const first = Object.values(errs)[0];
-              setSubmitError((first as { message?: string })?.message ?? "Please check the form fields above.");
-            }
-          }}
-        >
+        <Button type="submit" disabled={submitting} className="h-12 w-full text-base font-normal">
           {submitting ? "Saving…" : "Log Brew"}
         </Button>
       </form>
