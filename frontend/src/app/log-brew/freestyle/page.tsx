@@ -197,7 +197,7 @@ export default function FreestyleLogPage() {
   }, [lastGrindForBean, setValue, isCoachMode]);
 
   // Brew time — local display value for auto-formatting
-  const [brewTimeDisplay, setBrewTimeDisplay] = useState(form.getValues("brewTime") ?? "");
+  const [brewTimeDisplay, setBrewTimeDisplay] = useState(coachDefaults?.brewTime ?? "");
 
   const [tastingNotes, setTastingNotes] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -444,7 +444,18 @@ export default function FreestyleLogPage() {
 
         {submitError ? <p className="text-xs text-red-700">{submitError}</p> : null}
 
-        <Button type="submit" disabled={submitting} className="h-12 w-full text-base font-normal">
+        <Button
+          type="submit"
+          disabled={submitting}
+          className="h-12 w-full text-base font-normal"
+          onClick={() => {
+            const errs = form.formState.errors;
+            if (Object.keys(errs).length > 0) {
+              const first = Object.values(errs)[0];
+              setSubmitError((first as { message?: string })?.message ?? "Please check the form fields above.");
+            }
+          }}
+        >
           {submitting ? "Saving…" : "Log Brew"}
         </Button>
       </form>
