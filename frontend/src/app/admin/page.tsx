@@ -22,6 +22,7 @@ interface AdminStats {
     profile_complete: boolean;
     brew_count: number;
     bean_count: number;
+    coaching_count: number;
   }>;
   brews: Array<{
     id: string;
@@ -202,6 +203,7 @@ export default function AdminPage() {
                     <th className="px-4 py-3 text-left">Name</th>
                     <th className="px-4 py-3 text-center">Brews</th>
                     <th className="px-4 py-3 text-center">Beans</th>
+                    <th className="px-4 py-3 text-center">Coaching</th>
                     <th className="px-4 py-3 text-left">Joined</th>
                   </tr>
                 </thead>
@@ -212,6 +214,7 @@ export default function AdminPage() {
                       <td className="px-4 py-3">{user.name || "—"}</td>
                       <td className="px-4 py-3 text-center font-semibold">{user.brew_count}</td>
                       <td className="px-4 py-3 text-center font-semibold">{user.bean_count}</td>
+                      <td className="px-4 py-3 text-center font-semibold">{user.coaching_count ?? 0}</td>
                       <td className="px-4 py-3 text-slate-400">
                         {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
                       </td>
