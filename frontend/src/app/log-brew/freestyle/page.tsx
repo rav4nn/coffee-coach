@@ -442,7 +442,10 @@ export default function FreestyleLogPage() {
           />
         </div>
 
-        {submitError ? <p className="text-xs text-red-700">{submitError}</p> : null}
+        {submitError ? <p className="text-xs text-red-400 text-center">{submitError}</p> : null}
+        {!submitError && form.formState.isSubmitted && !form.formState.isValid && (
+          <p className="text-xs text-red-400 text-center">Please fill in all required fields above.</p>
+        )}
 
         <Button type="submit" disabled={submitting} className="h-12 w-full text-base font-normal">
           {submitting ? "Saving…" : "Log Brew"}
