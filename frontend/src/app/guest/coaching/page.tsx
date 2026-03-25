@@ -160,21 +160,6 @@ export default function GuestCoachingResult() {
 
       <div className="px-4 pt-4 space-y-4">
 
-        {/* Positive message for high ratings */}
-        {positiveMessage && (
-          <div className="flex items-start gap-3 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3">
-            <Image
-              src="/coach/coffee_coach_excited.png"
-              alt="Coach Kapi"
-              width={36}
-              height={36}
-              className="w-9 h-9 shrink-0 object-contain"
-              style={{ mixBlendMode: "screen" }}
-            />
-            <p className="text-sm text-slate-300 leading-relaxed pt-0.5">{positiveMessage}</p>
-          </div>
-        )}
-
         {/* Diagnosis card */}
         <div className="rounded-2xl border border-white/8 bg-[#1e1208] p-4">
           <div className="flex items-center gap-3 mb-4">
@@ -207,17 +192,32 @@ export default function GuestCoachingResult() {
             ))}
           </div>
 
-          {/* Footer bar */}
-          <div className="mt-3 pt-3 flex items-center justify-between" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-            <span className="text-xs text-slate-400">
-              {adjustmentCount === 0
-                ? "No changes needed"
-                : `${adjustmentCount} adjustment${adjustmentCount !== 1 ? "s" : ""} to try`}
-            </span>
-            {store.methodId && (
-              <span className="text-xs text-primary/70 capitalize">
-                {store.methodId.replace(/_/g, " ")}
-              </span>
+          {/* Brew context footer */}
+          <div className="mt-3 pt-3 space-y-1" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              {store.methodId && (
+                <span className="text-xs text-slate-400 capitalize">{store.methodId.replace(/_/g, " ")}</span>
+              )}
+              {store.coffeeGrams && (
+                <span className="text-xs text-slate-500">{store.coffeeGrams}g coffee</span>
+              )}
+              {store.waterMl && (
+                <span className="text-xs text-slate-500">{store.waterMl}ml water</span>
+              )}
+              {store.waterTempC && (
+                <span className="text-xs text-slate-500">{store.waterTempC}°C</span>
+              )}
+              {store.brewTime && (
+                <span className="text-xs text-slate-500">{store.brewTime}</span>
+              )}
+              {(store.grindClicks ?? store.grindSize) && (
+                <span className="text-xs text-slate-500">
+                  {store.grindClicks ? `${store.grindClicks} clicks` : store.grindSize}
+                </span>
+              )}
+            </div>
+            {positiveMessage && (
+              <p className="text-xs text-primary/60 italic">{positiveMessage}</p>
             )}
           </div>
         </div>
@@ -260,14 +260,6 @@ export default function GuestCoachingResult() {
           </button>
         </div>
 
-        {/* Try again */}
-        <button
-          type="button"
-          onClick={() => { store.reset(); router.push("/guest/brew"); }}
-          className="w-full bg-primary/10 border border-primary/20 text-slate-100 font-semibold py-3 rounded-xl transition-all hover:scale-[1.01]"
-        >
-          Fix another brew
-        </button>
       </div>
     </main>
   );
