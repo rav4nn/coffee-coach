@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNav } from "@/components/BottomNav";
@@ -10,7 +11,9 @@ const SHELL_FREE_ROUTES = ["/login", "/onboarding", "/account-info", "/settings"
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const hideShell = SHELL_FREE_ROUTES.some((r) => pathname.startsWith(r));
+  const { status } = useSession();
+  const isGuestHome = pathname === "/" && status === "unauthenticated";
+  const hideShell = isGuestHome || SHELL_FREE_ROUTES.some((r) => pathname.startsWith(r));
 
   if (hideShell) {
     return <>{children}</>;
