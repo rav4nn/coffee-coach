@@ -23,6 +23,7 @@ interface GuestBrewState {
   // Step 2
   methodId: string | null;
   beanName: string | null;
+  grinderName: string | null;
   coffeeGrams: number | null;
   waterMl: number | null;
   waterTempC: number | null;
@@ -39,6 +40,7 @@ interface GuestBrewState {
   setGoals: (goals: string[]) => void;
   setMethodId: (id: string | null) => void;
   setBeanName: (name: string | null) => void;
+  setGrinderName: (name: string | null) => void;
   setBrewParams: (params: {
     coffeeGrams?: number | null;
     waterMl?: number | null;
@@ -54,7 +56,7 @@ interface GuestBrewState {
 
 const INITIAL: Pick<
   GuestBrewState,
-  | "symptoms" | "goals" | "methodId" | "beanName"
+  | "symptoms" | "goals" | "methodId" | "beanName" | "grinderName"
   | "coffeeGrams" | "waterMl" | "waterTempC" | "grindSize"
   | "grindClicks" | "brewTime" | "rating" | "coachingResult"
 > = {
@@ -62,6 +64,7 @@ const INITIAL: Pick<
   goals: [],
   methodId: null,
   beanName: null,
+  grinderName: null,
   coffeeGrams: null,
   waterMl: null,
   waterTempC: null,
@@ -78,6 +81,7 @@ export const useGuestBrewStore = create<GuestBrewState>((set) => ({
   setGoals: (goals) => set({ goals }),
   setMethodId: (methodId) => set({ methodId }),
   setBeanName: (beanName) => set({ beanName }),
+  setGrinderName: (grinderName) => set({ grinderName }),
   setBrewParams: (params) => set((s) => ({ ...s, ...params })),
   setRating: (rating) => set({ rating }),
   setCoachingResult: (coachingResult) => set({ coachingResult }),

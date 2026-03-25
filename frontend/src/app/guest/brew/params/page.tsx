@@ -1,17 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { CompactFlowHeader } from "@/components/CompactFlowHeader";
 import { MethodPicker, type MethodCardId } from "@/components/MethodPicker";
 import { Input } from "@/components/ui/input";
 import { useGuestBrewStore } from "@/lib/guestBrewStore";
-import { HOFFMANN_DEFAULTS } from "@/lib/methodDefaults";
 
 const grindSizeOptions = ["Extra Fine", "Fine", "Medium-Fine", "Medium", "Medium-Coarse", "Coarse"] as const;
 
-/** Pour-over sub-devices shown after selecting pour_over. */
+const HAND_GRINDERS = [
+  "Timemore Chestnut C2",
+  "Timemore Chestnut C2S",
+  "Timemore Chestnut C3",
+  "Timemore Chestnut C3S",
+  "1Zpresso Q-Air",
+  "1Zpresso JX-Pro",
+  "1Zpresso K-Ultra",
+  "Kingrinder K6",
+  "Comandante C40 MK4",
+  "Aashonee Grindmaster 40",
+  "Aashonee",
+  "AGARO Elite",
+  "Amazon Basics",
+  "InstaCuppa",
+  "KOT",
+  "IBELL GRINDX6",
+  "Oblivion",
+  "Doppio",
+];
+
 const POUR_OVER_DEVICES: { id: string; label: string }[] = [
   { id: "v60", label: "V60" },
   { id: "chemex", label: "Chemex" },
@@ -27,33 +46,21 @@ export default function GuestBrewStep2() {
 
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [pourOverDevice, setPourOverDevice] = useState<string | null>(null);
-  const [beanName, setBeanName] = useState(store.beanName ?? "");
-  const [coffeeGrams, setCoffeeGrams] = useState<string>("");
-  const [waterMl, setWaterMl] = useState<string>("");
-  const [waterTempC, setWaterTempC] = useState<string>("");
+  const [coffeeGrams, setCoffeeGrams] = useState("");
+  const [waterMl, setWaterMl] = useState("");
+  const [waterTempC, setWaterTempC] = useState("");
   const [grindSize, setGrindSize] = useState<string>("Medium");
-  const [brewTime, setBrewTime] = useState<string>("");
+  const [grindClicks, setGrindClicks] = useState("");
+  const [brewTime, setBrewTime] = useState("");
+  const [selectedGrinder, setSelectedGrinder] = useState("");
 
   const effectiveMethodId = selectedCard === "pour_over" ? pourOverDevice : selectedCard;
   const isColdBrew = effectiveMethodId === "cold_brew";
-
-  // Auto-fill defaults when method changes
-  useEffect(() => {
-    if (!effectiveMethodId) return;
-    const defaults = HOFFMANN_DEFAULTS[effectiveMethodId];
-    if (!defaults) return;
-    setCoffeeGrams(String(defaults.coffeeGrams));
-    setWaterMl(defaults.waterMl != null ? String(defaults.waterMl) : "");
-    setWaterTempC(defaults.waterTempC != null ? String(defaults.waterTempC) : "");
-    setGrindSize(defaults.grindSize);
-    setBrewTime(defaults.brewTime);
-  }, [effectiveMethodId]);
+  const useClicks = selectedGrinder !== "";
 
   function handleMethodSelect(id: string) {
-    setSelectedCard(id);
-    if (id !== "pour_over") {
-      setPourOverDevice(null);
-    }
+    setSelectedCard(id as MethodCardId);
+    if (id !== "pour_over") setPourOverDevice(null);
   }
 
   const canProceed =
@@ -63,14 +70,15 @@ export default function GuestBrewStep2() {
 
   function handleNext() {
     store.setMethodId(effectiveMethodId);
-    store.setBeanName(beanName.trim() || null);
     store.setBrewParams({
       coffeeGrams: coffeeGrams ? Number(coffeeGrams) : null,
       waterMl: waterMl ? Number(waterMl) : null,
       waterTempC: waterTempC ? Number(waterTempC) : null,
-      grindSize,
-      brewTime,
+      grindSize: useClicks ? "Medium" : grindSize,
+      grindClicks: useClicks && grindClicks ? Number(grindClicks) : null,
+      brewTime: brewTime || null,
     });
+    store.setGrinderName(selectedGrinder || null);
     router.push("/guest/brew/rate");
   }
 
@@ -85,7 +93,6 @@ export default function GuestBrewStep2() {
       />
 
       <div className="px-4 pt-4 space-y-5">
-        {/* Method picker */}
         <div>
           <h2 className="text-lg font-bold text-slate-100 mb-1">How did you brew it?</h2>
           <p className="text-sm text-slate-400 mb-1">Pick your brewing method.</p>
@@ -118,36 +125,55 @@ export default function GuestBrewStep2() {
           </div>
         )}
 
-        {/* Bean name (optional) */}
         {effectiveMethodId && (
           <>
+            {/* Grinder selection (optional) */}
             <div>
               <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">
-                Bean name (optional)
+                Grinder (optional)
               </label>
-              <Input
-                type="text"
-                placeholder="e.g. Blue Tokai Attikan Estate"
-                value={beanName}
-                onChange={(e) => setBeanName(e.target.value)}
-              />
+              <select
+                value={selectedGrinder}
+                onChange={(e) => {
+                  setSelectedGrinder(e.target.value);
+                  setGrindClicks("");
+                }}
+                className="h-10 w-full rounded-xl border border-mocha/20 bg-steam px-3 text-sm text-espresso outline-none focus:ring-2 focus:ring-mocha/40"
+              >
+                <option value="">Select your grinder…</option>
+                {HAND_GRINDERS.map((g) => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
+              </select>
             </div>
 
             {/* Brew parameters */}
             <div className="rounded-2xl border border-primary/10 bg-steam p-4 space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-primary text-lg">coffee_maker</span>
-                <h3 className="text-xs font-normal uppercase tracking-widest text-slate-400">Brew Parameters</h3>
+                <h3 className="text-xs font-normal uppercase tracking-widest text-slate-400">Your Brew Parameters</h3>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">Coffee (g)</label>
-                  <Input type="number" step="0.1" value={coffeeGrams} onChange={(e) => setCoffeeGrams(e.target.value)} />
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="e.g. 15"
+                    value={coffeeGrams}
+                    onChange={(e) => setCoffeeGrams(e.target.value)}
+                  />
                 </div>
                 <div>
                   <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">Water (ml)</label>
-                  <Input type="number" step="1" value={waterMl} onChange={(e) => setWaterMl(e.target.value)} />
+                  <Input
+                    type="number"
+                    step="1"
+                    placeholder="e.g. 250"
+                    value={waterMl}
+                    onChange={(e) => setWaterMl(e.target.value)}
+                  />
                 </div>
               </div>
 
@@ -155,7 +181,13 @@ export default function GuestBrewStep2() {
                 {!isColdBrew && (
                   <div>
                     <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">Temp (°C)</label>
-                    <Input type="number" step="1" value={waterTempC} onChange={(e) => setWaterTempC(e.target.value)} />
+                    <Input
+                      type="number"
+                      step="1"
+                      placeholder="e.g. 93"
+                      value={waterTempC}
+                      onChange={(e) => setWaterTempC(e.target.value)}
+                    />
                   </div>
                 )}
                 <div>
@@ -170,21 +202,39 @@ export default function GuestBrewStep2() {
                 </div>
               </div>
 
+              {/* Grind: clicks if grinder selected, size picker otherwise */}
               <div>
-                <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">Grind Size</label>
-                <select
-                  value={grindSize}
-                  onChange={(e) => setGrindSize(e.target.value)}
-                  className="h-10 w-full rounded-xl border border-mocha/20 bg-steam px-3 text-sm text-espresso outline-none focus:ring-2 focus:ring-mocha/40"
-                >
-                  {grindSizeOptions.map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
+                {useClicks ? (
+                  <>
+                    <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">
+                      Clicks on {selectedGrinder}
+                    </label>
+                    <Input
+                      type="number"
+                      step="1"
+                      min="1"
+                      placeholder="e.g. 18"
+                      value={grindClicks}
+                      onChange={(e) => setGrindClicks(e.target.value)}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <label className="mb-1 block text-[11px] font-normal uppercase tracking-wider text-slate-500">Grind Size</label>
+                    <select
+                      value={grindSize}
+                      onChange={(e) => setGrindSize(e.target.value)}
+                      className="h-10 w-full rounded-xl border border-mocha/20 bg-steam px-3 text-sm text-espresso outline-none focus:ring-2 focus:ring-mocha/40"
+                    >
+                      {grindSizeOptions.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* CTA */}
             <button
               type="button"
               disabled={!canProceed}

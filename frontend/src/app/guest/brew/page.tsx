@@ -15,20 +15,16 @@ export default function GuestBrewStep1() {
   const setGoals = useGuestBrewStore((s) => s.setGoals);
 
   function toggleSymptom(value: string) {
-    // Single-select: toggle on/off
     if (symptoms.includes(value)) {
-      setSymptoms([]);
+      setSymptoms(symptoms.filter((s) => s !== value));
     } else {
-      setSymptoms([value]);
+      setSymptoms([...symptoms, value]);
     }
   }
 
   function toggleGoal(value: string) {
-    if (goals.includes(value)) {
-      setGoals(goals.filter((g) => g !== value));
-    } else if (goals.length < 2) {
-      setGoals([...goals, value]);
-    }
+    // Single-select: tap again to deselect
+    setGoals(goals.includes(value) ? [] : [value]);
   }
 
   const canProceed = symptoms.length > 0;
@@ -44,32 +40,22 @@ export default function GuestBrewStep1() {
       />
 
       <div className="px-4 pt-4 space-y-6">
-        {/* Symptom picker */}
         <div>
           <h2 className="text-lg font-bold text-slate-100 mb-1">
             What&apos;s wrong with your cup?
           </h2>
-          <p className="text-sm text-slate-400 mb-3">Pick the main issue you noticed.</p>
-          <SymptomPicker
-            selected={symptoms}
-            onToggle={toggleSymptom}
-          />
+          <p className="text-sm text-slate-400 mb-3">Pick everything you noticed.</p>
+          <SymptomPicker selected={symptoms} onToggle={toggleSymptom} />
         </div>
 
-        {/* Goal picker */}
         <div>
           <h2 className="text-lg font-bold text-slate-100 mb-1">
             Anything you want to improve?
           </h2>
-          <p className="text-sm text-slate-400 mb-3">Optional — pick up to 2.</p>
-          <GoalPicker
-            selected={goals}
-            maxSelections={2}
-            onToggle={toggleGoal}
-          />
+          <p className="text-sm text-slate-400 mb-3">Optional — pick one.</p>
+          <GoalPicker selected={goals} maxSelections={1} onToggle={toggleGoal} />
         </div>
 
-        {/* CTA */}
         <button
           type="button"
           disabled={!canProceed}

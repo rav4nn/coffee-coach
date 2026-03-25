@@ -46,7 +46,6 @@ export default function GuestBrewStep3() {
 
     const payload = {
       method_id: store.methodId,
-      bean_name: store.beanName,
       symptoms: store.symptoms,
       goals: store.goals,
       rating,
@@ -56,6 +55,7 @@ export default function GuestBrewStep3() {
       grind_size: store.grindSize,
       grind_clicks: store.grindClicks,
       brew_time: store.brewTime,
+      grinder_name: store.grinderName,
     };
 
     try {
