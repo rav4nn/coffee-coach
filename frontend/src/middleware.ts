@@ -5,6 +5,17 @@ export default auth((req) => {
   const profileComplete = req.auth?.user?.profile_complete;
   const path = req.nextUrl.pathname;
 
+  // Guest-accessible routes — no auth required
+  if (
+    path === "/" ||
+    path.startsWith("/guest") ||
+    path === "/post-login"
+  ) {
+    // Authenticated users on "/" skip straight to the authenticated home
+    // (handled inside page.tsx via session check, not here)
+    return NextResponse.next();
+  }
+
   // Unauthenticated users → send to /login
   if (!req.auth) {
     return NextResponse.redirect(new URL("/login", req.url));

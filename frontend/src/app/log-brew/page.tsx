@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { CompactFlowHeader } from "@/components/CompactFlowHeader";
+import {
+  MethodPicker,
+  SUPPORTED_METHODS,
+  type MethodCardId,
+} from "@/components/MethodPicker";
 import {
   getBrewMethodsApi,
   getUserBeansApi,
@@ -17,23 +21,6 @@ import { useBeansStore } from "@/lib/beansStore";
 import { useLogBrewStore } from "@/lib/logBrewStore";
 import { usePreferencesStore } from "@/lib/preferencesStore";
 
-type MethodCardId =
-  | "pour_over"
-  | "aeropress"
-  | "french_press"
-  | "moka_pot"
-  | "cold_brew"
-  | "south_indian_filter";
-
-const SUPPORTED_METHODS: MethodCardId[] = [
-  "pour_over",
-  "aeropress",
-  "french_press",
-  "moka_pot",
-  "cold_brew",
-  "south_indian_filter",
-];
-
 const POUR_OVER_DEVICE_ALLOWLIST = new Set([
   "v60",
   "chemex",
@@ -43,33 +30,6 @@ const POUR_OVER_DEVICE_ALLOWLIST = new Set([
   "wilfa_pour_over",
   "origami_dripper",
 ]);
-
-const METHOD_ICON: Record<MethodCardId, string> = {
-  pour_over: "water_drop",
-  aeropress: "compress",
-  french_press: "coffee_maker",
-  moka_pot: "soup_kitchen",
-  cold_brew: "ac_unit",
-  south_indian_filter: "filter_alt",
-};
-
-const METHOD_LABEL: Record<MethodCardId, string> = {
-  pour_over: "Pour Over",
-  aeropress: "AeroPress",
-  french_press: "French Press",
-  moka_pot: "Moka Pot",
-  cold_brew: "Cold Brew",
-  south_indian_filter: "Filter Kaapi",
-};
-
-const METHOD_IMAGE: Record<MethodCardId, string> = {
-  pour_over: "/coach/img1_pour_over.png",
-  aeropress: "/coach/img1_aeropress.png",
-  french_press: "/coach/img1_french_press.png",
-  moka_pot: "/coach/img1_moka_pot.png",
-  cold_brew: "/coach/img1_cold_brew.png",
-  south_indian_filter: "/coach/img1_filter_kaapi.png",
-};
 
 function formatRoastDate(value: string | null) {
   if (!value) return "";
@@ -174,7 +134,7 @@ export default function LogBrewPage() {
     return () => { mounted = false; };
   }, [persistedBeans, setLocalLastUsed, storedLastBean, storedLastMethod]);
 
-  const visibleMethodCards = useMemo(() => {
+  const visibleMethodIds = useMemo(() => {
     const standalone = methods.filter(
       (method) =>
         method.parent_method === null &&
@@ -183,15 +143,12 @@ export default function LogBrewPage() {
     );
     const hasPourOverFamily = methods.some((method) => method.parent_method === "pour_over");
 
-    const cards: Array<{ method_id: MethodCardId; display_name: string }> = [];
-    if (hasPourOverFamily) cards.push({ method_id: "pour_over", display_name: "Pour Over" });
+    const ids: MethodCardId[] = [];
+    if (hasPourOverFamily) ids.push("pour_over");
     standalone.forEach((method) => {
-      cards.push({
-        method_id: method.method_id as MethodCardId,
-        display_name: method.display_name,
-      });
+      ids.push(method.method_id as MethodCardId);
     });
-    return cards.filter((card) => SUPPORTED_METHODS.includes(card.method_id)).slice(0, 6);
+    return ids.filter((id) => SUPPORTED_METHODS.includes(id)).slice(0, 6);
   }, [methods]);
 
   const selectedBean = beans.find((bean) => bean.id === selectedBeanId);
@@ -337,47 +294,21 @@ export default function LogBrewPage() {
             ))}
           </div>
         ) : null}
-        <div className={`mt-4 grid grid-cols-3 gap-3 ${isLoading ? "hidden" : ""}`}>
-          {visibleMethodCards.map((method) => {
-            const active = selectedMethodId === method.method_id;
-            return (
-              <button
-                key={method.method_id}
-                type="button"
-                onClick={() => {
-                  setSelectedMethodId(method.method_id);
-                  if (method.method_id !== "pour_over") {
-                    setSelectedPourOverDeviceId("");
-                  } else {
-                    setTimeout(() => {
-                      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-                    }, 150);
-                  }
-                }}
-                className={`relative rounded-xl overflow-hidden border-2 transition-all ${
-                  active
-                    ? "border-primary ring-2 ring-primary/40"
-                    : "border-white/5 hover:border-primary/30"
-                }`}
-              >
-                <div className="relative aspect-[4/5]">
-                  <Image
-                    src={METHOD_IMAGE[method.method_id]}
-                    alt={METHOD_LABEL[method.method_id]}
-                    fill
-                    className="object-cover"
-                    sizes="33vw"
-                  />
-                  {active && <div className="absolute inset-0 bg-primary/25" />}
-                </div>
-                <div className="absolute bottom-0 inset-x-0 py-1.5 bg-background-dark/80 backdrop-blur-sm">
-                  <span className="block text-center text-[10px] font-normal uppercase leading-tight text-slate-100">
-                    {METHOD_LABEL[method.method_id]}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
+        <div className={isLoading ? "hidden" : ""}>
+          <MethodPicker
+            selectedMethod={selectedMethodId || null}
+            onSelect={(methodId) => {
+              setSelectedMethodId(methodId as MethodCardId);
+              if (methodId !== "pour_over") {
+                setSelectedPourOverDeviceId("");
+              } else {
+                setTimeout(() => {
+                  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+                }, 150);
+              }
+            }}
+            methods={visibleMethodIds}
+          />
         </div>
       </section>
 

@@ -23,7 +23,7 @@ function getInitials(name: string | null | undefined): string {
 }
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [profileOpen, setProfileOpen] = useState(false);
   const [primaryMethod, setPrimaryMethod] = useState<string | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -35,12 +35,18 @@ export default function Home() {
 
   const user = session?.user;
   const firstName = user?.name?.split(" ")[0] ?? "Brewer";
+  const isGuest = status === "unauthenticated";
 
   useEffect(() => {
+    if (isGuest) return;
     void fetchEntries();
-  }, [fetchEntries]);
+  }, [fetchEntries, isGuest]);
 
   useEffect(() => {
+    if (isGuest) {
+      setProfileLoaded(true);
+      return;
+    }
     fetch("/api/users/me", { cache: "no-store" })
       .then((r) => r.json())
       .then((u) => {
@@ -49,7 +55,7 @@ export default function Home() {
       })
       .catch(() => {})
       .finally(() => setProfileLoaded(true));
-  }, []);
+  }, [isGuest]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -61,8 +67,81 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  const isLoading = loading || !profileLoaded;
-  const isNewUser = !isLoading && entries.length === 0;
+  const isLoading = (loading || !profileLoaded) && !isGuest;
+  const isNewUser = !isLoading && !isGuest && entries.length === 0;
+
+  // Wait for session status before deciding what to render
+  if (status === "loading") {
+    return (
+      <main className="flex items-center justify-center min-h-screen">
+        <div className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+      </main>
+    );
+  }
+
+  // ── Guest landing ──────────────────────────────────────────────────────
+  if (isGuest) {
+    return (
+      <>
+        <style>{`
+          @keyframes kapiAppear {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          .kapi-appear { animation: kapiAppear 0.6s ease forwards; }
+        `}</style>
+
+        <main className="flex min-h-screen flex-col items-center justify-center px-6">
+          <div className="flex flex-col items-center max-w-sm">
+            <div className="w-48 h-48 kapi-appear">
+              <Image
+                src="/coach/img3_waving.png"
+                alt="Coach Kapi"
+                width={192}
+                height={192}
+                className="w-full h-full object-contain"
+                style={{ mixBlendMode: "screen" }}
+                priority
+              />
+            </div>
+
+            <h1
+              className="text-3xl font-bold text-slate-100 text-center mt-6 leading-snug kapi-appear"
+              style={{ animationDelay: "0.15s", opacity: 0 }}
+            >
+              Your coffee tastes off.<br />
+              <span className="text-primary">Let&apos;s fix it.</span>
+            </h1>
+
+            <p
+              className="text-slate-400 text-sm text-center mt-3 leading-relaxed kapi-appear"
+              style={{ animationDelay: "0.3s", opacity: 0 }}
+            >
+              Tell us what&apos;s wrong, and Coach Kapi will tell you exactly what to change.
+            </p>
+
+            <div
+              className="w-full mt-8 space-y-3 kapi-appear"
+              style={{ animationDelay: "0.45s", opacity: 0 }}
+            >
+              <Link
+                href="/guest/brew"
+                className="flex items-center justify-center gap-2 w-full bg-primary text-background-dark font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.01] transition-transform"
+              >
+                Fix my brew →
+              </Link>
+              <Link
+                href="/login"
+                className="flex items-center justify-center w-full text-sm text-slate-500 py-2 hover:text-slate-300 transition-colors"
+              >
+                Already have an account? Sign in
+              </Link>
+            </div>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
