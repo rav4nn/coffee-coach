@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/what-coffee/:path*",
-      "destination": "https://what-coffee-xi.vercel.app/what-coffee/:path*"
-    }
-  ]
-}

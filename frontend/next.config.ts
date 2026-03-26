@@ -19,18 +19,23 @@ const nextConfig: NextConfig = {
         destination: "https://what-coffee-xi.vercel.app/what-coffee/:path*",
       },
     ];
-    if (!backendUrl) return whatCoffeeRewrites;
-    return [
-      ...whatCoffeeRewrites,
-      {
-        source: "/backend/:path*",
-        destination: `${backendUrl}/:path*`,
-      },
-      {
-        source: "/api/static/:path*",
-        destination: `${backendUrl}/api/static/:path*`,
-      },
-    ];
+    const backendRewrites = backendUrl
+      ? [
+          {
+            source: "/backend/:path*",
+            destination: `${backendUrl}/:path*`,
+          },
+          {
+            source: "/api/static/:path*",
+            destination: `${backendUrl}/api/static/:path*`,
+          },
+        ]
+      : [];
+    return {
+      beforeFiles: whatCoffeeRewrites,
+      afterFiles: backendRewrites,
+      fallback: [],
+    };
   },
 };
 
