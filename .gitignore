@@ -28,6 +28,7 @@ ux_audit.txt
 CLAUDE.md
 deploy.sh
 tasks/
+guest.md
 
 # IDE and editor files
 .vscode/
