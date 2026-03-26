@@ -5,15 +5,6 @@ export default auth((req) => {
   const profileComplete = req.auth?.user?.profile_complete;
   const path = req.nextUrl.pathname;
 
-  // Proxy /what-coffee to the what-coffee Vercel deployment
-  if (path.startsWith("/what-coffee")) {
-    const targetUrl = new URL(
-      req.nextUrl.pathname + req.nextUrl.search,
-      "https://what-coffee-xi.vercel.app"
-    );
-    return NextResponse.rewrite(targetUrl);
-  }
-
   // Guest-accessible routes — no auth required
   if (
     path === "/" ||
